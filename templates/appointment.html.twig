@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Appointment - MediNest Bootstrap Template{% endblock %}
+
+{% block body_class %}appointment-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Appointment</h1>
+              <p class="mb-0">
+                Odio et unde deleniti. Deserunt numquam exercitationem. Officiis quo
+                odio sint voluptas consequatur ut a odio voluptatem. Sit dolorum
+                debitis veritatis natus dolores. Quasi ratione sint. Sit quaerat
+                ipsum dolorem.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li class="current">Appointment</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Appointment Section -->
+    <section id="appointment" class="appointment section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+            <div class="appointment-img">
+              <img src="{{ asset('assets/img/appointment/appointment-1.webp') }}" class="img-fluid" alt="Appointment">
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+            <form action="forms/appointment.php" method="post" class="php-email-form">
+              <div class="row gy-4">
+                <div class="col-md-6">
+                  <input type="text" name="name" class="form-control" placeholder="Your Name" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" name="phone" placeholder="Your Phone" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="date" name="date" class="form-control" placeholder="Appointment Date" required>
+                </div>
+                <div class="col-md-6">
+                  <select name="department" class="form-select" required>
+                    <option value="">Select Department</option>
+                    <option value="department1">Department 1</option>
+                    <option value="department2">Department 2</option>
+                    <option value="department3">Department 3</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <select name="doctor" class="form-select" required>
+                    <option value="">Select Doctor</option>
+                    <option value="doctor1">Doctor 1</option>
+                    <option value="doctor2">Doctor 2</option>
+                    <option value="doctor3">Doctor 3</option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <textarea class="form-control" name="message" rows="5" placeholder="Message (Optional)"></textarea>
+                </div>
+              </div>
+              <div class="form-text mt-3">
+                By submitting this form you agree to our <a href="{{ path('terms') }}">terms</a> and our <a href="{{ path('privacy') }}">Privacy Policy</a> which explains how we may collect, use and disclose your personal information including to third parties.
+              </div>
+              <div class="text-center mt-3">
+                <button type="submit">Make an Appointment</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+{% endblock %}

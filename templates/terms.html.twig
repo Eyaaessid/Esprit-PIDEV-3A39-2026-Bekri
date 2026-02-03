@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Terms - MediNest Bootstrap Template{% endblock %}
+
+{% block body_class %}terms-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Terms</h1>
+              <p class="mb-0">
+                Odio et unde deleniti. Deserunt numquam exercitationem. Officiis quo
+                odio sint voluptas consequatur ut a odio voluptatem. Sit dolorum
+                debitis veritatis natus dolores. Quasi ratione sint. Sit quaerat
+                ipsum dolorem.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li class="current">Terms</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Terms Of Service Section -->
+    <section id="terms-of-service" class="terms-of-service section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="intro-section">
+          <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+              <h2>Terms of Service</h2>
+              <p class="lead">These Terms of Service ("Terms") govern your access to and use of our website and services. By accessing or using our services, you agree to be bound by these Terms.</p>
+              <div class="last-updated">Last Updated: January 15, 2024</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="terms-content">
+          <div class="row gy-5">
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+              <div class="terms-item">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using our services, you agree to comply with these Terms. If you do not agree, please do not use our services.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> You must be at least 18 years old to use our services.</li>
+                  <li><i class="bi bi-check2-circle"></i> These Terms may be updated from time to time.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
+              <div class="terms-item">
+                <h3>2. User Accounts</h3>
+                <p>When creating an account, you must provide accurate information. You are responsible for maintaining the confidentiality of your account.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> Notify us immediately of any unauthorized use.</li>
+                  <li><i class="bi bi-check2-circle"></i> We may terminate accounts for violations.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="400">
+              <div class="terms-item">
+                <h3>3. Services</h3>
+                <p>Our services are provided "as is" without warranties. We may modify or discontinue services at any time.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> Usage must comply with applicable laws.</li>
+                  <li><i class="bi bi-check2-circle"></i> Prohibited activities include harassment and spam.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="500">
+              <div class="terms-item">
+                <h3>4. Intellectual Property</h3>
+                <p>All content on our site is owned by us or our licensors. You may not reproduce or distribute content without permission.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> Limited license for personal use.</li>
+                  <li><i class="bi bi-check2-circle"></i> User-generated content grants us a license.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="600">
+              <div class="terms-item">
+                <h3>5. Limitation of Liability</h3>
+                <p>We are not liable for any indirect or consequential damages arising from use of our services.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> Total liability limited to amount paid.</li>
+                  <li><i class="bi bi-check2-circle"></i> No liability for third-party content.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="700">
+              <div class="terms-item">
+                <h3>6. Governing Law</h3>
+                <p>These Terms are governed by the laws of [Your Jurisdiction]. Disputes shall be resolved in [Your City] courts.</p>
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check2-circle"></i> Arbitration may be required.</li>
+                  <li><i class="bi bi-check2-circle"></i> Class actions are waived.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="contact-section" data-aos="fade-up" data-aos-delay="800">
+          <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+              <div class="contact-card">
+                <h4>Questions About Terms?</h4>
+                <p>If you have any questions about these Terms, please contact us.</p>
+                <a href="{{ path('contact') }}" class="contact-link">Contact Support</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+{% endblock %}
