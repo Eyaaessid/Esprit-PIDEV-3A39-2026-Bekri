@@ -71,7 +71,12 @@
             </nav>
 
             <a class="btn-getstarted" href="{{ path('appointment') }}">Appointment</a>
+            <!-- Admin link (visible during development) -->
 
+             <a class="btn btn-outline-danger ms-2" href="{{ path('admin_') }}">
+    <i class="bi bi-shield-lock-fill me-1"></i> Admin
+</a>
+        
         </div>
     </header><!-- End Header -->
 
