@@ -28,7 +28,7 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
-    </head>
+</head>
 <body>
     <div class="container-xxl position-relative bg-white d-flex p-0">
         <!-- Spinner Start -->
@@ -42,7 +42,7 @@
         <!-- Sidebar Start -->
         <div class="sidebar pe-4 pb-3">
             <nav class="navbar bg-light navbar-light">
-                <a href="{{ path('admin_') }}" class="navbar-brand mx-4 mb-3">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand mx-4 mb-3">
                     <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="navbar-nav w-100">
-                    <a href="{{ path('admin_') }}" class="nav-item nav-link">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link active">
                         <i class="fa fa-tachometer-alt me-2"></i>Dashboard
                     </a>
                     <div class="nav-item dropdown">
@@ -86,8 +86,8 @@
                             <i class="far fa-file-alt me-2"></i>Pages
                         </a>
                         <div class="dropdown-menu bg-transparent border-0 rounded-0 rounded-bottom m-0">
-                            <a href="{{ path('admin_login') }}" class="dropdown-item">Sign In</a>
-                            <a href="{{ path('admin_register') }}" class="dropdown-item">Sign Up</a>
+                            <a href="{{ path('app_login') }}" class="dropdown-item">Sign In</a>
+                            <a href="{{ path('app_register') }}" class="dropdown-item">Sign Up</a>
                             <a href="{{ path('admin_404') }}" class="dropdown-item">404 Error</a>
                             <a href="{{ path('admin_blank') }}" class="dropdown-item">Blank Page</a>
                         </div>
@@ -100,7 +100,7 @@
         <div class="content">
             <!-- Navbar Start -->
             <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
-                <a href="{{ path('admin_') }}" class="navbar-brand d-flex d-lg-none me-4">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand d-flex d-lg-none me-4">
                     <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
                 </a>
                 <a href="#" class="sidebar-toggler flex-shrink-0">
@@ -181,7 +181,7 @@
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">My Profile</a>
                             <a href="#" class="dropdown-item">Settings</a>
-                            <a href="#" class="dropdown-item">Log Out</a>
+                            <a href="{{ path('app_logout') }}" class="dropdown-item">Log Out</a>
                         </div>
                     </div>
                 </div>

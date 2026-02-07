@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Enum\UtilisateurRole;
+use App\Enum\UtilisateurStatut;
 use App\Form\RegistrationFormType;
 use App\Form\ResetPasswordRequestFormType;
 use App\Form\ResetPasswordFormType;
@@ -35,7 +37,7 @@ class SecurityController extends AbstractController
         // Last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('security/login.html.twig', [
+        return $this->render('admin/signin.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
@@ -58,11 +60,14 @@ class SecurityController extends AbstractController
     ): Response {
         // If user is already logged in, redirect
         if ($this->getUser()) {
-            return $this->redirectToRoute('home');
+            return $this->redirectToRoute($this->getRedirectRouteByRole());
         }
 
         $user = new Utilisateur();
-        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form = $this->createForm(RegistrationFormType::class, $user, [
+            'action' => $this->generateUrl('app_register'),
+            'method' => 'POST',
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -74,20 +79,22 @@ class SecurityController extends AbstractController
                 )
             );
 
-            // Set default role
-            $user->setRoles(['ROLE_USER']);
+            // Set default values for required fields
+            $user->setRole(UtilisateurRole::USER);
+            $user->setStatut(UtilisateurStatut::ACTIF);
 
             // Save to database
             $entityManager->persist($user);
             $entityManager->flush();
 
             // Add flash message
-            $this->addFlash('success', 'Your account has been created successfully! Please login.');
+            $this->addFlash('success', 'Votre compte a été créé avec succès! Veuillez vous connecter.');
 
+            // Redirect to login page
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('admin\signup.html.twig', [
+        return $this->render('admin/signup.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
     }
@@ -109,7 +116,7 @@ class SecurityController extends AbstractController
                 ->findOneBy(['email' => $email]);
 
             // Always show success message for security (don't reveal if email exists)
-            $this->addFlash('success', 'If an account exists with that email, you will receive a password reset link.');
+            $this->addFlash('success', 'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.');
 
             if ($user) {
                 // Generate reset token
@@ -127,7 +134,7 @@ class SecurityController extends AbstractController
                 $emailMessage = (new TemplatedEmail())
                     ->from('noreply@yoursite.com')
                     ->to($user->getEmail())
-                    ->subject('Password Reset Request')
+                    ->subject('Demande de réinitialisation de mot de passe')
                     ->htmlTemplate('emails/reset_password.html.twig')
                     ->context([
                         'resetUrl' => $resetUrl,
@@ -161,7 +168,7 @@ class SecurityController extends AbstractController
             ->findOneBy(['resetToken' => $token]);
 
         if (!$user || $user->getResetTokenExpiresAt() < new \DateTime()) {
-            $this->addFlash('error', 'Invalid or expired reset token.');
+            $this->addFlash('error', 'Jeton invalide ou expiré.');
             return $this->redirectToRoute('app_forgot_password');
         }
 
@@ -183,7 +190,7 @@ class SecurityController extends AbstractController
 
             $entityManager->flush();
 
-            $this->addFlash('success', 'Your password has been reset successfully! Please login.');
+            $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès! Veuillez vous connecter.');
             return $this->redirectToRoute('app_login');
         }
 

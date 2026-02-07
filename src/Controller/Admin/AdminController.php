@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class AdminController extends AbstractController
 {
     // Dashboard / Home
-    #[Route('', name: '', methods: ['GET'])]
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
         return $this->render('admin/index.html.twig');
@@ -77,19 +77,5 @@ class AdminController extends AbstractController
     public function notFound(): Response
     {
         return $this->render('admin/404.html.twig');
-    }
-
-    // Sign In page (public-like, but inside admin folder for consistency)
-    #[Route('/login', name: 'login', methods: ['GET'])]
-    public function login(): Response
-    {
-        return $this->render('admin/signin.html.twig');
-    }
-
-    // Sign Up page
-    #[Route('/register', name: 'register', methods: ['GET'])]
-    public function register(): Response
-    {
-        return $this->render('admin/signup.html.twig');
     }
 }
