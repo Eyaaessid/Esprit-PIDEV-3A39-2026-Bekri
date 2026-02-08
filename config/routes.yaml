@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
+
+# This file is the entry point to configure the routes of your app.
+# Methods with the #[Route] attribute are automatically imported.
+# See also https://symfony.com/doc/current/routing.html
+
+# To list all registered routes, run the following command:
+#   bin/console debug:router
+
+controllers:
+    resource: routing.controllers
+
+comment_create:
+    path: /comments/create/{postId}
+    controller: App\Controller\CommentController::create
+    methods: POST
+comment_delete:
+    path: /comments/{id}/delete
+    controller: App\Controller\CommentController::delete
+    methods: POST
+comment_edit:
+    path: /comments/{id}/edit
+    controller: App\Controller\CommentController::edit
+    methods: POST

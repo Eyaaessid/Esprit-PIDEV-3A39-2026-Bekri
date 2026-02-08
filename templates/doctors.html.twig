@@ -1,0 +1,221 @@
+    {% extends 'base.html.twig' %}
+
+{% block title %}Doctors - MediNest Bootstrap Template{% endblock %}
+
+{% block body_class %}doctors-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Doctors</h1>
+              <p class="mb-0">
+                Odio et unde deleniti. Deserunt numquam exercitationem. Officiis quo
+                odio sint voluptas consequatur ut a odio voluptatem. Sit dolorum
+                debitis veritatis natus dolores. Quasi ratione sint. Sit quaerat
+                ipsum dolorem.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li class="current">Doctors</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Doctors Section -->
+    <section id="doctors" class="doctors section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Filterable Doctor Directory -->
+        <div class="doctor-directory mb-5">
+          <div class="directory-bar p-3 p-md-4 rounded-3">
+            <div class="row g-3 align-items-center">
+              <div class="col-lg-4">
+                <label for="doctor-search" class="form-label mb-1">Search Doctors</label>
+                <div class="position-relative">
+                  <i class="bi bi-search search-icon"></i>
+                  <input id="doctor-search" type="text" class="form-control search-input" placeholder="Type a name or keyword">
+                </div>
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label mb-1">Department</label>
+                <select class="form-select">
+                  <option value="*">All Departments</option>
+                  <option value=".filter-cardiology">Cardiology</option>
+                  <option value=".filter-pediatrics">Pediatrics</option>
+                  <option value=".filter-dermatology">Dermatology</option>
+                  <option value=".filter-orthopedics">Orthopedics</option>
+                </select>
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label mb-1">Location</label>
+                <select class="form-select">
+                  <option>All Locations</option>
+                  <option>Downtown Clinic</option>
+                  <option>Westside Center</option>
+                  <option>Riverside Campus</option>
+                </select>
+              </div>
+              <div class="col-lg-2 d-grid">
+                <button class="btn btn-appointment">Apply Filters</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+            <ul class="directory-filters isotope-filters" data-aos="fade-up" data-aos-delay="200">
+              <li data-filter="*" class="filter-active">All</li>
+              <li data-filter=".filter-cardiology">Cardiology</li>
+              <li data-filter=".filter-pediatrics">Pediatrics</li>
+              <li data-filter=".filter-dermatology">Dermatology</li>
+              <li data-filter=".filter-orthopedics">Orthopedics</li>
+            </ul><!-- End Directory Filters -->
+
+            <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="300">
+
+              <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-cardiology">
+                <article class="doctor-card h-100">
+                  <figure class="doctor-media">
+                    <img src="{{ asset('assets/img/health/staff-3.webp') }}" class="img-fluid" alt="Dr. Amelia Brooks" loading="lazy">
+                    <span class="tag">Senior Consultant</span>
+                  </figure>
+                  <div class="doctor-content">
+                    <h4>Dr. Amelia Brooks</h4>
+                    <span class="specialty">Cardiology Specialist</span>
+                    <div class="rating">
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-half"></i>
+                      <small>(45)</small>
+                    </div>
+                    <div class="buttons">
+                      <a href="#" class="btn btn-primary">Profile</a>
+                      <a href="#" class="btn btn-outline-primary">Book</a>
+                    </div>
+                  </div>
+                </article>
+              </div><!-- End Doctor Item -->
+
+              <!-- Add remaining doctor cards here – use {{ asset('assets/img/health/...') }} for images -->
+
+            </div>
+
+          </div>
+        </div><!-- End Filterable Doctor Directory -->
+
+        <!-- Doctor Profile with Tabs -->
+        <div class="doctor-profile">
+          <div class="row gy-4">
+            <div class="col-lg-4" data-aos="fade-right" data-aos-delay="100">
+              <div class="profile-card sticky-top">
+                <img src="{{ asset('assets/img/health/staff-12.webp') }}" class="img-fluid mb-3" alt="Dr. Marcus Chen">
+                <h3>Dr. Marcus Chen</h3>
+                <span class="specialty">Orthopedics</span>
+                <div class="social">
+                  <a href="#"><i class="bi bi-twitter"></i></a>
+                  <a href="#"><i class="bi bi-facebook"></i></a>
+                  <a href="#"><i class="bi bi-instagram"></i></a>
+                  <a href="#"><i class="bi bi-linkedin"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
+              <ul class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#health-doctors-3-tab-1" type="button" role="tab" aria-controls="health-doctors-3-tab-1" aria-selected="true">Bio</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#health-doctors-3-tab-2" type="button" role="tab" aria-controls="health-doctors-3-tab-2" aria-selected="false">Schedule</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#health-doctors-3-tab-3" type="button" role="tab" aria-controls="health-doctors-3-tab-3" aria-selected="false">Reviews</button>
+                </li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="health-doctors-3-tab-1" role="tabpanel">
+                  <p>Fugiat proident aliqua laboris, excepteur sunt ad pariatur occaecat. Veniam minim eu laboris, magna irure velit anim excepteur exercitation.</p>
+                  <ul class="list-unstyled mb-0">
+                    <li><i class="bi bi-check2-circle me-1"></i> Special interest in immunotherapy</li>
+                    <li><i class="bi bi-check2-circle me-1"></i> Member of ASCO</li>
+                    <li><i class="bi bi-check2-circle me-1"></i> Community outreach programs</li>
+                  </ul>
+                </div>
+                <div class="tab-pane fade" id="health-doctors-3-tab-2" role="tabpanel">
+                  <div class="schedule-grid">
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <div class="slot">
+                          <strong>Mon</strong>
+                          <span>9:00 AM - 1:00 PM</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="slot">
+                          <strong>Tue</strong>
+                          <span>12:00 PM - 6:00 PM</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="slot">
+                          <strong>Wed</strong>
+                          <span>9:00 AM - 3:00 PM</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="slot">
+                          <strong>Thu</strong>
+                          <span>10:00 AM - 4:00 PM</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="slot">
+                          <strong>Fri</strong>
+                          <span>Closed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <a href="#" class="btn btn-appointment"><i class="bi bi-calendar-event me-1"></i> Reserve a Slot</a>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="health-doctors-3-tab-3" role="tabpanel">
+                  <div class="review">
+                    <div class="d-flex align-items-center mb-2">
+                      <div class="stars text-warning me-2">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                      </div>
+                      <small>4.5/5 • 32 reviews</small>
+                    </div>
+                    <p class="mb-0">Id magna consequat minim in, lorem dolore fugiat. Officia irure ex anim, velit nulla cupidatat laboris enim.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- End Doctor Profile with Tabs -->
+
+      </div>
+
+    </section>
+
+{% endblock %}

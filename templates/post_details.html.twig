@@ -1,0 +1,988 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.titre }} - MediNest{% endblock %}
+
+{% block body_class %}post-details-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              {% if post.categorie %}
+                <span class="post-category-badge category-{{ post.categorie|lower }}">
+                  {{ post.categorie }}
+                </span>
+              {% endif %}
+              <h1 class="heading-title">{{ post.titre }}</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li><a href="{{ path('posts_list') }}">Posts</a></li>
+            <li class="current">{{ post.titre|slice(0, 50) }}...</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Post Details Section -->
+    <section id="post-details" class="post-details section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row">
+          
+          <!-- Main Post Content -->
+          <div class="col-lg-8">
+            
+            <article class="post-article">
+              
+              <!-- Post Header -->
+              <div class="post-header-detail">
+                <div class="author-info-detail">
+                  <div class="author-avatar-large">
+                    {% if post.utilisateur.avatar %}
+                      <img src="{{ post.utilisateur.avatar }}" alt="{{ post.utilisateur.nom }}">
+                    {% else %}
+                      <div class="avatar-placeholder-large">{{ post.utilisateur.nom|first|upper }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="author-meta">
+                    <h4 class="author-name-detail">{{ post.utilisateur.nom }} {{ post.utilisateur.prenom }}</h4>
+                    <div class="post-meta">
+                      <span class="meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        {{ post.createdAt|date('F d, Y') }}
+                      </span>
+                      <span class="meta-divider">•</span>
+                      <span class="meta-item">
+                        <i class="bi bi-clock"></i>
+                        {{ post.createdAt|date('g:i A') }}
+                      </span>
+                      {% if post.updatedAt %}
+                        <span class="meta-divider">•</span>
+                        <span class="meta-item text-muted">
+                          <i class="bi bi-pencil"></i>
+                          Updated {{ post.updatedAt|date('M d, Y') }}
+                        </span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                {% if true %}
+                  <div class="post-actions-detail">
+                    <button class="btn-edit-detail" data-bs-toggle="modal" data-bs-target="#editPostModal">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button class="btn-delete-detail" onclick="confirmDelete()">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Post Media -->
+              {% if post.mediaUrl %}
+                <div class="post-media-detail">
+                  <img src="{{ post.mediaUrl }}" alt="{{ post.titre }}" class="post-image-detail">
+                </div>
+              {% endif %}
+
+              <!-- Post Content -->
+              <div class="post-content-detail">
+                <p>{{ post.contenu|nl2br }}</p>
+              </div>
+
+              <!-- Post Engagement -->
+              <div class="post-engagement">
+                <div class="engagement-stats">
+                  <button class="engage-btn like-btn {% if userHasLiked %}liked{% endif %}" 
+                          data-post-id="{{ post.id }}">
+                    <i class="bi bi-heart-fill"></i>
+                    <span class="like-count">{{ post.likes|length }}</span> Likes
+                  </button>
+                  <span class="engage-divider">•</span>
+                  <span class="engage-info">
+                    <i class="bi bi-chat-left-text"></i>
+                    {{ post.commentaires|length }} Comments
+                  </span>
+                </div>
+                <div class="engagement-share">
+                  <button class="btn-share" title="Share">
+                    <i class="bi bi-share"></i> Share
+                  </button>
+                </div>
+              </div>
+
+            </article>
+
+            <!-- Comments Section -->
+            
+<div class="comments-section mt-5 pt-5 border-top">
+    <h4 class="mb-4">
+        Commentaires 
+        <span class="badge bg-secondary rounded-pill">{{ post.commentaires|length }}</span>
+    </h4>
+
+    <!-- Force show form for testing with fake user -->
+    <form action="{{ path('comment_create', {'postId': post.id}) }}" method="post" class="mb-5">
+        <div class="mb-3">
+            <textarea 
+                name="contenu" 
+                class="form-control" 
+                rows="4" 
+                placeholder="Votre commentaire..." 
+                required
+            ></textarea>
+        </div>
+
+        <input type="hidden" name="_token" value="{{ csrf_token('create_comment') }}">
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send"></i> Publier le commentaire
+        </button>
+    </form>
+
+    <!-- Comments List -->
+    {% if post.commentaires|length > 0 %}
+        <div class="comment-list">
+            {% for commentaire in post.commentaires %}
+                <div class="comment-card mb-4 p-3 bg-light rounded border">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-placeholder me-3">
+                                {{ commentaire.utilisateur.nom|first|upper }}
+                            </div>
+                            <div>
+                                <strong>
+                                    {{ commentaire.utilisateur.nom }} {{ commentaire.utilisateur.prenom }}
+                                </strong>
+                                <small class="text-muted ms-2">
+                                    {{ commentaire.createdAt|date('d/m/Y H:i') }}
+                                </small>
+                            </div>
+                        </div>
+
+                        {# Delete button - using forced user ID check #}
+                        {% set forcedUserId = 1 %}  {# ← CHANGE TO YOUR FAKE USER ID #}
+                        {% if forcedUserId == commentaire.utilisateur.id %}
+                            <form action="{{ path('comment_delete', {'id': commentaire.id}) }}" method="post" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ commentaire.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce commentaire ?');">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <p class="mt-3 mb-0">{{ commentaire.contenu|nl2br }}</p>
+                    {# Edit button + modal for your fake user #}
+{% set forcedUserId = 1 %}  {# ← CHANGE TO YOUR REAL FAKE USER ID #}
+{% if forcedUserId == commentaire.utilisateur.id %}
+  <!-- Edit button - opens a Bootstrap modal -->
+  <button type="button" class="btn btn-sm btn-outline-primary ms-2" 
+          data-bs-toggle="modal" 
+          data-bs-target="#editCommentModal{{ commentaire.id }}">
+    <i class="bi bi-pencil-square"></i> Modifier
+  </button>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="editCommentModal{{ commentaire.id }}" tabindex="-1" aria-labelledby="editCommentModalLabel{{ commentaire.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCommentModalLabel{{ commentaire.id }}">Modifier votre commentaire</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="{{ path('comment_edit', {'id': commentaire.id}) }}" method="post">
+          <div class="modal-body">
+            <!-- CSRF token - matches your controller -->
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_comment' ~ commentaire.id) }}">
+
+            <!-- Pre-filled content -->
+            <textarea name="contenu" class="form-control" rows="5" required>
+              {{- commentaire.contenu -}}
+            </textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-muted py-4">
+            Soyez le premier à commenter !
+        </p>
+    {% endif %}
+</div>
+
+            </div>
+
+          </div>
+
+          <!-- Sidebar -->
+          <div class="col-lg-4">
+            
+            <!-- Author Card -->
+            <div class="sidebar-widget author-widget" data-aos="fade-up" data-aos-delay="200">
+              <h4 class="widget-title">About the Author</h4>
+              <div class="author-card">
+                <div class="author-avatar-widget">
+                  {#{% if post.utilisateur.avatar %}
+                    <img src="{{ post.utilisateur.avatar }}" alt="{{ post.utilisateur.nom }}">
+                  {% else %}
+                    <div class="avatar-placeholder-widget">{{ post.utilisateur.nom|first|upper }}</div>
+                  {% endif %}
+                 </div>
+                <h5>{{ post.utilisateur.nom }} {{ post.utilisateur.prenom }}</h5>
+                {% if post.utilisateur.bio %}
+                  <p>{{ post.utilisateur.bio }}</p>
+                {% endif %}
+                <div class="author-stats">
+                  <div class="stat">
+                    <strong>{{ post.utilisateur.posts|length }}</strong>
+                    <span>Posts</span>
+                  </div>
+                  <div class="stat">
+                    <strong>{{ post.utilisateur.followers|length }}</strong>
+                    <span>Followers</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Related Posts -->
+            <div class="sidebar-widget related-posts-widget" data-aos="fade-up" data-aos-delay="300">
+              <h4 class="widget-title">Related Posts</h4>
+              <div class="related-posts">
+                {# TODO: Add query for related posts by category #}
+                <p class="text-muted text-center py-3">No related posts yet</p>
+              </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="sidebar-widget categories-widget" data-aos="fade-up" data-aos-delay="400">
+              <h4 class="widget-title">Categories</h4>
+              <ul class="categories-list">
+                <li><a href="{{ path('posts_list') }}?category=health">Health Tips</a></li>
+                <li><a href="{{ path('posts_list') }}?category=nutrition">Nutrition</a></li>
+                <li><a href="{{ path('posts_list') }}?category=mental">Mental Health</a></li>
+                <li><a href="{{ path('posts_list') }}?category=fitness">Fitness</a></li>
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Delete Form (Hidden) -->
+    <form id="deletePostForm" action="{{ path('post_delete', {'id': post.id}) }}" 
+          method="post" style="display: none;">
+      <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+    </form>
+
+    <!-- Edit Post Modal -->
+    {% if true %}
+      <div class="modal fade" id="editPostModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Post</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ path('post_edit', {'id': post.id}) }}" method="post" enctype="multipart/form-data">
+              <div class="modal-body">
+                <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ post.id) }}">
+                
+                <div class="mb-3">
+                  <label for="titre" class="form-label">Title *</label>
+                  <input type="text" class="form-control" id="titre" name="titre" 
+                         value="{{ post.titre }}" required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="categorie" class="form-label">Category</label>
+                  <select class="form-select" id="categorie" name="categorie">
+                    <option value="">Select category...</option>
+                    <option value="Health" {% if post.categorie == 'Health' %}selected{% endif %}>Health Tips</option>
+                    <option value="Nutrition" {% if post.categorie == 'Nutrition' %}selected{% endif %}>Nutrition</option>
+                    <option value="Mental" {% if post.categorie == 'Mental' %}selected{% endif %}>Mental Health</option>
+                    <option value="Fitness" {% if post.categorie == 'Fitness' %}selected{% endif %}>Fitness</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="contenu" class="form-label">Content *</label>
+                  <textarea class="form-control" id="contenu" name="contenu" rows="8" required>{{ post.contenu }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                  <label for="media" class="form-label">Update Image</label>
+                  {% if post.mediaUrl %}
+                    <div class="current-image mb-2">
+                      <img src="{{ post.mediaUrl }}" alt="Current" style="max-width: 100%; border-radius: 8px;">
+                    </div>
+                  {% endif %}
+                  <input type="file" class="form-control" id="media" name="media" accept="image/*">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn-primary">
+                  <i class="bi bi-check-circle"></i> Update Post
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* Post Details Styles */
+.post-details-page {
+  background: #f8f9fa;
+}
+
+.post-category-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+/* Post Article */
+.post-article {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+}
+
+.post-header-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.author-info-detail {
+  display: flex;
+  gap: 15px;
+}
+
+.author-avatar-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.author-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder-large {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.author-name-detail {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.meta-divider {
+  color: #bdc3c7;
+}
+
+.post-actions-detail {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-edit-detail, .btn-delete-detail {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-edit-detail {
+  background: #3498db;
+  color: white;
+}
+
+.btn-edit-detail:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.btn-delete-detail {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-delete-detail:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+.post-media-detail {
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.post-image-detail {
+  width: 100%;
+  height: auto;
+}
+
+.post-content-detail {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #34495e;
+  margin-bottom: 30px;
+}
+
+.post-content-detail p {
+  margin-bottom: 20px;
+}
+
+/* Post Engagement */
+.post-engagement {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-top: 2px solid #f0f0f0;
+}
+
+.engagement-stats {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.engage-btn {
+  background: transparent;
+  border: 2px solid #e0e0e0;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.engage-btn:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.engage-btn.liked {
+  background: #ffe5e5;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.engage-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7f8c8d;
+}
+
+.btn-share {
+  background: #3498db;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-share:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Comments Section */
+.comments-section {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.comments-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Add Comment Form */
+.add-comment-form {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.comment-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.comment-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder-small {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.comment-form {
+  flex: 1;
+}
+
+.comment-input {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 15px;
+  resize: vertical;
+  min-height: 100px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--accent-color, #3498db);
+}
+
+.btn-submit-comment {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-submit-comment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Login Prompt */
+.login-prompt {
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.login-prompt i {
+  font-size: 48px;
+  color: #bdc3c7;
+  margin-bottom: 15px;
+}
+
+.login-prompt p {
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.login-prompt a {
+  color: var(--accent-color, #3498db);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Comments List */
+.no-comments {
+  text-align: center;
+  padding: 60px 20px;
+  color: #95a5a6;
+}
+
+.no-comments i {
+  font-size: 64px;
+  margin-bottom: 15px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 15px;
+  padding: 25px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-content-wrapper {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.comment-date {
+  font-size: 13px;
+  color: #95a5a6;
+}
+
+.comment-content p {
+  margin: 0;
+  color: #34495e;
+  line-height: 1.6;
+}
+
+.comment-actions {
+  margin-top: 10px;
+}
+
+.comment-action-btn {
+  background: transparent;
+  border: none;
+  color: #95a5a6;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.3s ease;
+}
+
+.comment-action-btn:hover {
+  color: #e74c3c;
+}
+
+/* Sidebar Widgets */
+.sidebar-widget {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.widget-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.author-card {
+  text-align: center;
+}
+
+.author-avatar-widget {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 15px;
+}
+
+.author-avatar-widget img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder-widget {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.author-card h5 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.author-card p {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.author-stats {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat strong {
+  display: block;
+  font-size: 24px;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.stat span {
+  font-size: 13px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.categories-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.categories-list li {
+  margin-bottom: 12px;
+}
+
+.categories-list a {
+  color: #7f8c8d;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.categories-list a:hover {
+  background: #f8f9fa;
+  color: var(--accent-color, #3498db);
+  transform: translateX(5px);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .post-article {
+    padding: 25px;
+  }
+  
+  .post-header-detail {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .post-actions-detail {
+    width: 100%;
+  }
+  
+  .btn-edit-detail, .btn-delete-detail {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .post-engagement {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .engagement-stats {
+    flex-wrap: wrap;
+  }
+  
+  .add-comment-form {
+    flex-direction: column;
+  }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Delete Post Confirmation
+function confirmDelete() {
+  if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    document.getElementById('deletePostForm').submit();
+  }
+}
+
+// Delete Comment
+function deleteComment(commentId) {
+  if (confirm('Are you sure you want to delete this comment?')) {
+    document.getElementById('deleteCommentForm' + commentId).submit();
+  }
+}
+
+// Like Button
+document.querySelector('.like-btn')?.addEventListener('click', async function() {
+  const postId = this.dataset.postId;
+  
+  try {
+    const response = await fetch('/posts/' + postId + '/like', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    const data = await response.json();
+    
+    this.classList.toggle('liked');
+    this.querySelector('.like-count').textContent = data.count;
+    
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
+
+// Share Button
+document.querySelector('.btn-share')?.addEventListener('click', function() {
+  if (navigator.share) {
+    navigator.share({
+      title: document.title,
+      url: window.location.href
+    });
+  } else {
+    // Fallback: Copy to clipboard
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied to clipboard!');
+  }
+});
+</script>
+{% endblock %}
