@@ -66,25 +66,15 @@
                 <div class="navbar-nav w-100">
                     <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link active">
                         <i class="fa fa-tachometer-alt me-2"></i>Dashboard
+
+                    <a href="{{ path('admin_profile') }}" class="nav-item nav-link">
+                        <i class="fa fa-th me-2"></i>my profile
                     </a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="fa fa-laptop me-2"></i>Elements
-                        </a>
-                        <div class="dropdown-menu bg-transparent border-0">
-                            <a href="{{ path('admin_elements_buttons') }}" class="dropdown-item">Buttons</a>
-                            <a href="{{ path('admin_typography') }}" class="dropdown-item">Typography</a>
-                            <a href="{{ path('admin_elements_other') }}" class="dropdown-item">Other Elements</a>
-                        </div>
-                    </div>
-                    <a href="{{ path('admin_widgets') }}" class="nav-item nav-link">
-                        <i class="fa fa-th me-2"></i>Widgets
+                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
+                        <i class="fa fa-keyboard me-2"></i>users list
                     </a>
-                    <a href="{{ path('admin_forms') }}" class="nav-item nav-link">
-                        <i class="fa fa-keyboard me-2"></i>Forms
-                    </a>
-                    <a href="{{ path('admin_tables') }}" class="nav-item nav-link">
-                        <i class="fa fa-table me-2"></i>Tables
+                    <a href="{{ path('admin_question_index') }}" class="nav-item nav-link">
+                        <i class="fa fa-table me-2"></i>les question de suivi
                     </a>
                     <a href="{{ path('admin_charts') }}" class="nav-item nav-link">
                         <i class="fa fa-chart-bar me-2"></i>Charts

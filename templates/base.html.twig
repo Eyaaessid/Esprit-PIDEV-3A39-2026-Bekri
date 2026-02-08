@@ -406,8 +406,8 @@
             <nav id="navmenu" class="navmenu">
                 <ul>
                     <li><a href="{{ path('home') }}" class="{{ app.request.attributes.get('_route') == 'home' ? 'active' : '' }}">Home</a></li>
-                    <li><a href="{{ path('about') }}" class="{{ app.request.attributes.get('_route') == 'about' ? 'active' : '' }}">About</a></li>
-                    <li><a href="{{ path('services') }}" class="{{ app.request.attributes.get('_route') == 'services' ? 'active' : '' }}">Services</a></li>
+                    <li><a href="{{ path('objectif_index') }}" class="{{ app.request.attributes.get('_route') == 'mes objectifs' ? 'active' : '' }}">mes objectifs</a></li>
+                    <li><a href="{{ path('evenements_home') }}" class="{{ app.request.attributes.get('_route') == 'les evenements' ? 'active' : '' }}">les evenements</a></li>
                     
                     {% if app.user %}
                         {% if is_granted('ROLE_ADMIN') %}

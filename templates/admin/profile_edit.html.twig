@@ -4,24 +4,273 @@
     <meta charset="utf-8">
     <title>Edit Profile - DASHMIN</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <!-- Favicon -->
     <link href="{{ asset('admin/img/favicon.ico') }}" rel="icon">
-
-    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
     <link href="{{ asset('admin/css/bootstrap.min.css') }}" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
     <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+        }
+        
+        .content {
+            background: #f5f7fa;
+        }
+        
+        .page-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title i {
+            color: #20b2aa;
+            font-size: 1.75rem;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .card-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-header i {
+            color: #20b2aa;
+            font-size: 1.25rem;
+        }
+        
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #20b2aa 0%, #17a398 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
+            flex-shrink: 0;
+        }
+        
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .upload-info {
+            flex: 1;
+        }
+        
+                .form-label {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 0.9375rem;
+            letter-spacing: 0.3px;
+            display: block;
+        }
+        
+        .form-label::after {
+            content: '';
+            display: inline-block;
+        }
+        
+        .form-control {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9375rem;
+            color: #1e293b;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .form-control:focus {
+            border-color: #20b2aa;
+            box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.1);
+            background: white;
+        }
+        
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+        
+        .password-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-notice p {
+            margin: 0;
+            color: #92400e;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .password-notice i {
+            color: #f59e0b;
+            font-size: 1rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-cancel:hover {
+            background: #cbd5e1;
+            color: #334155;
+            transform: translateY(-1px);
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #20b2aa 0%, #17a398 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
+        }
+        
+        .btn-save:hover {
+            background: linear-gradient(135deg, #17a398 0%, #128f84 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(32, 178, 170, 0.35);
+            color: white;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .custom-file-input {
+            display: none;
+        }
+        
+        .custom-file-label {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .custom-file-label:hover {
+            border-color: #20b2aa;
+            color: #20b2aa;
+            background: #f0fdfa;
+        }
+        
+        .file-name {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container-xxl position-relative bg-white d-flex p-0">
@@ -33,8 +282,8 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        {% if user.avatar %}
-                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
                         {% else %}
                             <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
                         {% endif %}
@@ -48,6 +297,9 @@
                 <div class="navbar-nav w-100">
                     <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link">
                         <i class="fa fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
+                        <i class="fa fa-users me-2"></i>Users
                     </a>
                     <a href="{{ path('admin_profile') }}" class="nav-item nav-link active">
                         <i class="fa fa-user me-2"></i>My Profile
@@ -70,8 +322,8 @@
                 <div class="navbar-nav align-items-center ms-auto">
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            {% if user.avatar %}
-                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
                             {% else %}
                                 <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
                             {% endif %}
@@ -79,7 +331,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="{{ path('admin_profile') }}" class="dropdown-item"><i class="fa fa-user me-2"></i>My Profile</a>
-                            <a href="{{ path('admin_profile_edit') }}" class="dropdown-item"><i class="fa fa-cog me-2"></i>Settings</a>
+                            <a href="{{ path('admin_profile_edit') }}" class="dropdown-item active"><i class="fa fa-cog me-2"></i>Settings</a>
                             <hr class="dropdown-divider">
                             <a href="{{ path('app_logout') }}" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Log Out</a>
                         </div>
@@ -88,68 +340,114 @@
             </nav>
             <!-- Navbar End -->
 
-            <!-- Edit Profile Form -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="row">
-                    <div class="col-lg-8 mx-auto">
-                        <div class="bg-light rounded p-4">
-                            <h5 class="mb-4"><i class="fa fa-edit me-2"></i>Edit Administrator Profile</h5>
-                            
-                            {% for message in app.flashes('success') %}
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <i class="fa fa-check-circle me-2"></i>{{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                            
-                            {% for message in app.flashes('error') %}
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <i class="fa fa-exclamation-triangle me-2"></i>{{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                            
-                            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    {{ form_row(form.prenom) }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_row(form.nom) }}
-                                </div>
-                            </div>
-                            
-                            {{ form_row(form.email) }}
-                            {{ form_row(form.avatarFile) }}
-                            
-                            <hr class="my-4">
-                            
-                            <h6>Change Password</h6>
-                            <p class="text-muted small">Leave blank to keep current password</p>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    {{ form_row(form.plainPassword.first) }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_row(form.plainPassword.second) }}
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-4">
-                                <a href="{{ path('admin_profile') }}" class="btn btn-secondary">
-                                    <i class="fa fa-times me-2"></i>Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-check me-2"></i>Save Changes
-                                </button>
-                            </div>
-                            
-                            {{ form_end(form) }}
+            <!-- Main Content -->
+            <div class="page-wrapper">
+                
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit Profile
+                    </h1>
+                    <p class="page-subtitle">Update your personal information and settings</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+                
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm'}}) }}
+
+                <!-- Profile Picture Card -->
+                <div class="card-section">
+                    <h3 class="section-header">
+                        <i class="bi bi-camera"></i>
+                        Profile Picture
+                    </h3>
+                    <div class="avatar-wrapper">
+                        <div class="avatar-circle" id="avatarPreview">
+                            {% if user.avatar %}
+                                <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar">
+                            {% else %}
+                                {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="upload-info">
+                            <label for="avatarInput" class="custom-file-label">
+                                <i class="bi bi-upload me-2"></i>Choose File
+                            </label>
+                            <input type="file" id="avatarInput" class="custom-file-input" name="{{ form.avatarFile.vars.full_name }}" accept="image/*">
+                            <p class="file-name mb-0 mt-2" id="fileName">No file chosen</p>
+                            <small class="text-muted d-block mt-1">JPG, PNG or GIF. Max size 2MB</small>
                         </div>
                     </div>
                 </div>
+
+                <!-- Personal Information Card -->
+                <div class="card-section">
+                    <h3 class="section-header">
+                        <i class="bi bi-person-badge"></i>
+                        Personal Information
+                    </h3>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            {{ form_row(form.prenom) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.nom) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_row(form.email) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="card-section">
+                    <h3 class="section-header">
+                        <i class="bi bi-shield-lock"></i>
+                        Change Password
+                    </h3>
+                    <div class="password-notice">
+                        <p>
+                            <i class="bi bi-info-circle-fill"></i>
+                            <strong>Leave blank to keep your current password.</strong> Password must be at least 6 characters.
+                        </p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            {{ form_row(form.plainPassword.first) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.plainPassword.second) }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ path('admin_profile') }}" class="btn btn-cancel">
+                            <i class="bi bi-x-circle"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-save">
+                            <i class="bi bi-check-circle"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                {{ form_row(form.avatarFile, {'attr': {'style': 'display:none'}}) }}
+                {{ form_end(form) }}
             </div>
 
             <!-- Footer -->
@@ -163,12 +461,11 @@
                 </div>
             </div>
         </div>
-        <!-- Content End -->
     </div>
 
-    <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('admin/js/main.js') }}"></script>
+    
 </body>
 </html>

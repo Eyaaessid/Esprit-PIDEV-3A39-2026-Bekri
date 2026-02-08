@@ -18,10 +18,10 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 class UserController extends AbstractController
 {
-    #[Route('', name: 'dashboard')]
+    #[Route('', name: 'home')]
     public function dashboard(): Response
     {
-        return $this->render('base.html.twig', [
+        return $this->render('index.html.twig', [
             'user' => $this->getUser(),
         ]);
     }

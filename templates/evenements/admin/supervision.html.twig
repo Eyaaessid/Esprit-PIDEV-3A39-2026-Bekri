@@ -1,0 +1,195 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Supervision Événements - MediNest{% endblock %}
+
+{% block body_class %}admin-supervision-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Supervision des Événements</h1>
+              <p class="mb-0">
+                Vue d'ensemble et gestion de tous les événements de la plateforme.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li><a href="{{ path('admin_') }}">Admin</a></li>
+            <li class="current">Supervision Événements</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Supervision Section -->
+    <section id="admin-supervision" class="admin-supervision section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Statistics Cards -->
+        <div class="row gy-4 mb-5">
+          
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="card text-center shadow-sm h-100">
+              <div class="card-body">
+                <div class="mb-3">
+                  <i class="bi bi-calendar-event fs-1 text-primary"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.total }}</h3>
+                <p class="text-muted mb-0">Total événements</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="card text-center shadow-sm h-100">
+              <div class="card-body">
+                <div class="mb-3">
+                  <i class="bi bi-door-open fs-1 text-success"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.ouverts }}</h3>
+                <p class="text-muted mb-0">Ouverts</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="card text-center shadow-sm h-100">
+              <div class="card-body">
+                <div class="mb-3">
+                  <i class="bi bi-people fs-1 text-info"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.totalParticipations }}</h3>
+                <p class="text-muted mb-0">Participations actives</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="card text-center shadow-sm h-100">
+              <div class="card-body">
+                <div class="mb-3">
+                  <i class="bi bi-check-circle fs-1 text-secondary"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.termines }}</h3>
+                <p class="text-muted mb-0">Terminés</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Events Table -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white">
+                <h4 class="mb-0">
+                  <i class="bi bi-list-ul text-primary me-2"></i>
+                  Tous les événements
+                </h4>
+              </div>
+              <div class="card-body p-0">
+                {% if evenements|length > 0 %}
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Titre</th>
+                          <th>Organisateur</th>
+                          <th>Date</th>
+                          <th>Type</th>
+                          <th>Statut</th>
+                          <th>Capacité</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for evenement in evenements %}
+                        <tr>
+                          <td><strong>#{{ evenement.id }}</strong></td>
+                          <td>
+                            <strong>{{ evenement.titre }}</strong>
+                            {% if evenement.lienSession %}
+                            <br>
+                            <small class="text-muted">
+                              <i class="bi bi-geo-alt"></i>
+                              {{ evenement.lienSession|length > 25 ? evenement.lienSession|slice(0, 25) ~ '...' : evenement.lienSession }}
+                            </small>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {% if evenement.coach %}
+                              {{ evenement.coach.prenom }} {{ evenement.coach.nom }}
+                              <br>
+                              <small class="text-muted">{{ evenement.coach.email }}</small>
+                            {% else %}
+                              <span class="text-muted">N/A</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <i class="bi bi-calendar3 text-muted"></i>
+                            {{ evenement.dateDebut|date('d/m/Y') }}
+                            <br>
+                            <small class="text-muted">{{ evenement.dateDebut|date('H:i') }}</small>
+                          </td>
+                          <td>
+                            <span class="badge bg-primary">{{ evenement.type.value }}</span>
+                          </td>
+                          <td>
+                            {% if evenement.statut.value == 'OPEN' %}
+                              <span class="badge bg-success">Ouvert</span>
+                            {% elseif evenement.statut.value == 'FULL' %}
+                              <span class="badge bg-danger">Complet</span>
+                            {% elseif evenement.statut.value == 'PLANNED' %}
+                              <span class="badge bg-info">Planifié</span>
+                            {% elseif evenement.statut.value == 'CANCELLED' %}
+                              <span class="badge bg-secondary">Annulé</span>
+                            {% elseif evenement.statut.value == 'FINISHED' %}
+                              <span class="badge bg-dark">Terminé</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <i class="bi bi-people text-muted"></i>
+                            {{ evenement.capaciteMax }}
+                          </td>
+                          <td class="text-center">
+                            <a href="{{ path('evenements_show', {id: evenement.id}) }}" 
+                               class="btn btn-sm btn-outline-primary" 
+                               title="Voir les détails">
+                              <i class="bi bi-eye"></i>
+                            </a>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Aucun événement</h5>
+                    <p class="text-muted mb-0">Aucun événement n'a été créé sur la plateforme.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- End Supervision Section -->
+
+{% endblock %}

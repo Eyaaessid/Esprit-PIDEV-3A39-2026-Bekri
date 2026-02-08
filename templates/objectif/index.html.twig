@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Objectifs - Bekri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            50:  '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                        },
+                        amber: {
+                            100: '#fef3c7',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="h-full antialiased">
+    <div class="flex h-screen overflow-hidden bg-gray-50">
+
+        <!-- Sidebar -->
+        <aside class="hidden md:flex md:w-64 md:flex-shrink-0">
+            <div class="flex flex-col w-full">
+                <div class="flex items-center justify-center h-16 bg-teal-600 text-white font-bold text-2xl tracking-tight">
+                    bekri
+                </div>
+                <nav class="flex-1 px-3 py-6 bg-white border-r border-gray-100 overflow-y-auto">
+                    <div class="space-y-1">
+                        <a href="{{ path('home') }}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-home w-5 mr-3"></i> Accueil
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-user w-5 mr-3"></i> Mon profil
+                        </a>
+                        <a href="{{ path('objectif_index') }}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-bullseye w-5 mr-3"></i> Mes objectifs
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-chart-line w-5 mr-3"></i> Mes progrès
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-apple-alt w-5 mr-3"></i> Nutrition
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-bed w-5 mr-3"></i> Sommeil
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-dumbbell w-5 mr-3"></i> Activité physique
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-tint w-5 mr-3"></i> Hydratation
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-brain w-5 mr-3"></i> Santé mentale
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-cog w-5 mr-3"></i> Paramètres
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                            <i class="fas fa-sign-out-alt w-5 mr-3"></i> Déconnexion
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <div class="max-w-6xl mx-auto">
+
+                <!-- Recherche + Tri -->
+                <div class="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <!-- Recherche -->
+                    <form method="get" class="flex-1 flex gap-4">
+                        <select name="searchField" class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500">
+                            <option value="titre" {% if searchField == 'titre' %}selected{% endif %}>Titre</option>
+                            <option value="type" {% if searchField == 'type' %}selected{% endif %}>Type</option>
+                            <option value="statut" {% if searchField == 'statut' %}selected{% endif %}>Statut</option>
+                        </select>
+                        <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..." 
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500">
+                        <button type="submit" class="px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700">
+                            <i class="fas fa-search mr-2"></i> Rechercher
+                        </button>
+                        {% if search %}
+                            <a href="{{ path('objectif_index') }}" class="text-gray-600 hover:text-gray-800 flex items-center">
+                                <i class="fas fa-times mr-1"></i> Effacer
+                            </a>
+                        {% endif %}
+                    </form>
+
+                    <!-- Tri -->
+                    <form method="get" class="flex gap-4 items-center">
+                        <input type="hidden" name="search" value="{{ search }}">
+                        <input type="hidden" name="searchField" value="{{ searchField }}">
+                        <select name="sort" class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500">
+                            <option value="createdAt" {% if sort == 'createdAt' %}selected{% endif %}>Ajouté récemment</option>
+                            <option value="titre" {% if sort == 'titre' %}selected{% endif %}>Alphabétique (A → Z)</option>
+                            <option value="dateDebut" {% if sort == 'dateDebut' %}selected{% endif %}>Date de début</option>
+                            <option value="dateFin" {% if sort == 'dateFin' %}selected{% endif %}>Date de fin</option>
+                        </select>
+                        <select name="direction" class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500">
+                            <option value="desc" {% if direction == 'desc' %}selected{% endif %}>Décroissant</option>
+                            <option value="asc" {% if direction == 'asc' %}selected{% endif %}>Croissant</option>
+                        </select>
+                        <button type="submit" class="px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700">
+                            <i class="fas fa-sort-amount-down mr-2"></i> Trier
+                        </button>
+                    </form>
+
+                    <a href="{{ path('objectif_new') }}" class="inline-flex items-center px-6 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700">
+                        <i class="fas fa-plus mr-2"></i> Nouveau objectif
+                    </a>
+                </div>
+
+                {% if objectifs is empty %}
+                    <div class="bg-white rounded-2xl p-12 text-center border border-gray-200 shadow-sm">
+                        <div class="mx-auto w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-bullseye text-teal-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Aucun objectif pour le moment</h3>
+                        <p class="text-gray-600 mb-8 max-w-lg mx-auto">
+                            Commencez votre parcours bien-être en créant votre premier objectif.
+                        </p>
+                        <a href="{{ path('objectif_new') }}"
+                           class="inline-flex items-center px-8 py-4 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 shadow-lg hover:shadow-xl transition-all">
+                            <i class="fas fa-plus mr-3 text-lg"></i> Créer mon premier objectif
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for objectif in objectifs %}
+                            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <h3 class="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
+                                            {{ objectif.titre }}
+                                        </h3>
+                                        <span class="px-3 py-1 text-xs font-medium rounded-full
+                                            {% if objectif.statut == 'en_cours' %}bg-amber-100 text-amber-700
+                                            {% elseif objectif.statut == 'atteint' %}bg-teal-50 text-teal-700
+                                            {% else %}bg-red-50 text-red-700{% endif %}">
+                                            {{ objectif.statut|capitalize }}
+                                        </span>
+                                    </div>
+
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-3">
+                                        {{ objectif.description }}
+                                    </p>
+
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-tag mr-2"></i>
+                                            {{ objectif.type|capitalize }}
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-target mr-2"></i>
+                                            Cible : {{ objectif.valeurCible }}
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chart-line mr-2"></i>
+                                            Actuelle : {{ objectif.valeurActuelle ?? 'N/A' }}
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar mr-2"></i>
+                                            {{ objectif.dateDebut|date('d/m/Y') }} → {{ objectif.dateFin|date('d/m/Y') }}
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            Ajouté le {{ objectif.createdAt|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end gap-4 pt-4 border-t border-gray-100 mt-4">
+                                        <a href="{{ path('objectif_edit', {id: objectif.id}) }}"
+                                           class="inline-flex items-center px-4 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 font-medium transition-colors">
+                                            <i class="fas fa-edit mr-2"></i> Modifier
+                                        </a>
+                                        <form method="post" action="{{ path('objectif_delete', {id: objectif.id}) }}" class="inline"
+                                              onsubmit="return confirm('Voulez-vous vraiment supprimer cet objectif ?');">
+                                            <button type="submit"
+                                                    class="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors">
+                                                <i class="fas fa-trash-alt mr-2"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

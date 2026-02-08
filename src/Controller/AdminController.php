@@ -5,20 +5,21 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use App\Form\UserFormType;
+use App\Form\AdminUserEditFormType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\Length;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_ADMIN')]
@@ -32,59 +33,71 @@ class AdminController extends AbstractController
         ]);
     }
 
+    // ==================== USERS LIST ====================
     #[Route('/users', name: 'users_list')]
     public function usersList(Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search', '');
         $roleFilter = $request->query->get('role', '');
+        $statusFilter = $request->query->get('status', '');
+        $sortBy = $request->query->get('sort', 'createdAt');
+        $sortOrder = $request->query->get('order', 'DESC');
+        
+        // Validate sort parameters
+        $allowedSorts = ['nom', 'prenom', 'email', 'createdAt'];
+        $sortBy = in_array($sortBy, $allowedSorts) ? $sortBy : 'createdAt';
+        $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
         $page = max(1, $request->query->getInt('page', 1));
         $limit = 10;
 
         $queryBuilder = $entityManager->getRepository(Utilisateur::class)->createQueryBuilder('u');
 
-        // Search by name or email
         if ($search) {
             $queryBuilder->andWhere('u.nom LIKE :search OR u.prenom LIKE :search OR u.email LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        // Filter by role
         if ($roleFilter && in_array($roleFilter, ['user', 'coach', 'admin'])) {
             $queryBuilder->andWhere('u.role = :role')
                 ->setParameter('role', $roleFilter);
         }
 
-        // Order by creation date (newest first)
-        $queryBuilder->orderBy('u.createdAt', 'DESC');
+        if ($statusFilter && in_array($statusFilter, ['actif', 'bloque', 'inactif'])) {
+            $queryBuilder->andWhere('u.statut = :status')
+                ->setParameter('status', $statusFilter);
+        }
 
-        // Pagination
-        $totalUsers = count($queryBuilder->getQuery()->getResult());
-        $totalPages = ceil($totalUsers / $limit);
-        
+        $totalUsers = (clone $queryBuilder)->select('COUNT(u.id)')->getQuery()->getSingleScalarResult();
+
         $users = $queryBuilder
+            ->orderBy('u.' . $sortBy, $sortOrder)
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
-        // Count users by role
-        $userCount = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'user']);
+        // Statistics for cards
+        $userCount  = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'user']);
         $coachCount = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'coach']);
         $adminCount = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'admin']);
 
         return $this->render('admin/users_list.html.twig', [
-            'users' => $users,
-            'search' => $search,
-            'roleFilter' => $roleFilter,
+            'users'       => $users,
+            'search'      => $search,
+            'roleFilter'  => $roleFilter,
+            'statusFilter' => $statusFilter,
+            'sortBy' => $sortBy,
+            'sortOrder' => $sortOrder,
             'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalUsers' => $totalUsers,
-            'userCount' => $userCount,
-            'coachCount' => $coachCount,
-            'adminCount' => $adminCount,
+            'totalPages'  => ceil($totalUsers / $limit),
+            'totalUsers'  => $totalUsers,
+            'userCount'   => $userCount,
+            'coachCount'  => $coachCount,
+            'adminCount'  => $adminCount,
         ]);
     }
 
+    // ==================== USER DETAIL ====================
     #[Route('/users/{id}', name: 'user_detail', requirements: ['id' => '\d+'])]
     public function userDetail(int $id, EntityManagerInterface $entityManager): Response
     {
@@ -100,9 +113,11 @@ class AdminController extends AbstractController
         ]);
     }
 
+    // ==================== DELETE USER ====================
     #[Route('/users/{id}/delete', name: 'user_delete', methods: ['POST'])]
     public function userDelete(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var Utilisateur|null $user */
         $user = $entityManager->getRepository(Utilisateur::class)->find($id);
 
         if (!$user) {
@@ -110,15 +125,17 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('admin_users_list');
         }
 
-        // Prevent admin from deleting themselves
-        if ($user->getId() === $this->getUser()->getId()) {
+        /** @var Utilisateur $currentUser */
+        $currentUser = $this->getUser();
+
+        // Prevent deleting yourself
+        if ($user->getId() === $currentUser->getId()) {
             $this->addFlash('error', 'You cannot delete your own account.');
             return $this->redirectToRoute('admin_users_list');
         }
 
-        // Check CSRF token
-        $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete-user-' . $user->getId(), $token)) {
+        // CSRF protection
+        if (!$this->isCsrfTokenValid('delete-user-' . $user->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid security token.');
             return $this->redirectToRoute('admin_users_list');
         }
@@ -136,71 +153,23 @@ class AdminController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', "User '$userName' has been deleted successfully.");
+
         return $this->redirectToRoute('admin_users_list');
     }
 
-    #[Route('/tables', name: 'tables')]
-    public function tables(): Response
-    {
-        return $this->render('admin/table.html.twig');
-    }
-
-    #[Route('/typography', name: 'typography')]
-    public function typography(): Response
-    {
-        return $this->render('admin/typography.html.twig');
-    }
-
-    #[Route('/widgets', name: 'widgets')]
-    public function widgets(): Response
-    {
-        return $this->render('admin/widget.html.twig');
-    }
-
-    #[Route('/forms', name: 'forms')]
-    public function forms(): Response
-    {
-        return $this->render('admin/form.html.twig');
-    }
-
-    #[Route('/elements/buttons', name: 'elements_buttons')]
-    public function elementsButtons(): Response
-    {
-        return $this->render('admin/element.html.twig');
-    }
-
-    #[Route('/elements/other', name: 'elements_other')]
-    public function elementsOther(): Response
-    {
-        return $this->render('admin/element.html.twig');
-    }
-
-    #[Route('/charts', name: 'charts')]
-    public function charts(): Response
-    {
-        return $this->render('admin/chart.html.twig');
-    }
-
-    #[Route('/blank', name: 'blank')]
-    public function blank(): Response
-    {
-        return $this->render('admin/blank.html.twig');
-    }
-
-    #[Route('/404', name: '404')]
-    public function notFound(): Response
-    {
-        return $this->render('admin/404.html.twig');
-    }
-
+    // ==================== PROFILE ====================
     #[Route('/profile', name: 'profile')]
     public function profile(): Response
     {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
         return $this->render('admin/profile.html.twig', [
-            'user' => $this->getUser(),
+            'user' => $user,
         ]);
     }
 
+    // ==================== PROFILE EDIT ====================
     #[Route('/profile/edit', name: 'profile_edit')]
     public function profileEdit(
         Request $request,
@@ -210,94 +179,56 @@ class AdminController extends AbstractController
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
-        $originalEmail = $user->getEmail();
-        
+
         $form = $this->createFormBuilder($user)
-            ->add('nom', TextType::class, [
-                'label' => 'Last Name',
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('prenom', TextType::class, [
-                'label' => 'First Name',
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('email', EmailType::class, [
-                'label' => 'Email',
-                'attr' => ['class' => 'form-control']
-            ])
+            ->add('nom', TextType::class, ['label' => 'Last Name'])
+            ->add('prenom', TextType::class, ['label' => 'First Name'])
+            ->add('email', EmailType::class, ['label' => 'Email'])
             ->add('avatarFile', FileType::class, [
                 'label' => 'Profile Picture',
                 'mapped' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-control', 'accept' => 'image/*'],
                 'constraints' => [
-                    new File([
-                        'maxSize' => '2M',
-                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-                        'mimeTypesMessage' => 'Please upload a valid image',
-                    ])
+                    new File(['maxSize' => '2M', 'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif']])
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'mapped' => false,
                 'required' => false,
-                'first_options' => [
-                    'label' => 'New Password',
-                    'attr' => ['class' => 'form-control', 'placeholder' => 'Leave blank to keep current']
-                ],
-                'second_options' => [
-                    'label' => 'Confirm Password',
-                    'attr' => ['class' => 'form-control']
-                ],
-                'constraints' => [
-                    new Length(['min' => 6, 'minMessage' => 'Password must be at least {{ limit }} characters']),
-                ],
+                'first_options' => ['label' => 'New Password'],
+                'second_options' => ['label' => 'Confirm Password'],
             ])
             ->getForm();
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $newEmail = $form->get('email')->getData();
-            if ($newEmail !== $originalEmail) {
-                $existingUser = $entityManager->getRepository(Utilisateur::class)
-                    ->findOneBy(['email' => $newEmail]);
-                
-                if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                    $this->addFlash('error', 'This email is already in use by another account.');
-                    return $this->render('admin/profile_edit.html.twig', [
-                        'user' => $user,
-                        'form' => $form,
-                    ]);
-                }
-            }
-
             $plainPassword = $form->get('plainPassword')->getData();
             if ($plainPassword) {
-                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+                $user->setMotDePasse($passwordHasher->hashPassword($user, $plainPassword));
             }
 
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
                 $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$avatarFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $avatarFile->guessExtension();
 
                 try {
                     $avatarsDirectory = $this->getParameter('avatars_directory');
                     $avatarFile->move($avatarsDirectory, $newFilename);
-                    
+
                     if ($user->getAvatar()) {
-                        $oldAvatarPath = $avatarsDirectory.'/'.$user->getAvatar();
-                        if (file_exists($oldAvatarPath)) {
-                            unlink($oldAvatarPath);
+                        $oldPath = $avatarsDirectory . '/' . $user->getAvatar();
+                        if (file_exists($oldPath)) {
+                            unlink($oldPath);
                         }
                     }
-                    
+
                     $user->setAvatar($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
+                    $this->addFlash('error', 'Failed to upload avatar.');
                 }
             }
 
@@ -310,7 +241,91 @@ class AdminController extends AbstractController
 
         return $this->render('admin/profile_edit.html.twig', [
             'user' => $user,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    // ==================== ADD USER ====================
+    #[Route('/users/add', name: 'user_add')]
+    public function userAdd(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        SluggerInterface $slugger
+    ): Response {
+        $user = new Utilisateur();
+        $form = $this->createForm(UserFormType::class, $user, ['is_edit' => false]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $existingUser = $entityManager->getRepository(Utilisateur::class)
+                ->findOneBy(['email' => $user->getEmail()]);
+
+            if ($existingUser) {
+                $this->addFlash('error', 'This email is already in use.');
+                return $this->render('admin/user_add.html.twig', [
+                    'form' => $form,
+                ]);
+            }
+
+            $plainPassword = $form->get('plainPassword')->getData();
+            $user->setMotDePasse($passwordHasher->hashPassword($user, $plainPassword));
+
+            $avatarFile = $form->get('avatarFile')->getData();
+            if ($avatarFile) {
+                $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $avatarFile->guessExtension();
+
+                try {
+                    $avatarsDirectory = $this->getParameter('avatars_directory');
+                    $avatarFile->move($avatarsDirectory, $newFilename);
+                    $user->setAvatar($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Failed to upload avatar.');
+                }
+            }
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', "User '{$user->getPrenom()} {$user->getNom()}' has been created successfully.");
+            return $this->redirectToRoute('admin_users_list');
+        }
+
+        return $this->render('admin/user_add.html.twig', [
             'form' => $form,
+        ]);
+    }
+
+    // ==================== EDIT USER ====================
+    #[Route('/users/{id}/edit', name: 'user_edit', requirements: ['id' => '\d+'])]
+    public function userEdit(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $entityManager->getRepository(Utilisateur::class)->find($id);
+
+        if (!$user) {
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('admin_users_list');
+        }
+
+        $form = $this->createForm(AdminUserEditFormType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->setUpdatedAt(new \DateTime());
+            $entityManager->flush();
+
+            $this->addFlash('success', "User '{$user->getPrenom()} {$user->getNom()}' has been updated successfully.");
+            return $this->redirectToRoute('admin_users_list');
+        }
+
+        return $this->render('admin/user_edit.html.twig', [
+            'form' => $form,
+            'user' => $user,
         ]);
     }
 }

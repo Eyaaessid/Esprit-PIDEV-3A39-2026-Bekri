@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ evenement.titre }} - MediNest{% endblock %}
+
+{% block body_class %}edit-evenement-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Modifier l'événement</h1>
+              <p class="mb-0">
+                {{ evenement.titre }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li><a href="{{ path('evenements_coach_dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ path('evenements_coach_list') }}">Mes Événements</a></li>
+            <li class="current">Modifier</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Edit Form Section -->
+    <section id="edit-evenement" class="edit-evenement section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                
+                <form method="post" action="{{ path('evenements_coach_edit', {id: evenement.id}) }}">
+                  
+                  <div class="row gy-4">
+                    
+                    <div class="col-md-12">
+                      <label for="titre" class="form-label">Titre de l'événement *</label>
+                      <input type="text" class="form-control" id="titre" name="titre" required 
+                             value="{{ evenement.titre }}">
+                    </div>
+
+                    <div class="col-md-12">
+                      <label for="description" class="form-label">Description *</label>
+                      <textarea class="form-control" id="description" name="description" rows="5" required>{{ evenement.description }}</textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="type" class="form-label">Type d'événement *</label>
+                      <select class="form-select" id="type" name="type" required>
+                        <option value="SESSION" {{ evenement.type.value == 'SESSION' ? 'selected' : '' }}>Session</option>
+                        <option value="EVENT" {{ evenement.type.value == 'EVENT' ? 'selected' : '' }}>Événement</option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="capaciteMax" class="form-label">Capacité maximale *</label>
+                      <input type="number" class="form-control" id="capaciteMax" name="capaciteMax" 
+                             min="1" required value="{{ evenement.capaciteMax }}">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="dateDebut" class="form-label">Date et heure de début *</label>
+                      <input type="datetime-local" class="form-control" id="dateDebut" name="dateDebut" required
+                             value="{{ evenement.dateDebut|date('Y-m-d\\TH:i') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="dateFin" class="form-label">Date et heure de fin</label>
+                      <input type="datetime-local" class="form-control" id="dateFin" name="dateFin"
+                             value="{{ evenement.dateFin ? evenement.dateFin|date('Y-m-d\\TH:i') : '' }}">
+                    </div>
+
+                    <div class="col-md-12">
+                      <label for="lienSession" class="form-label">Lieu ou lien de session</label>
+                      <input type="text" class="form-control" id="lienSession" name="lienSession"
+                             value="{{ evenement.lienSession }}">
+                      <small class="text-muted">Indiquez le lieu physique ou le lien pour une session en ligne</small>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="statut" class="form-label">Statut *</label>
+                      <select class="form-select" id="statut" name="statut" required>
+                        <option value="PLANNED" {{ evenement.statut.value == 'PLANNED' ? 'selected' : '' }}>Planifié</option>
+                        <option value="OPEN" {{ evenement.statut.value == 'OPEN' ? 'selected' : '' }}>Ouvert aux inscriptions</option>
+                        <option value="FULL" {{ evenement.statut.value == 'FULL' ? 'selected' : '' }}>Complet</option>
+                        <option value="CANCELLED" {{ evenement.statut.value == 'CANCELLED' ? 'selected' : '' }}>Annulé</option>
+                        <option value="FINISHED" {{ evenement.statut.value == 'FINISHED' ? 'selected' : '' }}>Terminé</option>
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
+                    </button>
+                    <a href="{{ path('evenements_coach_list') }}" class="btn btn-outline-secondary">
+                      <i class="bi bi-x-circle me-2"></i>Annuler
+                    </a>
+                  </div>
+
+                </form>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- End Edit Form Section -->
+
+{% endblock %}
