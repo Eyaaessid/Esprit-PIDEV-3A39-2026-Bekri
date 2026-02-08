@@ -3,7 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SuiviQuotidienRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SuiviQuotidienRepository::class)]
@@ -14,140 +15,33 @@ class SuiviQuotidien
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'suivisQuotidiens')]
+    //#[ORM\ManyToOne(inversedBy: 'suivisQuotidiens')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?ObjectifBienEtre $objectif = null;
+    private ?Utilisateur $utilisateur = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private \DateTimeInterface $date;
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(type: Types::FLOAT)]
-    private float $sommeil;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $commentaire = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
-    private int $humeur;
-
-    #[ORM\Column(type: Types::INTEGER)]
-    private int $energie;
-
-    #[ORM\Column(type: Types::FLOAT, nullable: true)]
-    private ?float $poids = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $nutrition = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $createdAt;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\OneToMany(mappedBy: 'suivi', targetEntity: ReponseSuivi::class, orphanRemoval: true)]
+    private Collection $reponses;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->reponses = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getObjectif(): ?ObjectifBienEtre
-    {
-        return $this->objectif;
-    }
-
-    public function setObjectif(?ObjectifBienEtre $objectif): static
-    {
-        $this->objectif = $objectif;
-        return $this;
-    }
-
-    public function getDate(): \DateTimeInterface
-    {
-        return $this->date;
-    }
-
-    public function setDate(\DateTimeInterface $date): static
-    {
-        $this->date = $date;
-        return $this;
-    }
-
-    public function getSommeil(): float
-    {
-        return $this->sommeil;
-    }
-
-    public function setSommeil(float $sommeil): static
-    {
-        $this->sommeil = $sommeil;
-        return $this;
-    }
-
-    public function getHumeur(): int
-    {
-        return $this->humeur;
-    }
-
-    public function setHumeur(int $humeur): static
-    {
-        $this->humeur = $humeur;
-        return $this;
-    }
-
-    public function getEnergie(): int
-    {
-        return $this->energie;
-    }
-
-    public function setEnergie(int $energie): static
-    {
-        $this->energie = $energie;
-        return $this;
-    }
-
-    public function getPoids(): ?float
-    {
-        return $this->poids;
-    }
-
-    public function setPoids(?float $poids): static
-    {
-        $this->poids = $poids;
-        return $this;
-    }
-
-    public function getNutrition(): ?string
-    {
-        return $this->nutrition;
-    }
-
-    public function setNutrition(?string $nutrition): static
-    {
-        $this->nutrition = $nutrition;
-        return $this;
-    }
-
-    public function getCreatedAt(): \DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-        return $this;
-    }
+    // Getters/Setters
+    public function getId(): ?int { return $this->id; }
+    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
+    public function setUtilisateur(?Utilisateur $utilisateur): static { $this->utilisateur = $utilisateur; return $this; }
+    public function getDate(): ?\DateTimeInterface { return $this->date; }
+    public function setDate(\DateTimeInterface $date): static { $this->date = $date; return $this; }
+    public function getCommentaire(): ?string { return $this->commentaire; }
+    public function setCommentaire(?string $commentaire): static { $this->commentaire = $commentaire; return $this; }
+    public function getReponses(): Collection { return $this->reponses; }
+    public function addReponse(ReponseSuivi $reponse): static { if (!$this->reponses->contains($reponse)) { $this->reponses->add($reponse); $reponse->setSuivi($this); } return $this; }
+    public function removeReponse(ReponseSuivi $reponse): static { if ($this->reponses->removeElement($reponse)) { if ($reponse->getSuivi() === $this) { $reponse->setSuivi(null); } } return $this; }
 }

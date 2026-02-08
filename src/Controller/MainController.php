@@ -31,13 +31,12 @@ class MainController extends AbstractController
     {
         return $this->render('department-details.html.twig');
     }
-     
-    
-    
 
-
-   
-
+    #[Route('/services', name: 'services')]
+    public function services(): Response
+    {
+        return $this->render('services.html.twig');
+    }
     
     #[Route('/testimonials', name: 'testimonials')]
     public function testimonials(): Response

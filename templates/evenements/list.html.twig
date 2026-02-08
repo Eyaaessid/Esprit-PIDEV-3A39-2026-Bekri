@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Événements Bien-être - MediNest{% endblock %}
+
+{% block body_class %}evenements-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Événements Bien-être</h1>
+              <p class="mb-0">
+                Découvrez nos événements dédiés à votre santé mentale et votre bien-être. 
+                Participez à des ateliers, conférences et sessions guidées par nos experts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li class="current">Événements</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Événements Section -->
+    <section id="evenements" class="evenements section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+              <div>
+                <h4 class="mb-0">{{ evenements|length }} événements disponibles</h4>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{{ path('evenements_mes_participations') }}" class="btn btn-outline-primary">
+                  <i class="bi bi-calendar-check"></i> Mes Participations
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Événements Grid -->
+        <div class="row gy-4">
+
+          {% for evenement in evenements %}
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+            <div class="service-card h-100">
+              <div class="service-icon">
+                {% if evenement.type.value == 'SESSION' %}
+                  <i class="fas fa-users"></i>
+                {% else %}
+                  <i class="fas fa-calendar-alt"></i>
+                {% endif %}
+              </div>
+              
+              <div class="service-content">
+                <div class="mb-3">
+                  <span class="badge bg-primary">{{ evenement.type.value }}</span>
+                  {% if evenement.statut.value == 'OPEN' %}
+                    <span class="badge bg-success">Ouvert</span>
+                  {% elseif evenement.statut.value == 'FULL' %}
+                    <span class="badge bg-danger">Complet</span>
+                  {% elseif evenement.statut.value == 'PLANNED' %}
+                    <span class="badge bg-info">Planifié</span>
+                  {% endif %}
+                </div>
+
+                <h3>{{ evenement.titre }}</h3>
+                
+                <div class="mb-3">
+                  <p class="text-muted mb-2">
+                    <i class="bi bi-calendar3"></i> 
+                    {{ evenement.dateDebut|date('d/m/Y à H:i') }}
+                  </p>
+                  {% if evenement.lienSession %}
+                  <p class="text-muted mb-2">
+                    <i class="bi bi-geo-alt"></i> 
+                    {{ evenement.lienSession }}
+                  </p>
+                  {% endif %}
+                  <p class="text-muted mb-2">
+                    <i class="bi bi-people"></i> 
+                    {{ evenement.capaciteMax }} places
+                  </p>
+                </div>
+
+                <p>{{ evenement.description|length > 120 ? evenement.description|slice(0, 120) ~ '...' : evenement.description }}</p>
+                
+                <a href="{{ path('evenements_show', {id: evenement.id}) }}" class="service-link">
+                  Voir les détails <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="col-12">
+            <div class="alert alert-info text-center">
+              <i class="bi bi-info-circle me-2"></i>
+              Aucun événement disponible pour le moment.
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+    </section><!-- End Événements Section -->
+
+{% endblock %}

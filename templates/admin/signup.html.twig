@@ -1,117 +1,322 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}DASHMIN - Bootstrap Admin Template{% endblock %}</title>
+    <title>{% block title %}Inscription - Bekri{% endblock %}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
-
-    <!-- Favicon -->
-    <link href="{{ asset('admin/img/favicon.ico') }}" rel="icon">
-
-    <!-- Google Web Fonts -->
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e0f2f7 0%, #f0f8fa 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
 
-    <!-- Libraries Stylesheet -->
-    <link href="{{ asset('admin/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('admin/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
+        .signup-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            max-width: 520px;
+            width: 100%;
+            padding: 50px 40px;
+            position: relative;
+            overflow: hidden;
+        }
 
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="{{ asset('admin/css/bootstrap.min.css') }}" rel="stylesheet">
+        .signup-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #20b2aa, #3ecdc7);
+        }
 
-    <!-- Template Stylesheet -->
-    <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
-    </head>
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .welcome-text h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            color: #95a5a6;
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #2c3e50;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bdc3c7;
+            font-size: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border: 2px solid #e8eef1;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            background: #f8fafb;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #20b2aa;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(32, 178, 170, 0.08);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 24px 0;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #20b2aa;
+        }
+
+        .checkbox-wrapper label {
+            color: #7f8c8d;
+            font-size: 13px;
+            cursor: pointer;
+            line-height: 1.5;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3);
+            margin-top: 8px;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(32, 178, 170, 0.4);
+        }
+
+        .signin-link {
+            text-align: center;
+            margin-top: 24px;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+
+        .signin-link a {
+            color: #20b2aa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-danger {
+            background: #fff5f5;
+            color: #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .signup-container {
+                padding: 40px 28px;
+            }
+        }
+    </style>
+</head>
 <body>
-    <div class="container-xxl position-relative bg-white d-flex p-0">
-        <!-- Spinner Start -->
-        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+    <div class="signup-container">
+        <div class="logo-container">
+            <img src="{{ asset('images/logo.png') }}" alt="Bekri Logo" class="logo">
         </div>
-        <!-- Spinner End -->
 
-        {# Sign Up Start #}
-        <div class="container-fluid">
-            <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
-                <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
-                    <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <a href="{{ path('admin_')}}" class="">
-                                <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
-                            </a>
-                            <h3>Sign Up</h3>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="floatingText" placeholder="jhondoe">
-                            <label for="floatingText">Username</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-                            <label for="floatingInput">Email address</label>
-                        </div>
-                        <div class="form-floating mb-4">
-                            <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                            <label for="floatingPassword">Password</label>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                                <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                            </div>
-                            <a href="">Forgot Password</a>
-                        </div>
-                        <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign Up</button>
-                        <p class="text-center mb-0">Already have an Account? <a href="{{ path('admin_login') }}">Sign In</a></p>
+        <div class="welcome-text">
+            <h1>Créer un compte</h1>
+            <p>Commencez votre parcours de bien-être</p>
+        </div>
+
+        {% for error in registrationForm.vars.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error.message }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(registrationForm) }}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">{{ form_label(registrationForm.nom) }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-input'}}) }}
                     </div>
+                    {{ form_errors(registrationForm.nom) }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form_label(registrationForm.prenom) }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-input'}}) }}
+                    </div>
+                    {{ form_errors(registrationForm.prenom) }}
                 </div>
             </div>
-        </div>
-        {# Sign Up End #}
-    </div>
 
-    <!-- Footer Start -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="bg-light rounded-top p-4">
-                    <div class="row">
-                        <div class="col-12 col-sm-6 text-center text-sm-start">
-                            © <a href="#">Your Site Name</a>, All Right Reserved.
-                        </div>
-                        <div class="col-12 col-sm-6 text-center text-sm-end">
-                            Designed By <a href="https://htmlcodex.com">HTML Codex</a>
-                        </div>
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.email) }}</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    {{ form_widget(registrationForm.email, {'attr': {'class': 'form-input'}}) }}
+                </div>
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">{{ form_label(registrationForm.telephone) }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone input-icon"></i>
+                        {{ form_widget(registrationForm.telephone, {'attr': {'class': 'form-input'}}) }}
                     </div>
+                    {{ form_errors(registrationForm.telephone) }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form_label(registrationForm.dateNaissance) }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-calendar input-icon"></i>
+                        {{ form_widget(registrationForm.dateNaissance, {'attr': {'class': 'form-input'}}) }}
+                    </div>
+                    {{ form_errors(registrationForm.dateNaissance) }}
                 </div>
             </div>
-            <!-- Footer End -->
-        </div>
-        <!-- Content End -->
 
-        <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.plainPassword.first) }}</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-input', 'placeholder': 'Minimum 6 caractères'}}) }}
+                </div>
+                {{ form_errors(registrationForm.plainPassword.first) }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.plainPassword.second) }}</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-input'}}) }}
+                </div>
+                {{ form_errors(registrationForm.plainPassword.second) }}
+            </div>
+
+            <div class="checkbox-wrapper">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms) }}
+            </div>
+            {{ form_errors(registrationForm.agreeTerms) }}
+
+            <button type="submit" class="btn-signup">
+                <i class="fas fa-user-plus"></i>
+                <span>Créer mon compte</span>
+            </button>
+
+            <div class="signin-link">
+                Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+            </div>
+        {{ form_end(registrationForm) }}
     </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('admin/lib/chart/chart.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/easing/easing.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/waypoints/waypoints.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/owlcarousel/owl.carousel.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/tempusdominus/js/moment.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
-    <script src="{{ asset('admin/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
-
-    <!-- Template Javascript -->
-    <script src="{{ asset('admin/js/main.js') }}"></script>
-
 </body>
 </html>

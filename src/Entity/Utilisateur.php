@@ -9,9 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-class Utilisateur
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -59,6 +61,12 @@ class Utilisateur
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
+
+    //#[ORM\Column(length: 255, nullable: true)]
+    //private ?string $resetToken = null;
+
+    //#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+   // private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     /**
      * @var Collection<int, Post>
@@ -113,6 +121,58 @@ class Utilisateur
         $this->participationsEvenements = new ArrayCollection();
         $this->resultatsTests = new ArrayCollection();
     }
+
+    // ==================== UserInterface Methods ====================
+    
+    /**
+     * A visual identifier that represents this user.
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     * 
+     * Converts enum value to Symfony role format
+     * Enum values are lowercase ('admin', 'user', 'coach')
+     * Symfony expects uppercase ('ROLE_ADMIN', 'ROLE_USER', 'ROLE_COACH')
+     */
+    public function getRoles(): array
+    {
+        // Convert enum to Symfony role format (uppercase)
+        // 'admin' -> 'ROLE_ADMIN'
+        // 'user' -> 'ROLE_USER'
+        // 'coach' -> 'ROLE_COACH'
+        return ['ROLE_' . strtoupper($this->role->value)];
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->motDePasse;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->motDePasse = $password;
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    // ==================== Regular Entity Methods ====================
 
     public function getId(): ?int
     {
@@ -270,6 +330,28 @@ class Utilisateur
     public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
 

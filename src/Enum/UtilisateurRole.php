@@ -4,9 +4,9 @@ namespace App\Enum;
 
 enum UtilisateurRole: string
 {
-    case ADMIN = 'ADMIN';
+    case ADMIN = 'admin';
     case USER = 'USER';
-    case COACH = 'COACH';
+    case COACH = 'coach';
 
     // Optional: nice display name for forms / UI
     public function label(): string

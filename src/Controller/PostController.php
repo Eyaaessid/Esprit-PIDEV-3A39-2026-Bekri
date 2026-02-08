@@ -215,6 +215,7 @@ public function show(Post $post, EntityManagerInterface $entityManager): Respons
         $this->addFlash('success', 'Post deleted successfully!');
         return $this->redirectToRoute('posts_list');
     }
+    
 
     #[Route('/{id}/like', name: 'post_like', methods: ['POST'])]
     public function like(

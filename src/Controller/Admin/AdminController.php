@@ -2,8 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Repository\CommentaireRepository;
-use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,62 +9,18 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin', name: 'admin_')]
 class AdminController extends AbstractController
 {
-    public function __construct(
-        private PostRepository $postRepository,
-        private CommentaireRepository $commentaireRepository
-    ) {
-    }
-
-    // Dashboard / Home with Posts and Comments
-    #[Route('', name: '', methods: ['GET'])]
+    // Dashboard / Home
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        // Get all posts (not deleted)
-        $posts = $this->postRepository->createQueryBuilder('p')
-            ->where('p.deletedAt IS NULL')
-            ->orderBy('p.createdAt', 'DESC')
-            ->setMaxResults(50) // Limit to recent 50 posts
-            ->getQuery()
-            ->getResult();
-
-        // Get all comments (not deleted)
-        $comments = $this->commentaireRepository->createQueryBuilder('c')
-            ->where('c.deletedAt IS NULL')
-            ->orderBy('c.createdAt', 'DESC')
-            ->setMaxResults(50) // Limit to recent 50 comments
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('admin/table.html.twig', [
-            'posts' => $posts,
-            'comments' => $comments,
-        ]);
+        return $this->render('admin/index.html.twig');
     }
 
     // Tables page
     #[Route('/tables', name: 'tables', methods: ['GET'])]
     public function tables(): Response
     {
-        // Get all posts (not deleted)
-        $posts = $this->postRepository->createQueryBuilder('p')
-            ->where('p.deletedAt IS NULL')
-            ->orderBy('p.createdAt', 'DESC')
-            ->setMaxResults(50) // Limit to recent 50 posts
-            ->getQuery()
-            ->getResult();
-
-        // Get all comments (not deleted)
-        $comments = $this->commentaireRepository->createQueryBuilder('c')
-            ->where('c.deletedAt IS NULL')
-            ->orderBy('c.createdAt', 'DESC')
-            ->setMaxResults(50) // Limit to recent 50 comments
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('admin/table.html.twig', [
-            'posts' => $posts,
-            'comments' => $comments,
-        ]);
+        return $this->render('admin/table.html.twig');
     }
 
     // Typography page
@@ -123,62 +77,5 @@ class AdminController extends AbstractController
     public function notFound(): Response
     {
         return $this->render('admin/404.html.twig');
-    }
-
-    // Sign In page (public-like, but inside admin folder for consistency)
-    #[Route('/login', name: 'login', methods: ['GET'])]
-    public function login(): Response
-    {
-        return $this->render('admin/signin.html.twig');
-    }
-
-    // Sign Up page
-    #[Route('/register', name: 'register', methods: ['GET'])]
-    public function register(): Response
-    {
-        return $this->render('admin/signup.html.twig');
-    }
-
-    // Profile page
-    #[Route('/profile', name: 'profile', methods: ['GET'])]
-    public function profile(): Response
-    {
-        return $this->render('admin/profile.html.twig');
-    }
-
-    // Settings page
-    #[Route('/settings', name: 'settings', methods: ['GET'])]
-    public function settings(): Response
-    {
-        return $this->render('admin/settings.html.twig');
-    }
-
-    // Settings - General
-    #[Route('/settings/general', name: 'settings_general', methods: ['GET'])]
-    public function settingsGeneral(): Response
-    {
-        return $this->render('admin/settings/general.html.twig');
-    }
-
-    // Settings - Security
-    #[Route('/settings/security', name: 'settings_security', methods: ['GET'])]
-    public function settingsSecurity(): Response
-    {
-        return $this->render('admin/settings/security.html.twig');
-    }
-
-    // Users page
-    #[Route('/users', name: 'users', methods: ['GET'])]
-    public function users(): Response
-    {
-        return $this->render('admin/users.html.twig');
-    }
-
-    // Logout
-    #[Route('/logout', name: 'logout', methods: ['GET'])]
-    public function logout(): Response
-    {
-        // This will be handled by security system
-        return $this->redirectToRoute('admin_login');
     }
 }

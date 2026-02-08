@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Participants - {{ evenement.titre }} - MediNest{% endblock %}
+
+{% block body_class %}participants-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">Participants</h1>
+              <p class="mb-0">
+                {{ evenement.titre }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{{ path('home') }}">Home</a></li>
+            <li><a href="{{ path('evenements_coach_dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ path('evenements_coach_list') }}">Mes Événements</a></li>
+            <li class="current">Participants</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Participants Section -->
+    <section id="participants" class="participants section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Event Info Card -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h4 class="mb-2">{{ evenement.titre }}</h4>
+                    <p class="text-muted mb-0">
+                      <i class="bi bi-calendar3 me-2"></i>{{ evenement.dateDebut|date('d/m/Y à H:i') }}
+                      {% if evenement.lienSession %}
+                        <span class="ms-3"><i class="bi bi-geo-alt me-2"></i>{{ evenement.lienSession }}</span>
+                      {% endif %}
+                    </p>
+                  </div>
+                  <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <span class="badge bg-primary fs-6">{{ evenement.type.value }}</span>
+                    {% if evenement.statut.value == 'OPEN' %}
+                      <span class="badge bg-success fs-6">Ouvert</span>
+                    {% elseif evenement.statut.value == 'FULL' %}
+                      <span class="badge bg-danger fs-6">Complet</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          {% set inscritCount = participations|filter(p => p.statut.value == 'INSCRIT')|length %}
+          {% set annuleCount = participations|filter(p => p.statut.value == 'ANNULE')|length %}
+          {% set presentCount = participations|filter(p => p.statut.value == 'PRESENT')|length %}
+
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-people fs-1 text-primary mb-2"></i>
+                <h3 class="mb-0">{{ participations|length }}</h3>
+                <p class="text-muted mb-0">Total inscriptions</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
+                <h3 class="mb-0">{{ inscritCount }}</h3>
+                <p class="text-muted mb-0">Actifs</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-person-check fs-1 text-info mb-2"></i>
+                <h3 class="mb-0">{{ presentCount }}</h3>
+                <p class="text-muted mb-0">Présents</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-x-circle fs-1 text-danger mb-2"></i>
+                <h3 class="mb-0">{{ annuleCount }}</h3>
+                <p class="text-muted mb-0">Annulés</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants List -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white">
+                <h4 class="mb-0">
+                  <i class="bi bi-list-ul text-primary me-2"></i>
+                  Liste des participants
+                </h4>
+              </div>
+              <div class="card-body p-0">
+                {% if participations|length > 0 %}
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Participant</th>
+                          <th>Email</th>
+                          <th>Date d'inscription</th>
+                          <th>Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for participation in participations %}
+                        <tr>
+                          <td>
+                            <strong>{{ participation.utilisateur.prenom }} {{ participation.utilisateur.nom }}</strong>
+                          </td>
+                          <td>
+                            <i class="bi bi-envelope text-muted"></i>
+                            {{ participation.utilisateur.email }}
+                          </td>
+                          <td>
+                            <i class="bi bi-calendar3 text-muted"></i>
+                            {{ participation.dateInscription|date('d/m/Y H:i') }}
+                          </td>
+                          <td>
+                            {% if participation.statut.value == 'INSCRIT' %}
+                              <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Inscrit
+                              </span>
+                            {% elseif participation.statut.value == 'ANNULE' %}
+                              <span class="badge bg-danger">
+                                <i class="bi bi-x-circle"></i> Annulé
+                              </span>
+                            {% elseif participation.statut.value == 'PRESENT' %}
+                              <span class="badge bg-info">
+                                <i class="bi bi-person-check"></i> Présent
+                              </span>
+                            {% elseif participation.statut.value == 'ABSENT' %}
+                              <span class="badge bg-warning">
+                                <i class="bi bi-person-x"></i> Absent
+                              </span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-center py-5">
+                    <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Aucun participant</h5>
+                    <p class="text-muted mb-0">Aucune inscription pour le moment.</p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <a href="{{ path('evenements_coach_list') }}" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-left me-2"></i>Retour à mes événements
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- End Participants Section -->
+
+{% endblock %}

@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ObjectifBienEtreRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,7 +21,7 @@ class ObjectifBienEtre
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 100)]
@@ -42,25 +40,27 @@ class ObjectifBienEtre
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $statut = null;          // ← I renamed status → statut (more consistent with your other enums)
+    private ?string $statut = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $createdAt;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
-
-    /**
-     * @var Collection<int, SuiviQuotidien>
-     */
-    #[ORM\OneToMany(targetEntity: SuiviQuotidien::class, mappedBy: 'objectif', orphanRemoval: true)]
-    private Collection $suivisQuotidiens;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
-        $this->suivisQuotidiens = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        // No more collection initialization here
     }
+
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    // All your getters and setters (keep them as is)
 
     public function getId(): ?int
     {
@@ -166,54 +166,25 @@ class ObjectifBienEtre
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, SuiviQuotidien>
-     */
-    public function getSuivisQuotidiens(): Collection
-    {
-        return $this->suivisQuotidiens;
-    }
-
-    public function addSuiviQuotidien(SuiviQuotidien $suiviQuotidien): static
-    {
-        if (!$this->suivisQuotidiens->contains($suiviQuotidien)) {
-            $this->suivisQuotidiens->add($suiviQuotidien);
-            $suiviQuotidien->setObjectif($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSuiviQuotidien(SuiviQuotidien $suiviQuotidien): static
-    {
-        if ($this->suivisQuotidiens->removeElement($suiviQuotidien)) {
-            if ($suiviQuotidien->getObjectif() === $this) {
-                $suiviQuotidien->setObjectif(null);
-            }
-        }
-
         return $this;
     }
 }

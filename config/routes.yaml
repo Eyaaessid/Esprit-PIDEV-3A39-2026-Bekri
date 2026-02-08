@@ -1,14 +1,45 @@
-# yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
-
-# This file is the entry point to configure the routes of your app.
-# Methods with the #[Route] attribute are automatically imported.
-# See also https://symfony.com/doc/current/routing.html
-
-# To list all registered routes, run the following command:
-#   bin/console debug:router
-
+# Import all controllers with Route attributes
 controllers:
-    resource: routing.controllers
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Manual User Routes
+user_dashboard:
+    path: /user
+    controller: App\Controller\UserController::dashboard
+    methods: [GET]
+
+user_profile:
+    path: /user/profile
+    controller: App\Controller\UserController::profile
+    methods: [GET]
+
+user_profile_edit:
+    path: /user/profile/edit
+    controller: App\Controller\UserController::profileEdit
+    methods: [GET, POST]
+
+# Manual Coach Routes
+coach_dashboard:
+    path: /coach
+    controller: App\Controller\CoachController::dashboard
+    methods: [GET]
+
+coach_profile:
+    path: /coach/profile
+    controller: App\Controller\CoachController::profile
+    methods: [GET]
+
+coach_profile_edit:
+    path: /coach/profile/edit
+    controller: App\Controller\CoachController::profileEdit
+    methods: [GET, POST]
+
+
+
+ 
 
 comment_create:
     path: /comments/create/{postId}
@@ -22,3 +53,52 @@ comment_edit:
     path: /comments/{id}/edit
     controller: App\Controller\CommentController::edit
     methods: POST
+
+
+
+
+posts_list:
+    path: /posts
+    controller: App\Controller\PostController::index
+    methods: GET
+
+post_create:
+    path: /create
+    controller: App\Controller\PostController::create
+    methods: POST
+
+post_details:
+    path: /{id}
+    controller: App\Controller\PostController::show
+    methods: GET
+    requirements:
+        id: '\d+'
+
+post_edit:
+    path: /{id}/edit
+    controller: App\Controller\PostController::edit
+    methods: POST
+    requirements:
+        id: '\d+'
+
+post_delete:
+    path: /{id}/delete
+    controller: App\Controller\PostController::delete
+    methods: POST
+    requirements:
+        id: '\d+'
+
+post_like:
+    path: /{id}/like
+    controller: App\Controller\PostController::like
+    methods: POST
+    requirements:
+        id: '\d+'
+
+  
+
+
+
+
+
+   
