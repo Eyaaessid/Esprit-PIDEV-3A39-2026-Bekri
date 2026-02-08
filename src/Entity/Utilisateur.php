@@ -135,15 +135,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     * 
+     * Converts enum value to Symfony role format
+     * Enum values are lowercase ('admin', 'user', 'coach')
+     * Symfony expects uppercase ('ROLE_ADMIN', 'ROLE_USER', 'ROLE_COACH')
      */
     public function getRoles(): array
     {
-        // Convert enum to Symfony role format
-        $roles = ['ROLE_' . $this->role->value];
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-        
-        return array_unique($roles);
+        // Convert enum to Symfony role format (uppercase)
+        // 'admin' -> 'ROLE_ADMIN'
+        // 'user' -> 'ROLE_USER'
+        // 'coach' -> 'ROLE_COACH'
+        return ['ROLE_' . strtoupper($this->role->value)];
     }
 
     /**
