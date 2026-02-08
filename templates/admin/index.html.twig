@@ -47,7 +47,15 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
+                        {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
                         <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
+                        {% endif %}
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
@@ -118,7 +126,15 @@
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
+                        {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -128,7 +144,15 @@
                             <hr class="dropdown-divider">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
+                        {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -138,7 +162,15 @@
                             <hr class="dropdown-divider">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
+                        {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -175,12 +207,20 @@
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                {% if app.user.avatar %}
+                            <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
                             <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% endif %}
+                            {% endif %}
                             <span class="d-none d-lg-inline-flex">{{ app.user.nom }} {{ app.user.prenom }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                            <a href="#" class="dropdown-item"><i class="fa fa-user me-2"></i>My Profile</a>
-                            <a href="#" class="dropdown-item"><i class="fa fa-cog me-2"></i>Settings</a>
+                            <a href="{{ path('admin_profile') }}" class="dropdown-item"><i class="fa fa-user me-2"></i>My Profile</a>
+                            <a href="{{ path('admin_profile_edit') }}" class="dropdown-item"><i class="fa fa-cog me-2"></i>Settings</a>
                             <hr class="dropdown-divider">
                             <a href="{{ path('app_logout') }}" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Log Out</a>
                         </div>
@@ -458,7 +498,7 @@
                 <div class="bg-light rounded-top p-4">
                     <div class="row">
                         <div class="col-12 col-sm-6 text-center text-sm-start">
-                            © <a href="#">Your Site Name</a>, All Right Reserved.
+                            ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© <a href="#">Your Site Name</a>, All Right Reserved.
                         </div>
                         <div class="col-12 col-sm-6 text-center text-sm-end">
                             Designed By <a href="https://htmlcodex.com">HTML Codex</a>

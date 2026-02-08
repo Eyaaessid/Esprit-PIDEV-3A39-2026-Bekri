@@ -1,0 +1,353 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Dashboard - BekriWellbeing{% endblock %}
+
+{% block main %}
+<!-- Page Title -->
+<div class="page-title" data-aos="fade" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 0 40px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="text-white mb-2">
+                    <i class="bi bi-speedometer2 me-2"></i>Welcome back, {{ user.prenom }}!
+                </h1>
+                <p class="text-white-50 mb-0">
+                    <i class="bi bi-calendar3 me-2"></i>{{ "now"|date("l, F j, Y") }}
+                </p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <div class="user-stats-badge bg-white rounded-3 p-3 d-inline-block">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="user-avatar-large bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); font-size: 24px; font-weight: 700;">
+                            {{ user.prenom[0]|upper }}{{ user.nom[0]|upper }}
+                        </div>
+                        <div class="text-start">
+                            <h5 class="mb-0">{{ user.nom }} {{ user.prenom }}</h5>
+                            <small class="text-muted">
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <i class="bi bi-shield-check text-danger"></i> Administrator
+                                {% elseif is_granted('ROLE_COACH') %}
+                                    <i class="bi bi-person-check text-primary"></i> Wellness Coach
+                                {% else %}
+                                    <i class="bi bi-person text-success"></i> Member
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Content -->
+<section class="dashboard-section py-5">
+    <div class="container">
+        
+        <!-- Quick Stats -->
+        <div class="row g-4 mb-5" data-aos="fade-up">
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small">Wellbeing Score</p>
+                                <h3 class="mb-0 fw-bold">
+                                    {% if user.scoreInitial %}
+                                        {{ user.scoreInitial }}<small class="fs-6 text-muted">/100</small>
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </h3>
+                            </div>
+                            <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle p-3">
+                                <i class="bi bi-graph-up-arrow fs-4"></i>
+                            </div>
+                        </div>
+                        {% if user.scoreInitial %}
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ user.scoreInitial }}%" aria-valuenow="{{ user.scoreInitial }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        {% else %}
+                            <a href="#" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                                <i class="bi bi-clipboard-check me-1"></i>Take Assessment
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small">Active Goals</p>
+                                <h3 class="mb-0 fw-bold">{{ user.objectifBienEtres|length }}</h3>
+                            </div>
+                            <div class="icon-box bg-success bg-opacity-10 text-success rounded-circle p-3">
+                                <i class="bi bi-bullseye fs-4"></i>
+                            </div>
+                        </div>
+                        <a href="#goals-section" class="text-success text-decoration-none small">
+                            <i class="bi bi-arrow-right me-1"></i>View all goals
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small">Upcoming Events</p>
+                                <h3 class="mb-0 fw-bold">{{ user.participationsEvenements|length }}</h3>
+                            </div>
+                            <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-circle p-3">
+                                <i class="bi bi-calendar-event fs-4"></i>
+                            </div>
+                        </div>
+                        <a href="#events-section" class="text-warning text-decoration-none small">
+                            <i class="bi bi-arrow-right me-1"></i>See calendar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small">My Posts</p>
+                                <h3 class="mb-0 fw-bold">{{ user.posts|length }}</h3>
+                            </div>
+                            <div class="icon-box bg-info bg-opacity-10 text-info rounded-circle p-3">
+                                <i class="bi bi-chat-square-text fs-4"></i>
+                            </div>
+                        </div>
+                        <a href="#community-section" class="text-info text-decoration-none small">
+                            <i class="bi bi-arrow-right me-1"></i>Community activity
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Row -->
+        <div class="row g-4">
+            
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm mb-4" data-aos="fade-up">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0"><i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4 col-sm-6">
+                                <a href="#" class="quick-action-btn btn btn-outline-primary w-100 p-3 text-start">
+                                    <i class="bi bi-clipboard-pulse fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Take Wellbeing Test</span>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <a href="#" class="quick-action-btn btn btn-outline-success w-100 p-3 text-start">
+                                    <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Create New Goal</span>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <a href="#" class="quick-action-btn btn btn-outline-warning w-100 p-3 text-start">
+                                    <i class="bi bi-calendar-plus fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Join Event</span>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <a href="#" class="quick-action-btn btn btn-outline-info w-100 p-3 text-start">
+                                    <i class="bi bi-chat-dots fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Community Forum</span>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <a href="#" class="quick-action-btn btn btn-outline-danger w-100 p-3 text-start">
+                                    <i class="bi bi-book fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Resource Library</span>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <a href="{{ path('appointment') }}" class="quick-action-btn btn btn-outline-dark w-100 p-3 text-start">
+                                    <i class="bi bi-calendar-check fs-4 d-block mb-2"></i>
+                                    <span class="fw-semibold">Book Session</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card border-0 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user.posts|length > 0 or user.commentaires|length > 0 %}
+                            <div class="activity-timeline">
+                                <!-- Sample activities - replace with real data -->
+                                <div class="activity-item d-flex mb-3 pb-3 border-bottom">
+                                    <div class="activity-icon bg-success bg-opacity-10 text-success rounded-circle p-2 me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-check-circle"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-semibold">Completed daily wellbeing check-in</p>
+                                        <small class="text-muted">2 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item d-flex mb-3 pb-3 border-bottom">
+                                    <div class="activity-icon bg-info bg-opacity-10 text-info rounded-circle p-2 me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-chat"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-semibold">Shared a post in the community</p>
+                                        <small class="text-muted">Yesterday</small>
+                                    </div>
+                                </div>
+                                <div class="activity-item d-flex mb-0">
+                                    <div class="activity-icon bg-warning bg-opacity-10 text-warning rounded-circle p-2 me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-semibold">Registered for "Stress Management Workshop"</p>
+                                        <small class="text-muted">3 days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+                                <p class="text-muted">No recent activity yet. Start your wellness journey today!</p>
+                                <a href="#" class="btn btn-primary mt-2">
+                                    <i class="bi bi-plus-circle me-2"></i>Get Started
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                
+                <!-- Profile Summary -->
+                <div class="card border-0 shadow-sm mb-4" data-aos="fade-up">
+                    <div class="card-body text-center">
+                        <div class="user-avatar-xl bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 40px; font-weight: 700;">
+                            {{ user.prenom[0]|upper }}{{ user.nom[0]|upper }}
+                        </div>
+                        <h5 class="mb-1">{{ user.nom }} {{ user.prenom }}</h5>
+                        <p class="text-muted small mb-3">{{ user.email }}</p>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Member since {{ user.createdAt|date("F Y") }}
+                            </span>
+                        </div>
+
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="bi bi-pencil me-2"></i>Edit Profile
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-gear me-2"></i>Account Settings
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="card border-0 shadow-sm mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0"><i class="bi bi-calendar-event text-warning me-2"></i>Upcoming Events</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if user.participationsEvenements|length > 0 %}
+                            {# Show events list #}
+                            <p class="text-center text-muted">You have {{ user.participationsEvenements|length }} upcoming events</p>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="bi bi-calendar-x fs-2 text-muted mb-2 d-block"></i>
+                                <p class="text-muted small mb-3">No upcoming events</p>
+                                <a href="#" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-search me-1"></i>Browse Events
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Goals Progress -->
+                <div class="card border-0 shadow-sm" data-aos="fade-up" data-aos-delay="200" id="goals-section">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0"><i class="bi bi-bullseye text-success me-2"></i>My Goals</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if user.objectifBienEtres|length > 0 %}
+                            <p class="text-center text-muted">You have {{ user.objectifBienEtres|length }} active goals</p>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="bi bi-flag fs-2 text-muted mb-2 d-block"></i>
+                                <p class="text-muted small mb-3">No goals set yet</p>
+                                <a href="#" class="btn btn-sm btn-success">
+                                    <i class="bi bi-plus-circle me-1"></i>Create Your First Goal
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .icon-box {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .quick-action-btn {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        text-decoration: none;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+</style>
+
+{% endblock %}

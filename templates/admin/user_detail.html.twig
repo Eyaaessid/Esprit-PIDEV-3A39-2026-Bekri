@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>User Details - DASHMIN</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="{{ asset('admin/img/favicon.ico') }}" rel="icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('admin/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-xxl position-relative bg-white d-flex p-0">
+        <!-- Sidebar (same as users_list) -->
+        <div class="sidebar pe-4 pb-3">
+            <nav class="navbar bg-light navbar-light">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand mx-4 mb-3">
+                    <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
+                </a>
+                <div class="d-flex align-items-center ms-4 mb-4">
+                    <div class="position-relative">
+                        {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% endif %}
+                        <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0">{{ app.user.nom }} {{ app.user.prenom }}</h6>
+                        <span>{{ app.user.role.label }}</span>
+                    </div>
+                </div>
+                <div class="navbar-nav w-100">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link">
+                        <i class="fa fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link active">
+                        <i class="fa fa-users me-2"></i>Users
+                    </a>
+                    <a href="{{ path('admin_profile') }}" class="nav-item nav-link">
+                        <i class="fa fa-user me-2"></i>My Profile
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Content Start -->
+        <div class="content">
+            <!-- Navbar (same structure) -->
+            <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand d-flex d-lg-none me-4">
+                    <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
+                </a>
+                <a href="#" class="sidebar-toggler flex-shrink-0">
+                    <i class="fa fa-bars"></i>
+                </a>
+                <div class="navbar-nav align-items-center ms-auto">
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                            {% endif %}
+                            <span class="d-none d-lg-inline-flex">{{ app.user.nom }} {{ app.user.prenom }}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
+                            <a href="{{ path('admin_profile') }}" class="dropdown-item"><i class="fa fa-user me-2"></i>My Profile</a>
+                            <a href="{{ path('admin_profile_edit') }}" class="dropdown-item"><i class="fa fa-cog me-2"></i>Settings</a>
+                            <hr class="dropdown-divider">
+                            <a href="{{ path('app_logout') }}" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Log Out</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Detail Content -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="mb-3">
+                    <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left me-2"></i>Back to Users List
+                    </a>
+                </div>
+
+                <div class="row g-4">
+                    <!-- User Profile Card -->
+                    <div class="col-lg-4">
+                        <div class="bg-light rounded p-4">
+                            <div class="text-center mb-4">
+                                {% if user.avatar %}
+                                    <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" 
+                                         alt="{{ user.prenom }}" 
+                                         class="rounded-circle mb-3"
+                                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #009CFF;">
+                                {% else %}
+                                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                         style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <span class="text-white" style="font-size: 60px; font-weight: bold;">
+                                            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                
+                                <h4 class="mb-1">{{ user.prenom }} {{ user.nom }}</h4>
+                                <p class="text-muted mb-3">{{ user.email }}</p>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge bg-danger">Administrator</span>
+                                {% elseif user.role == 'coach' %}
+                                    <span class="badge bg-info">Coach</span>
+                                {% else %}
+                                    <span class="badge bg-success">User</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Information -->
+                    <div class="col-lg-8">
+                        <div class="bg-light rounded p-4 mb-4">
+                            <h5 class="mb-4"><i class="fa fa-info-circle me-2"></i>User Information</h5>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>First Name:</strong></div>
+                                <div class="col-sm-8">{{ user.prenom }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Last Name:</strong></div>
+                                <div class="col-sm-8">{{ user.nom }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Email:</strong></div>
+                                <div class="col-sm-8">{{ user.email }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Phone:</strong></div>
+                                <div class="col-sm-8">{{ user.telephone|default('N/A') }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Date of Birth:</strong></div>
+                                <div class="col-sm-8">{{ user.dateNaissance ? user.dateNaissance|date('F d, Y') : 'N/A' }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Country:</strong></div>
+                                <div class="col-sm-8">{{ user.pays|default('N/A') }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Role:</strong></div>
+                                <div class="col-sm-8">
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">Administrator</span>
+                                    {% elseif user.role == 'coach' %}
+                                        <span class="badge bg-info">Coach</span>
+                                    {% else %}
+                                        <span class="badge bg-success">User</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Account Created:</strong></div>
+                                <div class="col-sm-8">{{ user.createdAt|date('F d, Y \\a\\t H:i') }}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Last Updated:</strong></div>
+                                <div class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('F d, Y \\a\\t H:i') : 'Never' }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        {% if user.id != app.user.id %}
+                        <div class="bg-light rounded p-4">
+                            <h5 class="mb-3"><i class="fa fa-cogs me-2"></i>Actions</h5>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fa fa-trash me-2"></i>Delete User
+                            </button>
+                        </div>
+
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Delete</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete user <strong>{{ user.prenom }} {{ user.nom }}</strong>?</p>
+                                        <p class="text-danger"><i class="fa fa-exclamation-triangle me-2"></i>This action cannot be undone!</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                                            <button type="submit" class="btn btn-danger">Delete User</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="bg-light rounded-top p-4">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                             Bekri Wellbeing Platform, All Rights Reserved.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('admin/js/main.js') }}"></script>
+</body>
+</html>

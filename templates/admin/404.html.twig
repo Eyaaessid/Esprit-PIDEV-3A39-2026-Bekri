@@ -47,7 +47,11 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
+                        {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
                         <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
@@ -118,7 +122,11 @@
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -128,7 +136,11 @@
                             <hr class="dropdown-divider">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -138,7 +150,11 @@
                             <hr class="dropdown-divider">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
-                                    <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                                    {% if app.user.avatar %}
+                        <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    {% endif %}
                                     <div class="ms-2">
                                         <h6 class="fw-normal mb-0">Jhon send you a message</h6>
                                         <small>15 minutes ago</small>
@@ -195,7 +211,7 @@
                 <i class="bi bi-exclamation-triangle display-1 text-primary"></i>
                 <h1 class="display-1 fw-bold">404</h1>
                 <h1 class="mb-4">Page Not Found</h1>
-                <p class="mb-4">We’re sorry, the page you have looked for does not exist in our website!
+                <p class="mb-4">Weâ€™re sorry, the page you have looked for does not exist in our website!
                     Maybe go to our home page or try to use a search?</p>
                 <a class="btn btn-primary rounded-pill py-3 px-5" href="{{ path('admin_dashboard') }}">Go Back To Home</a>
             </div>
@@ -207,7 +223,7 @@
                 <div class="bg-light rounded-top p-4">
                     <div class="row">
                         <div class="col-12 col-sm-6 text-center text-sm-start">
-                            © <a href="#">Your Site Name</a>, All Right Reserved.
+                            Â© <a href="#">Your Site Name</a>, All Right Reserved.
                         </div>
                         <div class="col-12 col-sm-6 text-center text-sm-end">
                             Designed By <a href="https://htmlcodex.com">HTML Codex</a>
