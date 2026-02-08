@@ -70,14 +70,29 @@
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
-            <a class="btn-getstarted" href="{{ path('appointment') }}">Appointment</a>
-            <!-- Admin link (visible during development) -->
-
-             <a class="btn btn-outline-danger ms-2" href="{{ path('admin_dashboard') }}">
-    <i class="bi bi-shield-lock-fill me-1"></i> Admin
-</a>
-        
-        </div>
+            {% if app.user %}
+                <!-- User is logged in -->
+                <div class="dropdown">
+                    <a class="btn-getstarted dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i> {{ app.user.nom }} {{ app.user.prenom }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <!-- User is not logged in -->
+                <a class="btn-getstarted" href="{{ path('app_login') }}">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                </a>
+            {% endif %}
     </header><!-- End Header -->
 
     <main class="main">
@@ -97,7 +112,7 @@
                         <p>A108 Adam Street</p>
                         <p>New York, NY 535022</p>
                         <p class="mt-3"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-                        <p><strong>Email:</strong> <span>info@example.com</span></p>
+                        <p><strong>Email:</strong> <span>info@medinest.com</span></p>
                     </div>
                     <div class="social-links d-flex mt-4">
                         <a href=""><i class="bi bi-twitter-x"></i></a>
@@ -181,7 +196,6 @@
     <!-- Main JS File -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
-    {% block javascripts %}{% endblock %}
-
 </body>
+
 </html>
