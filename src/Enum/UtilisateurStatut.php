@@ -4,6 +4,7 @@ namespace App\Enum;
 
 enum UtilisateurStatut: string
 {
+    case VIDE     = '';
     case ACTIF = 'ACTIF';
     case BLOQUE = 'bloque';
     case INACTIF = 'inactif';

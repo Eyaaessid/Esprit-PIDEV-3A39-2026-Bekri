@@ -70,19 +70,23 @@
                     <a href="{{ path('admin_profile') }}" class="nav-item nav-link">
                         <i class="fa fa-th me-2"></i>my profile
                     </a>
+                    
+                    
                     <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
                         <i class="fa fa-keyboard me-2"></i>users list
                     </a>
+                    
                     <a href="{{ path('admin_question_index') }}" class="nav-item nav-link">
                         <i class="fa fa-table me-2"></i>les question de suivi
                     </a>
-                    <a href="{{ path('admin_charts') }}" class="nav-item nav-link">
-                        <i class="fa fa-chart-bar me-2"></i>Charts
-                    </a>
+                    <a href="{{ path('admin_post_list') }}" class="nav-item nav-link">
+        <i class="fa fa-th me-2"></i>posts
+    </a>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="far fa-file-alt me-2"></i>Pages
                         </a>
+                        
                         <div class="dropdown-menu bg-transparent border-0 rounded-0 rounded-bottom m-0">
                             <a href="{{ path('app_login') }}" class="dropdown-item">Sign In</a>
                             <a href="{{ path('app_register') }}" class="dropdown-item">Sign Up</a>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}Admin Dashboard - Posts & Comments Management{% endblock %}</title>
+    <title>Posts Management - Admin Dashboard</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -61,41 +61,42 @@
         <!-- Sidebar Start -->
         <div class="sidebar pe-4 pb-3">
             <nav class="navbar bg-light navbar-light">
-                <a href="{{ path('admin_') }}" class="navbar-brand mx-4 mb-3">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand mx-4 mb-3">
                     <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% endif %}
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
-                        <h6 class="mb-0">Admin User</h6>
-                        <span>Administrator</span>
+                        <h6 class="mb-0">{{ app.user.nom }} {{ app.user.prenom }}</h6>
+                        <span>{{ app.user.role.label }}</span>
                     </div>
                 </div>
                 <div class="navbar-nav w-100">
-                    <a href="{{ path('admin_') }}" class="nav-item nav-link active">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link">
                         <i class="fa fa-tachometer-alt me-2"></i>Dashboard
                     </a>
-                    <a href="{{ path('admin_post_list') }}" class="nav-item nav-link">
+                    <a href="{{ path('admin_profile') }}" class="nav-item nav-link">
+                        <i class="fa fa-user me-2"></i>My Profile
+                    </a>
+                    <a href="{{ path('admin_post_list') }}" class="nav-item nav-link active">
                         <i class="fa fa-file-alt me-2"></i>Posts
                     </a>
                     <a href="{{ path('admin_comment_list') }}" class="nav-item nav-link">
                         <i class="fa fa-comments me-2"></i>Comments
                     </a>
-                    <a href="{{ path('admin_users') }}" class="nav-item nav-link">
-                        <i class="fa fa-users me-2"></i>Users
+                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
+                        <i class="fa fa-users me-2"></i>Users List
                     </a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="fa fa-cog me-2"></i>Settings
-                        </a>
-                        <div class="dropdown-menu bg-transparent border-0">
-                            <a href="{{ path('admin_settings_general') }}" class="dropdown-item">General</a>
-                            <a href="{{ path('admin_settings_security') }}" class="dropdown-item">Security</a>
-                        </div>
-                    </div>
+                    <a href="{{ path('admin_question_index') }}" class="nav-item nav-link">
+                        <i class="fa fa-table me-2"></i>Questions de Suivi
+                    </a>
                 </div>
             </nav>
         </div>
@@ -105,7 +106,7 @@
         <div class="content">
             <!-- Navbar Start -->
             <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
-                <a href="{{ path('admin_') }}" class="navbar-brand d-flex d-lg-none me-4">
+                <a href="{{ path('admin_dashboard') }}" class="navbar-brand d-flex d-lg-none me-4">
                     <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
                 </a>
                 <a href="#" class="sidebar-toggler flex-shrink-0">
@@ -135,71 +136,99 @@
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
-                            <span class="d-none d-lg-inline-flex">Admin</span>
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                            {% endif %}
+                            <span class="d-none d-lg-inline-flex">{{ app.user.nom }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="{{ path('admin_profile') }}" class="dropdown-item">My Profile</a>
-                            <a href="{{ path('admin_settings') }}" class="dropdown-item">Settings</a>
-                            <a href="{{ path('admin_logout') }}" class="dropdown-item">Log Out</a>
+                            <a href="#" class="dropdown-item">Settings</a>
+                            <a href="{{ path('app_logout') }}" class="dropdown-item">Log Out</a>
                         </div>
                     </div>
                 </div>
             </nav>
             <!-- Navbar End -->
 
-            <!-- Dashboard Header Start -->
+            <!-- Page Header -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="bg-light rounded p-4">
+                    <h4 class="mb-0">Posts Management</h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Posts</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
             <div class="container-fluid pt-4 px-4">
                 <div class="row g-4">
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-4">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa fa-file-alt fa-3x text-primary"></i>
                             <div class="ms-3">
                                 <p class="mb-2">Total Posts</p>
-                                <h6 class="mb-0">{{ posts|length }}</h6>
+                                <h6 class="mb-0">{{ totalPosts }}</h6>
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
-                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                            <i class="fa fa-comments fa-3x text-primary"></i>
-                            <div class="ms-3">
-                                <p class="mb-2">Total Comments</p>
-                                <h6 class="mb-0">{{ comments|length }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-4">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
                             <i class="fa fa-calendar fa-3x text-success"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Posts This Week</p>
-                                <h6 class="mb-0">{{ posts|filter(p => p.createdAt|date('U') > "now"|date_modify('-7 days')|date('U'))|length }}</h6>
+                                <p class="mb-2">Current Page</p>
+                                <h6 class="mb-0">Page {{ currentPage }} of {{ totalPages }}</h6>
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-4">
                         <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                            <i class="fa fa-heart fa-3x text-danger"></i>
+                            <i class="fa fa-list fa-3x text-info"></i>
                             <div class="ms-3">
-                                <p class="mb-2">Total Likes</p>
-                                <h6 class="mb-0">{{ posts|reduce((carry, p) => carry + p.likes|length, 0) }}</h6>
+                                <p class="mb-2">Showing</p>
+                                <h6 class="mb-0">{{ posts|length }} posts</h6>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Dashboard Header End -->
 
             <!-- Posts Table Start -->
             <div class="container-fluid pt-4 px-4">
                 <div class="bg-light text-center rounded p-4">
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">Posts Management</h6>
+                        <h6 class="mb-0">All Posts</h6>
                         <a href="{{ path('admin_post_create') }}" class="btn btn-sm btn-primary">
                             <i class="fa fa-plus me-2"></i>New Post
                         </a>
                     </div>
+                    
+                    <!-- Flash Messages -->
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fa fa-check-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fa fa-exclamation-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                    {% for message in app.flashes('info') %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fa fa-info-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+
                     <div class="table-responsive">
                         <table class="table text-start align-middle table-bordered table-hover mb-0">
                             <thead>
@@ -259,21 +288,29 @@
                     </div>
                     
                     <!-- Pagination -->
-                    {% if posts|length > 0 %}
+                    {% if totalPages > 1 %}
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div>
-                            Showing {{ posts|length }} posts
+                            Showing {{ posts|length }} of {{ totalPosts }} posts
                         </div>
                         <nav>
                             <ul class="pagination mb-0">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#">Previous</a>
+                                <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ currentPage > 1 ? path('admin_post_list', {page: currentPage - 1}) : '#' }}">Previous</a>
                                 </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Next</a>
+                                
+                                {% for i in 1..totalPages %}
+                                    {% if i == currentPage %}
+                                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                    {% elseif i == 1 or i == totalPages or (i >= currentPage - 2 and i <= currentPage + 2) %}
+                                        <li class="page-item"><a class="page-link" href="{{ path('admin_post_list', {page: i}) }}">{{ i }}</a></li>
+                                    {% elseif i == currentPage - 3 or i == currentPage + 3 %}
+                                        <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ currentPage < totalPages ? path('admin_post_list', {page: currentPage + 1}) : '#' }}">Next</a>
                                 </li>
                             </ul>
                         </nav>
@@ -282,113 +319,6 @@
                 </div>
             </div>
             <!-- Posts Table End -->
-
-            <!-- Comments Table Start -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="bg-light text-center rounded p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">Comments Management</h6>
-                        <div>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSelectedComments()">
-                                <i class="fa fa-trash me-2"></i>Delete Selected
-                            </button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table text-start align-middle table-bordered table-hover mb-0">
-                            <thead>
-                                <tr class="text-dark">
-                                    <th scope="col" style="width: 30px;">
-                                        <input type="checkbox" id="selectAllComments" onclick="toggleSelectAll(this)">
-                                    </th>
-                                    <th scope="col" style="width: 50px;">#</th>
-                                    <th scope="col">Comment</th>
-                                    <th scope="col" style="width: 150px;">Author</th>
-                                    <th scope="col" style="width: 200px;">Post</th>
-                                    <th scope="col" style="width: 100px;">Status</th>
-                                    <th scope="col" style="width: 120px;">Date</th>
-                                    <th scope="col" style="width: 180px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for comment in comments %}
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" class="comment-checkbox" value="{{ comment.id }}">
-                                    </td>
-                                    <td>{{ comment.id }}</td>
-                                    <td>
-                                        <div class="text-truncate-content" title="{{ comment.contenu }}">
-                                            {{ comment.contenu|striptags|slice(0, 100) }}{% if comment.contenu|length > 100 %}...{% endif %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {{ comment.utilisateur.nom ?? 'Anonymous' }}<br>
-                                        <small class="text-muted">{{ comment.utilisateur.email ?? '' }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="text-truncate-content" title="{{ comment.post.titre }}">
-                                            {{ comment.post.titre }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if comment.deletedAt is null %}
-                                            <span class="badge badge-status bg-success">Active</span>
-                                        {% else %}
-                                            <span class="badge badge-status bg-danger">Deleted</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ comment.createdAt|date('Y-m-d H:i') }}</td>
-                                    <td class="action-buttons">
-                                        <a href="{{ path('admin_comment_view', {id: comment.id}) }}" class="btn btn-sm btn-info" title="View">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('admin_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-primary" title="Edit">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-danger" 
-                                                onclick="deleteComment({{ comment.id }})" 
-                                                title="Delete">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                        No comments found
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if comments|length > 0 %}
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            Showing {{ comments|length }} comments
-                        </div>
-                        <nav>
-                            <ul class="pagination mb-0">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#">Previous</a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Next</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            <!-- Comments Table End -->
 
             <!-- Footer Start -->
             <div class="container-fluid pt-4 px-4">
@@ -430,10 +360,8 @@
         // Delete Post Function
         function deletePost(postId) {
             if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-                // Build the URL in JavaScript
                 const url = '/admin/posts/' + postId + '/delete';
                 
-                // AJAX call to delete post
                 fetch(url, {
                     method: 'DELETE',
                     headers: {
@@ -453,77 +381,6 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('An error occurred while deleting the post.');
-                });
-            }
-        }
-
-        // Delete Comment Function
-        function deleteComment(commentId) {
-            if (confirm('Are you sure you want to delete this comment?')) {
-                // Build the URL in JavaScript
-                const url = '/admin/comments/' + commentId + '/delete';
-                
-                // AJAX call to delete comment
-                fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Comment deleted successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error deleting comment: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the comment.');
-                });
-            }
-        }
-
-        // Toggle Select All Checkboxes
-        function toggleSelectAll(checkbox) {
-            const checkboxes = document.querySelectorAll('.comment-checkbox');
-            checkboxes.forEach(cb => cb.checked = checkbox.checked);
-        }
-
-        // Delete Selected Comments
-        function deleteSelectedComments() {
-            const selectedIds = Array.from(document.querySelectorAll('.comment-checkbox:checked'))
-                .map(cb => cb.value);
-            
-            if (selectedIds.length === 0) {
-                alert('Please select at least one comment to delete.');
-                return;
-            }
-
-            if (confirm(`Are you sure you want to delete ${selectedIds.length} comment(s)?`)) {
-                fetch('/admin/comments/bulk-delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ ids: selectedIds })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`${selectedIds.length} comment(s) deleted successfully!`);
-                        location.reload();
-                    } else {
-                        alert('Error deleting comments: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting comments.');
                 });
             }
         }
