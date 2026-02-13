@@ -15,7 +15,7 @@ class SuiviQuotidien
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'suivisQuotidiens')]
+    //#[ORM\ManyToOne(inversedBy: 'suivisQuotidiens')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 

@@ -24,3 +24,6 @@ services:
 
 parameters:
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
+
+    parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads/posts'

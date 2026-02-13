@@ -62,11 +62,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $resetToken = null;
+    //#[ORM\Column(length: 255, nullable: true)]
+    //private ?string $resetToken = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $resetTokenExpiresAt = null;
+    //#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+   // private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     /**
      * @var Collection<int, Post>
