@@ -61,6 +61,22 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            // ✅ VÉRIFIER SI L'EMAIL EXISTE DÉJÀ (AVANT persist)
+            $existingUser = $entityManager->getRepository(Utilisateur::class)
+                ->findOneBy(['email' => $user->getEmail()]);
+            
+            if ($existingUser) {
+                // ✅ Message user-friendly avec lien vers login
+                $this->addFlash('error', 'Cet email est déjà utilisé. Vous avez déjà un compte ? <a href="' . $this->generateUrl('app_login') . '" class="alert-link">Connectez-vous ici</a>.');
+                
+                // ✅ Retourner au formulaire (pré-rempli)
+                return $this->render('admin/signup.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
+            
+            // ✅ Email unique → continuer avec l'inscription
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
@@ -84,7 +100,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    // ==================== HELPER METHOD (UPDATED) ====================
+    // ==================== HELPER METHOD ====================
     private function getRedirectRouteByRole(): string
     {
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -95,7 +111,6 @@ class SecurityController extends AbstractController
             return 'home';
         }
 
-        // ←←← THIS IS WHAT YOU WANTED
         // Normal users (role USER) go to the public homepage
         return 'home';
     }
