@@ -11,8 +11,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
+#[UniqueEntity(
+    fields: ['email'],
+    message: 'Cet email est déjà utilisé par un autre compte.'
+)]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -21,36 +27,80 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    private string $nom;
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
-    private string $prenom;
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    private ?string $prenom = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    private string $email;
+    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
+    #[Assert\Email(message: 'L\'adresse email "{{ value }}" n\'est pas valide.')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    private string $motDePasse;
+    private ?string $motDePasse = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Length(
+        min: 8,
+        max: 20,
+        minMessage: 'Le numéro de téléphone doit contenir au moins {{ limit }} chiffres.',
+        maxMessage: 'Le numéro de téléphone ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[+]?[0-9\s\-()]+$/',
+        message: 'Le numéro de téléphone n\'est pas valide. Utilisez uniquement des chiffres, espaces, +, - ou ().'
+    )]
     private ?string $telephone = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private \DateTimeInterface $dateNaissance;
-
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $pays = 'Tunisie';
+    #[Assert\NotBlank(message: 'La date de naissance est obligatoire.')]
+    #[Assert\LessThan(
+        value: '-13 years',
+        message: 'Vous devez avoir au moins 13 ans pour vous inscrire.'
+    )]
+    #[Assert\GreaterThan(
+        value: '-120 years',
+        message: 'La date de naissance n\'est pas valide.'
+    )]
+    private ?\DateTimeInterface $dateNaissance = null;
 
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $avatar = null;
 
     #[ORM\Column(length: 50, enumType: UtilisateurRole::class)]
+    #[Assert\NotNull(message: 'Le rôle est obligatoire.')]
     private UtilisateurRole $role = UtilisateurRole::USER;
 
     #[ORM\Column(length: 50, enumType: UtilisateurStatut::class)]
+    #[Assert\NotNull(message: 'Le statut est obligatoire.')]
     private UtilisateurStatut $statut = UtilisateurStatut::ACTIF;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: 'Le score initial doit être un nombre positif.')]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'Le score initial doit être entre {{ min }} et {{ max }}.'
+    )]
     private ?int $scoreInitial = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -61,12 +111,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
-
-    //#[ORM\Column(length: 255, nullable: true)]
-    //private ?string $resetToken = null;
-
-    //#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-   // private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
     /**
      * @var Collection<int, Post>
@@ -179,45 +223,45 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getNom(): string
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): static
+    public function setNom(?string $nom): static
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getPrenom(): string
+    public function getPrenom(): ?string
     {
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): static
+    public function setPrenom(?string $prenom): static
     {
         $this->prenom = $prenom;
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(?string $email): static
     {
         $this->email = $email;
         return $this;
     }
 
-    public function getMotDePasse(): string
+    public function getMotDePasse(): ?string
     {
         return $this->motDePasse;
     }
 
-    public function setMotDePasse(string $motDePasse): static
+    public function setMotDePasse(?string $motDePasse): static
     {
         $this->motDePasse = $motDePasse;
         return $this;
@@ -234,25 +278,14 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDateNaissance(): \DateTimeInterface
+    public function getDateNaissance(): ?\DateTimeInterface
     {
         return $this->dateNaissance;
     }
 
-    public function setDateNaissance(\DateTimeInterface $dateNaissance): static
+    public function setDateNaissance(?\DateTimeInterface $dateNaissance): static
     {
         $this->dateNaissance = $dateNaissance;
-        return $this;
-    }
-
-    public function getPays(): ?string
-    {
-        return $this->pays;
-    }
-
-    public function setPays(?string $pays): static
-    {
-        $this->pays = $pays;
         return $this;
     }
 
@@ -330,28 +363,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-        return $this;
-    }
-
-    public function getResetToken(): ?string
-    {
-        return $this->resetToken;
-    }
-
-    public function setResetToken(?string $resetToken): static
-    {
-        $this->resetToken = $resetToken;
-        return $this;
-    }
-
-    public function getResetTokenExpiresAt(): ?\DateTimeInterface
-    {
-        return $this->resetTokenExpiresAt;
-    }
-
-    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
-    {
-        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
     }
 

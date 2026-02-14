@@ -20,6 +20,8 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Regex;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_ADMIN')]
@@ -179,63 +181,143 @@ class AdminController extends AbstractController
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
+        $originalEmail = $user->getEmail();
 
-        $form = $this->createFormBuilder($user)
-            ->add('nom', TextType::class, ['label' => 'Last Name'])
-            ->add('prenom', TextType::class, ['label' => 'First Name'])
-            ->add('email', EmailType::class, ['label' => 'Email'])
+        $form = $this->createFormBuilder($user, [
+                'validation_groups' => false, // Disable entity validation, only use form field constraints
+            ])
+            ->add('prenom', TextType::class, [
+                'label' => 'First Name',
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Enter your first name']
+            ])
+            ->add('nom', TextType::class, [
+                'label' => 'Last Name',
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Enter your last name']
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email',
+                'attr' => ['class' => 'form-control', 'placeholder' => 'your.email@example.com']
+            ])
             ->add('avatarFile', FileType::class, [
                 'label' => 'Profile Picture',
                 'mapped' => false,
                 'required' => false,
+                'attr' => ['class' => 'form-control', 'accept' => 'image/*'],
                 'constraints' => [
-                    new File(['maxSize' => '2M', 'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif']])
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+                        'mimeTypesMessage' => 'Please upload a valid image (JPG, PNG, GIF, or WebP)'
+                    ])
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'mapped' => false,
                 'required' => false,
-                'first_options' => ['label' => 'New Password'],
-                'second_options' => ['label' => 'Confirm Password'],
+                'first_options' => [
+                    'label' => 'New Password',
+                    'attr' => ['class' => 'form-control', 'placeholder' => 'Leave blank to keep current password']
+                ],
+                'second_options' => [
+                    'label' => 'Confirm New Password',
+                    'attr' => ['class' => 'form-control', 'placeholder' => 'Repeat the new password']
+                ],
+                'invalid_message' => 'The password fields must match.',
+                'constraints' => [
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Password must be at least {{ limit }} characters long',
+                        'max' => 4096,
+                    ]),
+                    new Regex([
+                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                        'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
+                    ]),
+                ],
             ])
             ->getForm();
 
         $form->handleRequest($request);
+        
+        // DEBUG - Visible on page
+        $debugInfo = [];
+        if ($form->isSubmitted()) {
+            $debugInfo['submitted'] = 'YES';
+            $debugInfo['valid'] = $form->isValid() ? 'YES' : 'NO';
+            $avatarFile = $form->get('avatarFile')->getData();
+            $debugInfo['avatar'] = $avatarFile ? $avatarFile->getClientOriginalName() : 'NO FILE';
+            
+            if (!$form->isValid()) {
+                $errors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $errors[] = $error->getMessage();
+                }
+                $debugInfo['errors'] = $errors;
+            }
+            
+            $this->addFlash('warning', 'DEBUG: ' . json_encode($debugInfo));
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('plainPassword')->getData();
-            if ($plainPassword) {
-                $user->setMotDePasse($passwordHasher->hashPassword($user, $plainPassword));
+            // Check if email changed and if it's already taken by another user
+            $newEmail = $form->get('email')->getData();
+            if ($newEmail !== $originalEmail) {
+                $existingUser = $entityManager->getRepository(Utilisateur::class)
+                    ->findOneBy(['email' => $newEmail]);
+                
+                if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    $this->addFlash('error', 'This email is already in use by another account.');
+                    return $this->render('admin/profile_edit.html.twig', [
+                        'user' => $user,
+                        'form' => $form,
+                    ]);
+                }
             }
 
+            // Handle password change
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $user->setPassword(
+                    $passwordHasher->hashPassword($user, $plainPassword)
+                );
+            }
+
+            // Handle avatar upload
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
                 $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $avatarFile->guessExtension();
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$avatarFile->guessExtension();
 
                 try {
                     $avatarsDirectory = $this->getParameter('avatars_directory');
                     $avatarFile->move($avatarsDirectory, $newFilename);
-
+                    
                     if ($user->getAvatar()) {
-                        $oldPath = $avatarsDirectory . '/' . $user->getAvatar();
-                        if (file_exists($oldPath)) {
-                            unlink($oldPath);
+                        $oldAvatarPath = $avatarsDirectory.'/'.$user->getAvatar();
+                        if (file_exists($oldAvatarPath)) {
+                            unlink($oldAvatarPath);
                         }
                     }
-
+                    
                     $user->setAvatar($newFilename);
+                    $this->addFlash('success', 'Avatar uploaded successfully!');
+                    
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload avatar.');
+                    $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
                 }
             }
 
             $user->setUpdatedAt(new \DateTime());
-            $entityManager->flush();
+            
+            try {
+                $entityManager->flush();
+                $this->addFlash('success', 'Your profile has been updated successfully!');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Failed to save profile: ' . $e->getMessage());
+            }
 
-            $this->addFlash('success', 'Profile updated successfully!');
             return $this->redirectToRoute('admin_profile');
         }
 

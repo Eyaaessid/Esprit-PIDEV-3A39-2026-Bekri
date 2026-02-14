@@ -106,6 +106,7 @@
             font-weight: 700;
             box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
             flex-shrink: 0;
+            overflow: hidden;
         }
         
         .avatar-circle img {
@@ -148,6 +149,26 @@
             color: #94a3b8;
         }
         
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            z-index: 10;
+        }
+        
+        .toggle-password:hover {
+            color: #20b2aa;
+        }
+        
         .password-notice {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border-left: 4px solid #f59e0b;
@@ -168,6 +189,34 @@
         .password-notice i {
             color: #f59e0b;
             font-size: 1rem;
+        }
+        
+        .password-requirements {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+        
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            list-style: none;
+        }
+        
+        .password-requirements li {
+            position: relative;
+            padding-left: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .password-requirements li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #20b2aa;
         }
         
         .form-actions {
@@ -260,10 +309,25 @@
             background: #f0fdfa;
         }
         
+        .file-info {
+            margin-top: 0.75rem;
+        }
+        
         .file-name {
             color: #64748b;
             font-size: 0.875rem;
+        }
+        
+        .file-name.selected {
+            color: #20b2aa;
+            font-weight: 500;
+        }
+        
+        .invalid-feedback {
+            display: block;
             margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #ef4444;
         }
     </style>
 </head>
@@ -361,8 +425,15 @@
                         <span>{{ message }}</span>
                     </div>
                 {% endfor %}
+                
+                {% for message in app.flashes('warning') %}
+                    <div class="alert" style="background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>{{ message|raw }}</span>
+                    </div>
+                {% endfor %}
 
-                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm'}}) }}
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm', 'onsubmit': 'console.log("Form submitting..."); return true;'}}) }}
 
                 <!-- Profile Picture Card -->
                 <div class="card-section">
@@ -383,8 +454,11 @@
                                 <i class="bi bi-upload me-2"></i>Choose File
                             </label>
                             {{ form_widget(form.avatarFile, {'attr': {'class': 'custom-file-input'}}) }}
-                            <p class="file-name mb-0 mt-2" id="fileName">No file chosen</p>
-                            <small class="text-muted d-block mt-1">JPG, PNG or GIF. Max size 2MB</small>
+                            <div class="file-info">
+                                <p class="file-name mb-0" id="fileName">No file chosen</p>
+                                <small class="text-muted d-block mt-1">JPG, PNG or GIF. Max size 2MB</small>
+                            </div>
+                            {{ form_errors(form.avatarFile) }}
                         </div>
                     </div>
                 </div>
@@ -417,15 +491,36 @@
                     <div class="password-notice">
                         <p>
                             <i class="bi bi-info-circle-fill"></i>
-                            <strong>Leave blank to keep your current password.</strong> Password must be at least 6 characters.
+                            <strong>Leave blank to keep your current password.</strong>
                         </p>
                     </div>
+                    
+                    <div class="password-requirements mb-4">
+                        <strong class="d-block mb-2" style="color: #1e293b;">Password Requirements:</strong>
+                        <ul>
+                            <li>Minimum 6 characters</li>
+                            <li>At least one uppercase letter (A-Z)</li>
+                            <li>At least one lowercase letter (a-z)</li>
+                            <li>At least one number (0-9)</li>
+                        </ul>
+                    </div>
+                    
                     <div class="row g-4">
                         <div class="col-md-6">
-                            {{ form_row(form.plainPassword.first) }}
+                            <div class="password-wrapper">
+                                {{ form_label(form.plainPassword.first) }}
+                                {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
+                                <i class="bi bi-eye toggle-password" data-target="password-first"></i>
+                                {{ form_errors(form.plainPassword.first) }}
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            {{ form_row(form.plainPassword.second) }}
+                            <div class="password-wrapper">
+                                {{ form_label(form.plainPassword.second) }}
+                                {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
+                                <i class="bi bi-eye toggle-password" data-target="password-second"></i>
+                                {{ form_errors(form.plainPassword.second) }}
+                            </div>
                         </div>
                     </div>
                     
@@ -434,14 +529,14 @@
                             <i class="bi bi-x-circle"></i>
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-save">
+                        <button type="submit" class="btn btn-save" onclick="console.log('Button clicked');">
                             <i class="bi bi-check-circle"></i>
                             Save Changes
                         </button>
                     </div>
-                </div>
 
                 {{ form_end(form) }}
+                </div>
             </div>
 
             <!-- Footer -->
@@ -462,21 +557,40 @@
     <script src="{{ asset('admin/js/main.js') }}"></script>
     
     <script>
-    // File input preview and name display
     document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.querySelector('input[type="file"][name*="avatarFile"]');
+        // File input preview and name display
+        const fileInput = document.querySelector('input[name="form[avatarFile]"]');
         const fileName = document.getElementById('fileName');
         const avatarPreview = document.getElementById('avatarPreview');
         
-        if (fileInput) {
+        console.log('File input:', fileInput); // Debug
+        console.log('File name element:', fileName); // Debug
+        
+        if (fileInput && fileName && avatarPreview) {
             fileInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 
+                console.log('File selected:', file); // Debug
+                
                 if (file) {
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please select a valid image file (JPG, PNG, GIF, or WebP)');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    // Validate file size (2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('File size must be less than 2MB');
+                        fileInput.value = '';
+                        return;
+                    }
+                    
                     // Update file name display
                     fileName.textContent = file.name;
-                    fileName.style.color = '#20b2aa';
-                    fileName.style.fontWeight = '500';
+                    fileName.classList.add('selected');
                     
                     // Preview image
                     const reader = new FileReader();
@@ -486,11 +600,31 @@
                     reader.readAsDataURL(file);
                 } else {
                     fileName.textContent = 'No file chosen';
-                    fileName.style.color = '#64748b';
-                    fileName.style.fontWeight = 'normal';
+                    fileName.classList.remove('selected');
                 }
             });
+        } else {
+            console.error('Missing elements:', { fileInput, fileName, avatarPreview });
         }
+        
+        // Password toggle functionality
+        const passwordToggles = document.querySelectorAll('.toggle-password');
+        
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const passwordField = this.previousElementSibling;
+                
+                if (passwordField && passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    this.classList.remove('bi-eye');
+                    this.classList.add('bi-eye-slash');
+                } else if (passwordField) {
+                    passwordField.type = 'password';
+                    this.classList.remove('bi-eye-slash');
+                    this.classList.add('bi-eye');
+                }
+            });
+        });
     });
     </script>
 </body>

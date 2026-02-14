@@ -87,21 +87,12 @@
                         </div>
                     </div>
                     <hr>
-                    <div class="row mb-3">
+                    <div class="row">
                         <div class="col-sm-4">
                             <strong>Date of Birth:</strong>
                         </div>
                         <div class="col-sm-8">
                             {{ user.dateNaissance ? user.dateNaissance|date('F d, Y') : 'Not provided' }}
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <strong>Country:</strong>
-                        </div>
-                        <div class="col-sm-8">
-                            {{ user.pays ?? 'Not specified' }}
                         </div>
                     </div>
                 </div>

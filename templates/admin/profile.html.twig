@@ -11,7 +11,7 @@
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -22,6 +22,57 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #009CFF;
+            box-shadow: 0 4px 12px rgba(0, 156, 255, 0.25);
+        }
+        
+        .profile-initials {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .info-row {
+            padding: 0.75rem 0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .info-value {
+            color: #1e293b;
+        }
+        
+        .edit-profile-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .edit-profile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+    </style>
 </head>
 <body>
     <div class="container-xxl position-relative bg-white d-flex p-0">
@@ -48,6 +99,9 @@
                 <div class="navbar-nav w-100">
                     <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link">
                         <i class="fa fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
+                        <i class="fa fa-users me-2"></i>Users
                     </a>
                     <a href="{{ path('admin_profile') }}" class="nav-item nav-link active">
                         <i class="fa fa-user me-2"></i>My Profile
@@ -90,6 +144,15 @@
 
             <!-- Profile Content -->
             <div class="container-fluid pt-4 px-4">
+                <!-- Flash Messages -->
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+                
                 <div class="row g-4">
                     <!-- Profile Card -->
                     <div class="col-lg-4">
@@ -98,23 +161,21 @@
                                 {% if user.avatar %}
                                     <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" 
                                          alt="{{ user.prenom }}" 
-                                         class="rounded-circle mb-3"
-                                         style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #009CFF;">
+                                         class="profile-avatar mb-3">
                                 {% else %}
-                                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
-                                         style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                        <i class="fa fa-shield-alt text-white" style="font-size: 60px;"></i>
+                                    <div class="profile-initials mx-auto mb-3">
+                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
                                     </div>
                                 {% endif %}
                                 
                                 <h4 class="mb-1">{{ user.nom }} {{ user.prenom }}</h4>
                                 <p class="text-muted mb-3">{{ user.email }}</p>
-                                <span class="badge bg-danger">System Administrator</span>
+                                <span class="badge bg-danger">{{ user.role.getLabel() }}</span>
                             </div>
                             
                             <hr class="my-4">
                             
-                            <a href="{{ path('admin_profile_edit') }}" class="btn btn-primary w-100">
+                            <a href="{{ path('admin_profile_edit') }}" class="btn btn-primary w-100 edit-profile-btn">
                                 <i class="fa fa-edit me-2"></i>Edit Profile
                             </a>
                         </div>
@@ -123,31 +184,63 @@
                     <!-- Profile Information -->
                     <div class="col-lg-8">
                         <div class="bg-light rounded p-4 mb-4">
-                            <h5 class="mb-4"><i class="fa fa-user me-2"></i>Administrator Information</h5>
-                            <div class="row mb-3">
-                                <div class="col-sm-4"><strong>First Name:</strong></div>
-                                <div class="col-sm-8">{{ user.prenom }}</div>
+                            <h5 class="mb-4">
+                                <i class="fa fa-user me-2 text-primary"></i>
+                                Personal Information
+                            </h5>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">First Name:</div>
+                                <div class="col-sm-8 info-value">{{ user.prenom }}</div>
                             </div>
                             <hr>
-                            <div class="row mb-3">
-                                <div class="col-sm-4"><strong>Last Name:</strong></div>
-                                <div class="col-sm-8">{{ user.nom }}</div>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Last Name:</div>
+                                <div class="col-sm-8 info-value">{{ user.nom }}</div>
                             </div>
                             <hr>
-                            <div class="row mb-3">
-                                <div class="col-sm-4"><strong>Email:</strong></div>
-                                <div class="col-sm-8">{{ user.email }}</div>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Email:</div>
+                                <div class="col-sm-8 info-value">{{ user.email }}</div>
                             </div>
                             <hr>
-                            <div class="row mb-3">
-                                <div class="col-sm-4"><strong>Role:</strong></div>
-                                <div class="col-sm-8"><span class="badge bg-danger">Administrator</span></div>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Role:</div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-danger">{{ user.role.getLabel() }}</span>
+                                </div>
                             </div>
                             <hr>
-                            <div class="row">
-                                <div class="col-sm-4"><strong>Account Created:</strong></div>
-                                <div class="col-sm-8">{{ user.createdAt|date('F d, Y') }}</div>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Status:</div>
+                                <div class="col-sm-8">
+                                    {% if user.statut.value == 'actif' %}
+                                        <span class="badge bg-success">{{ user.statut.getLabel() }}</span>
+                                    {% elseif user.statut.value == 'bloque' %}
+                                        <span class="badge bg-danger">{{ user.statut.getLabel() }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ user.statut.getLabel() }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
+                            <hr>
+                            
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Account Created:</div>
+                                <div class="col-sm-8 info-value">{{ user.createdAt|date('F d, Y') }}</div>
+                            </div>
+                            
+                            {% if user.updatedAt %}
+                            <hr>
+                            <div class="info-row row">
+                                <div class="col-sm-4 info-label">Last Updated:</div>
+                                <div class="col-sm-8 info-value">{{ user.updatedAt|date('F d, Y') }}</div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

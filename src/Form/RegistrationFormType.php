@@ -15,6 +15,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -24,7 +26,13 @@ class RegistrationFormType extends AbstractType
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer votre nom']),
+                    new NotBlank(['message' => 'Le nom est obligatoire.']),
+                    new Length([
+                        'min' => 2,
+                        'max' => 100,
+                        'minMessage' => 'Le nom doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+                    ]),
                 ],
                 'attr' => [
                     'class' => 'form-input',
@@ -34,7 +42,13 @@ class RegistrationFormType extends AbstractType
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer votre prénom']),
+                    new NotBlank(['message' => 'Le prénom est obligatoire.']),
+                    new Length([
+                        'min' => 2,
+                        'max' => 100,
+                        'minMessage' => 'Le prénom doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le prénom ne peut pas dépasser {{ limit }} caractères.'
+                    ]),
                 ],
                 'attr' => [
                     'class' => 'form-input',
@@ -44,7 +58,8 @@ class RegistrationFormType extends AbstractType
             ->add('email', EmailType::class, [
                 'label' => 'Adresse email',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer votre email']),
+                    new NotBlank(['message' => 'L\'email est obligatoire.']),
+                    new Email(['message' => 'L\'adresse email "{{ value }}" n\'est pas valide.']),
                 ],
                 'attr' => [
                     'class' => 'form-input',
@@ -54,6 +69,18 @@ class RegistrationFormType extends AbstractType
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
+                'constraints' => [
+                    new Length([
+                        'min' => 8,
+                        'max' => 20,
+                        'minMessage' => 'Le numéro de téléphone doit contenir au moins {{ limit }} chiffres.',
+                        'maxMessage' => 'Le numéro de téléphone ne peut pas dépasser {{ limit }} caractères.'
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[+]?[0-9\s\-()]+$/',
+                        'message' => 'Le numéro de téléphone n\'est pas valide. Utilisez uniquement des chiffres, espaces, +, - ou ().'
+                    ]),
+                ],
                 'attr' => [
                     'class' => 'form-input',
                     'placeholder' => '+216 XX XXX XXX'
@@ -63,10 +90,11 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Date de naissance',
                 'widget' => 'single_text',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer votre date de naissance']),
+                    new NotBlank(['message' => 'La date de naissance est obligatoire.']),
                 ],
                 'attr' => [
                     'class' => 'form-input',
+                    'max' => (new \DateTime('-13 years'))->format('Y-m-d'),
                 ]
             ])
             ->add('plainPassword', RepeatedType::class, [
@@ -88,11 +116,15 @@ class RegistrationFormType extends AbstractType
                 ],
                 'invalid_message' => 'Les mots de passe doivent correspondre.',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer un mot de passe']),
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire.']),
                     new Length([
                         'min' => 6,
-                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères',
                         'max' => 4096,
+                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                        'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.'
                     ]),
                 ],
             ])
@@ -101,7 +133,7 @@ class RegistrationFormType extends AbstractType
                 'label' => 'J\'accepte les conditions d\'utilisation',
                 'constraints' => [
                     new IsTrue([
-                        'message' => 'Vous devez accepter les conditions d\'utilisation.',
+                        'message' => 'Vous devez accepter les conditions d\'utilisation pour continuer.',
                     ]),
                 ],
                 'attr' => [
@@ -114,8 +146,6 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Utilisateur::class,
-            // This tells Symfony to ONLY include the fields we explicitly added above
-            'fields' => ['nom', 'prenom', 'email', 'telephone', 'dateNaissance']
         ]);
     }
 }
