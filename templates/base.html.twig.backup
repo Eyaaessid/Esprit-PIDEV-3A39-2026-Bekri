@@ -605,6 +605,5 @@
 
     {% block scripts_extra %}{% endblock %}
 
-    {% block javascripts %}{% endblock %}
 </body>
 </html>

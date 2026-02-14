@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Post;
+use App\Entity\Like;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,9 +13,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
+#[Route('/posts')]
 class PostController extends AbstractController
 {
-    #[Route('/posts', name: 'posts_list', methods: ['GET'])]
+    #[Route('', name: 'posts_list', methods: ['GET'])]
     public function index(PostRepository $postRepository): Response
     {
         $posts = $postRepository->findBy(

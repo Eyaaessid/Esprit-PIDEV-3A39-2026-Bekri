@@ -37,68 +37,57 @@ coach_profile_edit:
     controller: App\Controller\CoachController::profileEdit
     methods: [GET, POST]
 
-
-
- 
-
+# Comment Routes
 comment_create:
     path: /comments/create/{postId}
     controller: App\Controller\CommentController::create
     methods: POST
+
 comment_delete:
     path: /comments/{id}/delete
     controller: App\Controller\CommentController::delete
     methods: POST
+
 comment_edit:
     path: /comments/{id}/edit
     controller: App\Controller\CommentController::edit
     methods: POST
 
-
-
-
+# Post Routes (Front-End) - FIXED WITH /posts PREFIX
 posts_list:
     path: /posts
     controller: App\Controller\PostController::index
     methods: GET
 
 post_create:
-    path: /create
+    path: /posts/create
     controller: App\Controller\PostController::create
     methods: POST
 
 post_details:
-    path: /{id}
+    path: /posts/{id}
     controller: App\Controller\PostController::show
     methods: GET
     requirements:
         id: '\d+'
 
 post_edit:
-    path: /{id}/edit
+    path: /posts/{id}/edit
     controller: App\Controller\PostController::edit
     methods: POST
     requirements:
         id: '\d+'
 
 post_delete:
-    path: /{id}/delete
+    path: /posts/{id}/delete
     controller: App\Controller\PostController::delete
     methods: POST
     requirements:
         id: '\d+'
 
 post_like:
-    path: /{id}/like
+    path: /posts/{id}/like
     controller: App\Controller\PostController::like
     methods: POST
     requirements:
         id: '\d+'
-
-  
-
-
-
-
-
-   

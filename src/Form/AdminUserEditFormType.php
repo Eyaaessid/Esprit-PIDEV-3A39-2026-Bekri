@@ -24,7 +24,7 @@ class AdminUserEditFormType extends AbstractType
                     'Administrator' => UtilisateurRole::ADMIN,
                 ],
                 'choice_label' => function (UtilisateurRole $role) {
-                    return $role->label();
+                    return $role->getLabel();
                 },
             ])
             ->add('statut', ChoiceType::class, [
@@ -36,7 +36,7 @@ class AdminUserEditFormType extends AbstractType
                     'Inactive' => UtilisateurStatut::INACTIF,
                 ],
                 'choice_label' => function (UtilisateurStatut $statut) {
-                    return $statut->label();
+                    return $statut->getLabel();
                 },
             ]);
     }
