@@ -2,6 +2,8 @@
 
 namespace App\Security;
 
+use App\Entity\Utilisateur;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -10,16 +12,19 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
 
 class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
-    private UrlGeneratorInterface $urlGenerator;
-
-    public function __construct(UrlGeneratorInterface $urlGenerator)
-    {
-        $this->urlGenerator = $urlGenerator;
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private EntityManagerInterface $entityManager
+    ) {
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
     {
         $user = $token->getUser();
+        if ($user instanceof Utilisateur) {
+            $user->setLastLoginAt(new \DateTime());
+            $this->entityManager->flush();
+        }
         $roles = $user->getRoles();
 
         if (in_array('ROLE_ADMIN', $roles)) {

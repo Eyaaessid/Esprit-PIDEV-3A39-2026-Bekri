@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Enum\UtilisateurStatut;
 use App\Form\UserProfileType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -116,5 +117,32 @@ class UserController extends AbstractController
             'user' => $user,
             'form' => $form,
         ]);
+    }
+
+    /**
+     * User self-deactivation: set INACTIF, deactivated_by=user, then logout.
+     */
+    #[Route('/profile/deactivate', name: 'profile_deactivate', methods: ['POST'])]
+    public function deactivateAccount(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            return $this->redirectToRoute('user_profile');
+        }
+
+        if (!$this->isCsrfTokenValid('deactivate-account', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('user_profile');
+        }
+
+        $user->setStatut(UtilisateurStatut::INACTIF);
+        $user->setDeactivatedAt(new \DateTime());
+        $user->setDeactivatedBy('user');
+        $user->setUpdatedAt(new \DateTime());
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Votre compte a été désactivé. Vous pouvez le réactiver à tout moment en vous connectant et en suivant le lien envoyé par email.');
+        return $this->redirectToRoute('app_logout');
     }
 }

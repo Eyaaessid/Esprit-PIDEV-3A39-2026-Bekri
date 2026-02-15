@@ -77,6 +77,9 @@
                     <a href="{{ path('admin_users_list') }}" class="nav-item nav-link active">
                         <i class="fa fa-users me-2"></i>Users
                     </a>
+                    <a href="{{ path('admin_reactivation_requests') }}" class="nav-item nav-link">
+                        <i class="fa fa-user-check me-2"></i>Reactivation Requests
+                    </a>
                     <a href="{{ path('admin_profile') }}" class="nav-item nav-link">
                         <i class="fa fa-user me-2"></i>My Profile
                     </a>
@@ -262,6 +265,7 @@
                                     </th>
                                     <th scope="col">Role</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Deactivated</th>
                                     <th scope="col">
                                         <a href="{{ path('admin_users_list', {'search': search, 'role': roleFilter, 'status': statusFilter|default(''), 'sort': 'createdAt', 'order': (sortBy|default('createdAt') == 'createdAt' and sortOrder|default('DESC') == 'ASC') ? 'DESC' : 'ASC'}) }}" 
                                            class="text-decoration-none text-dark" style="cursor: pointer;">
@@ -306,6 +310,16 @@
                                             <span class="badge bg-warning">Inactive</span>
                                         {% else %}
                                             <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if userItem.deactivatedAt %}
+                                            <small>{{ userItem.deactivatedAt|date('Y-m-d') }}</small>
+                                            {% if userItem.deactivatedBy %}
+                                                <br><span class="badge bg-secondary">{{ userItem.deactivatedBy }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            —
                                         {% endif %}
                                     </td>
                                     <td>{{ userItem.createdAt|date('M d, Y') }}</td>

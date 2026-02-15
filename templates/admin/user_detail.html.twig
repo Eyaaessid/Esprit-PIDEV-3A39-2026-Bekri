@@ -162,6 +162,17 @@
                             </div>
                             <hr>
                             <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Status:</strong></div>
+                                <div class="col-sm-8">
+                                    {{ user.statut.getLabel() }}
+                                    {% if user.deactivatedAt %}
+                                        <br><small class="text-muted">Deactivated {{ user.deactivatedAt|date('Y-m-d') }}
+                                        {% if user.deactivatedBy %}(by {{ user.deactivatedBy }}){% endif %}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
                                 <div class="col-sm-4"><strong>Account Created:</strong></div>
                                 <div class="col-sm-8">{{ user.createdAt|date('F d, Y \\a\\t H:i') }}</div>
                             </div>
@@ -171,6 +182,17 @@
                                 <div class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('F d, Y \\a\\t H:i') : 'Never' }}</div>
                             </div>
                         </div>
+
+                        <!-- Reactivate button for admin-deactivated users -->
+                        {% if user.statut.value == 'inactif' and user.deactivatedBy == 'admin' and user.id != app.user.id %}
+                        <div class="bg-light rounded p-4 mb-4">
+                            <form method="post" action="{{ path('admin_user_reactivate', {id: user.id}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('reactivate-user-' ~ user.id) }}">
+                                <button type="submit" class="btn btn-success"><i class="fa fa-user-check me-2"></i>Reactivate Account</button>
+                            </form>
+                            <p class="text-muted small mt-2 mb-0">Or edit the user and set status to Active.</p>
+                        </div>
+                        {% endif %}
 
                         <!-- Actions -->
                         {% if user.id != app.user.id %}

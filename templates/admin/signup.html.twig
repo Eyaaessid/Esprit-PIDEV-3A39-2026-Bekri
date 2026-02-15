@@ -404,6 +404,114 @@
             }
         }
 
+        .captcha-honeypot {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .captcha-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .captcha-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        .captcha-modal-content {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 440px;
+            width: 100%;
+            animation: modalSlideIn 0.3s ease-out;
+            overflow: hidden;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .captcha-modal-header {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        .captcha-modal-header i { font-size: 32px; display: block; margin-bottom: 10px; }
+        .captcha-modal-header h5 { margin: 0; font-size: 18px; font-weight: 600; }
+        .captcha-modal-body { padding: 28px; }
+        .captcha-modal-body .captcha-question {
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            color: white;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .captcha-input-group { margin-top: 8px; }
+        .captcha-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .captcha-input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #e8eef1;
+            border-radius: 10px;
+        }
+        .captcha-input-group input:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+        }
+        .captcha-modal-footer {
+            padding: 20px 28px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .captcha-modal-footer .btn-modal {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        .captcha-modal-footer .btn-modal-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .captcha-modal-footer .btn-modal-primary {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: white;
+        }
+
         @media (max-width: 576px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -624,7 +732,11 @@
                 </div>
             {% endif %}
 
-            <button type="submit" class="btn-signup">
+            {# Invisible honeypot + timestamp #}
+            <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="captcha-honeypot" aria-hidden="true">
+            <input type="hidden" name="form_timestamp" value="{{ 'now'|date('U') }}">
+
+            <button type="submit" class="btn-signup" id="signup-submit-btn">
                 <i class="fas fa-user-plus"></i>
                 <span>Créer mon compte</span>
             </button>
@@ -633,6 +745,30 @@
                 Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
             </div>
         {{ form_end(registrationForm) }}
+    </div>
+
+    <!-- CAPTCHA Modal -->
+    <div id="captcha-modal" class="captcha-modal" style="display: none;">
+        <div class="captcha-modal-overlay" onclick="closeCaptchaModal()"></div>
+        <div class="captcha-modal-content">
+            <div class="captcha-modal-header">
+                <i class="fas fa-shield-alt"></i>
+                <h5>Vérification de sécurité</h5>
+            </div>
+            <div class="captcha-modal-body">
+                <div class="captcha-question">
+                    <span id="captcha-question-text"></span>
+                </div>
+                <div class="captcha-input-group">
+                    <label for="captcha-modal-input">Votre réponse <span class="required-star">*</span></label>
+                    <input type="number" id="captcha-modal-input" class="form-input" placeholder="?" min="0" step="1" autocomplete="off">
+                </div>
+            </div>
+            <div class="captcha-modal-footer">
+                <button type="button" class="btn-modal btn-modal-secondary" onclick="closeCaptchaModal()">Annuler</button>
+                <button type="button" class="btn-modal btn-modal-primary" onclick="submitCaptchaAndSignup()">Vérifier et créer mon compte</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -704,6 +840,58 @@
                 }
             });
         }
+
+        var signupCaptchaVerified = false;
+        var signupCaptchaQuestion = {{ captcha_question|default('')|json_encode|raw }};
+        function showCaptchaModalSignup(question) {
+            document.getElementById('captcha-question-text').textContent = question || signupCaptchaQuestion;
+            document.getElementById('captcha-modal').style.display = 'flex';
+            document.getElementById('captcha-modal-input').value = '';
+            setTimeout(function() { document.getElementById('captcha-modal-input').focus(); }, 100);
+        }
+        function closeCaptchaModal() {
+            document.getElementById('captcha-modal').style.display = 'none';
+        }
+        function submitCaptchaAndSignup() {
+            var userAnswer = document.getElementById('captcha-modal-input').value.trim();
+            if (!userAnswer) {
+                alert('Veuillez entrer une réponse.');
+                return;
+            }
+            var form = document.getElementById('signup-form');
+            var input = form.querySelector('input[name="captcha_answer"]');
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'captcha_answer';
+                form.appendChild(input);
+            }
+            input.value = userAnswer;
+            signupCaptchaVerified = true;
+            closeCaptchaModal();
+            form.submit();
+        }
+        document.getElementById('captcha-modal-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { submitCaptchaAndSignup(); }
+        });
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            var honeypot = document.querySelector('input[name="website"]');
+            if (honeypot && honeypot.value !== '') {
+                e.preventDefault();
+                return false;
+            }
+            var ts = parseInt(document.querySelector('input[name="form_timestamp"]').value, 10);
+            if (ts && (Math.floor(Date.now() / 1000) - ts) < 3) {
+                e.preventDefault();
+                alert('Veuillez patienter quelques secondes avant d\'envoyer le formulaire.');
+                return false;
+            }
+            if (!signupCaptchaVerified) {
+                e.preventDefault();
+                showCaptchaModalSignup();
+                return false;
+            }
+        });
 
         // Auto-focus on first error field
         document.addEventListener('DOMContentLoaded', function() {

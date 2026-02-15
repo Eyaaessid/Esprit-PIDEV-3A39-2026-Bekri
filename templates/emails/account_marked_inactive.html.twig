@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;padding:24px;text-align:center;border-radius:10px 10px 0 0}.content{background:#fff;padding:24px;border:1px solid #eee;border-top:none;border-radius:0 0 10px 10px}.footer{text-align:center;margin-top:16px;color:#666;font-size:12px}</style></head>
+<body>
+<div class="container">
+    <div class="header"><h1>Compte inactif</h1></div>
+    <div class="content">
+        <p>Bonjour {{ user.prenom }},</p>
+        <p>Votre compte Bekri Wellbeing a été marqué <strong>inactif</strong> car vous ne vous êtes pas connecté(e) depuis plus de 30 jours.</p>
+        <p>Pour réactiver votre compte, connectez-vous simplement : un email contenant un lien de réactivation vous sera envoyé.</p>
+        <p>Si vous ne souhaitez pas réactiver, vous n'avez rien à faire. Conformément à notre politique, les comptes inactifs depuis plus d'un an peuvent être supprimés.</p>
+        <p>Cordialement,<br>L'équipe Bekri Wellbeing</p>
+    </div>
+    <div class="footer"><p>{{ "now"|date("Y") }} Bekri Wellbeing.</p></div>
+</div>
+</body>
+</html>

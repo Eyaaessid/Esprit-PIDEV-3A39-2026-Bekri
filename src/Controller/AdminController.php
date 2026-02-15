@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\ReactivationRequest;
 use App\Entity\Utilisateur;
+use App\Enum\UtilisateurStatut;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -399,6 +401,13 @@ class AdminController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user->setUpdatedAt(new \DateTime());
+            if ($user->getStatut() === UtilisateurStatut::INACTIF) {
+                $user->setDeactivatedAt(new \DateTime());
+                $user->setDeactivatedBy('admin');
+            } elseif ($user->getStatut() === UtilisateurStatut::ACTIF && $user->getDeactivatedBy() === 'admin') {
+                $user->setDeactivatedAt(null);
+                $user->setDeactivatedBy(null);
+            }
             $entityManager->flush();
 
             $this->addFlash('success', "User '{$user->getPrenom()} {$user->getNom()}' has been updated successfully.");
@@ -409,5 +418,83 @@ class AdminController extends AbstractController
             'form' => $form,
             'user' => $user,
         ]);
+    }
+
+    // ==================== REACTIVATION REQUESTS ====================
+
+    #[Route('/reactivation-requests', name: 'reactivation_requests')]
+    public function reactivationRequests(EntityManagerInterface $entityManager): Response
+    {
+        $pending = $entityManager->getRepository(ReactivationRequest::class)
+            ->findPendingOrderByRequestedAt();
+
+        return $this->render('admin/reactivation_requests.html.twig', [
+            'requests' => $pending,
+        ]);
+    }
+
+    #[Route('/reactivation-requests/{id}/approve', name: 'reactivation_request_approve', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function reactivationRequestApprove(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $rr = $entityManager->getRepository(ReactivationRequest::class)->find($id);
+        if (!$rr || $rr->getStatus() !== ReactivationRequest::STATUS_PENDING) {
+            $this->addFlash('error', 'Demande introuvable ou déjà traitée.');
+            return $this->redirectToRoute('admin_reactivation_requests');
+        }
+        if (!$this->isCsrfTokenValid('reactivation-approve-' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('admin_reactivation_requests');
+        }
+        $user = $rr->getUtilisateur();
+        $user->setStatut(UtilisateurStatut::ACTIF);
+        $user->setDeactivatedAt(null);
+        $user->setDeactivatedBy(null);
+        $user->setUpdatedAt(new \DateTime());
+        $rr->setStatus(ReactivationRequest::STATUS_APPROVED);
+        $rr->setProcessedAt(new \DateTime());
+        $entityManager->flush();
+        $this->addFlash('success', "Compte de {$user->getPrenom()} {$user->getNom()} réactivé.");
+        return $this->redirectToRoute('admin_reactivation_requests');
+    }
+
+    #[Route('/users/{id}/reactivate', name: 'user_reactivate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function userReactivate(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $entityManager->getRepository(Utilisateur::class)->find($id);
+        if (!$user) {
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('admin_users_list');
+        }
+        if (!$this->isCsrfTokenValid('reactivate-user-' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid token.');
+            return $this->redirectToRoute('admin_user_detail', ['id' => $id]);
+        }
+        $user->setStatut(UtilisateurStatut::ACTIF);
+        $user->setDeactivatedAt(null);
+        $user->setDeactivatedBy(null);
+        $user->setUpdatedAt(new \DateTime());
+        $entityManager->flush();
+        $this->addFlash('success', "Account for {$user->getPrenom()} {$user->getNom()} has been reactivated.");
+        return $this->redirectToRoute('admin_user_detail', ['id' => $id]);
+    }
+
+    #[Route('/reactivation-requests/{id}/deny', name: 'reactivation_request_deny', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function reactivationRequestDeny(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $rr = $entityManager->getRepository(ReactivationRequest::class)->find($id);
+        if (!$rr || $rr->getStatus() !== ReactivationRequest::STATUS_PENDING) {
+            $this->addFlash('error', 'Demande introuvable ou déjà traitée.');
+            return $this->redirectToRoute('admin_reactivation_requests');
+        }
+        if (!$this->isCsrfTokenValid('reactivation-deny-' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('admin_reactivation_requests');
+        }
+        $rr->setStatus(ReactivationRequest::STATUS_DENIED);
+        $rr->setProcessedAt(new \DateTime());
+        $rr->setAdminNote($request->request->get('admin_note', ''));
+        $entityManager->flush();
+        $this->addFlash('info', 'Demande refusée.');
+        return $this->redirectToRoute('admin_reactivation_requests');
     }
 }

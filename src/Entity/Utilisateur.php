@@ -120,6 +120,26 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $resetTokenExpiresAt = null;
 
+    // ==================== ACCOUNT STATUS / REACTIVATION FIELDS ====================
+
+    /** When the account was deactivated (set to INACTIF). */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $deactivatedAt = null;
+
+    /** Who deactivated: 'user', 'admin', or 'system'. */
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $deactivatedBy = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $reactivationToken = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $reactivationTokenExpiresAt = null;
+
+    /** Last successful login timestamp. */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLoginAt = null;
+
     /**
      * @var Collection<int, Post>
      */
@@ -395,6 +415,63 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    // ==================== DEACTIVATION / REACTIVATION METHODS ====================
+
+    public function getDeactivatedAt(): ?\DateTimeInterface
+    {
+        return $this->deactivatedAt;
+    }
+
+    public function setDeactivatedAt(?\DateTimeInterface $deactivatedAt): static
+    {
+        $this->deactivatedAt = $deactivatedAt;
+        return $this;
+    }
+
+    public function getDeactivatedBy(): ?string
+    {
+        return $this->deactivatedBy;
+    }
+
+    public function setDeactivatedBy(?string $deactivatedBy): static
+    {
+        $this->deactivatedBy = $deactivatedBy;
+        return $this;
+    }
+
+    public function getReactivationToken(): ?string
+    {
+        return $this->reactivationToken;
+    }
+
+    public function setReactivationToken(?string $reactivationToken): static
+    {
+        $this->reactivationToken = $reactivationToken;
+        return $this;
+    }
+
+    public function getReactivationTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->reactivationTokenExpiresAt;
+    }
+
+    public function setReactivationTokenExpiresAt(?\DateTimeInterface $reactivationTokenExpiresAt): static
+    {
+        $this->reactivationTokenExpiresAt = $reactivationTokenExpiresAt;
+        return $this;
+    }
+
+    public function getLastLoginAt(): ?\DateTimeInterface
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
+    {
+        $this->lastLoginAt = $lastLoginAt;
         return $this;
     }
 

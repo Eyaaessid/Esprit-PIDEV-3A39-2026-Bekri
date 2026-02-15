@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Demander une réactivation - Bekri</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e0f2f7 0%, #f0f8fa 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .box { background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); max-width: 480px; width: 100%; padding: 50px 40px; position: relative; overflow: hidden; }
+        .box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #20b2aa, #3ecdc7); }
+        .logo-container { text-align: center; margin-bottom: 30px; }
+        .logo { max-width: 120px; height: auto; }
+        h1 { color: #2c3e50; font-size: 28px; margin-bottom: 8px; text-align: center; }
+        .sub { color: #95a5a6; font-size: 14px; text-align: center; margin-bottom: 24px; }
+        .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; font-size: 14px; }
+        .alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; color: #2c3e50; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+        .form-input, .form-textarea { width: 100%; padding: 14px 16px; border: 2px solid #e8eef1; border-radius: 12px; font-size: 14px; font-family: inherit; }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: #20b2aa; }
+        .btn-submit { width: 100%; padding: 15px; background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn-submit:hover { opacity: 0.95; }
+        .back-link { display: block; text-align: center; margin-top: 24px; color: #20b2aa; text-decoration: none; font-size: 14px; }
+        .back-link:hover { color: #1a8f89; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="logo-container">
+            <img src="{{ asset('images/logo.png') }}" alt="Bekri" class="logo" onerror="this.style.display='none'">
+        </div>
+        <h1>Demander une réactivation</h1>
+        <p class="sub">Votre compte a été désactivé par un administrateur. Remplissez le formulaire pour demander une réactivation.</p>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-group">
+                <label class="form-label" for="email">Adresse email *</label>
+                <input type="email" class="form-input" id="email" name="email" required placeholder="nom@exemple.com" value="{{ app.request.request.get('email') }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="reason">Raison de votre demande *</label>
+                <textarea class="form-textarea" id="reason" name="reason" required placeholder="Expliquez pourquoi vous souhaitez réactiver votre compte (min. 10 caractères)">{{ app.request.request.get('reason') }}</textarea>
+            </div>
+            <button type="submit" class="btn-submit">Envoyer la demande</button>
+            <a href="{{ path('app_login') }}" class="back-link"><i class="fas fa-arrow-left"></i> Retour à la connexion</a>
+        </form>
+    </div>
+</body>
+</html>

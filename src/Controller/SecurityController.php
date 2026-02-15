@@ -27,7 +27,7 @@ class SecurityController extends AbstractController
 
     // ==================== LOGIN ====================
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         // If user is already logged in → redirect based on role
         if ($this->getUser()) {
@@ -36,10 +36,15 @@ class SecurityController extends AbstractController
 
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
+        $loginAttempts = $request->getSession()->get('login_attempts', 0);
+        $captcha = $this->generateWellnessCaptcha($request);
 
         return $this->render('admin/signin.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'login_attempts' => $loginAttempts,
+            'captcha_question' => $captcha['question'],
+            'show_captcha' => $loginAttempts >= 2,
         ]);
     }
 
@@ -56,7 +61,7 @@ class SecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer  // ← ADDED
+        MailerInterface $mailer
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute($this->getRedirectRouteByRole());
@@ -67,18 +72,26 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
-            // ✅ VÉRIFIER SI L'EMAIL EXISTE DÉJÀ (AVANT persist)
-            $existingUser = $entityManager->getRepository(Utilisateur::class)
-                ->findOneBy(['email' => $user->getEmail()]);
-            
-            if ($existingUser) {
-                // ✅ Message user-friendly avec lien vers login
-                $this->addFlash('error', 'Cet email est déjà utilisé. Vous avez déjà un compte ? <a href="' . $this->generateUrl('app_login') . '" class="alert-link">Connectez-vous ici</a>.');
-                
-                // ✅ Retourner au formulaire (pré-rempli)
+            // CAPTCHA validation: use session from when form was displayed (do NOT regenerate before validate)
+            $captchaError = $this->validateCaptcha($request);
+            if ($captchaError !== null) {
+                $this->addFlash('error', $captchaError);
+                $newCaptcha = $this->generateWellnessCaptcha($request);
                 return $this->render('admin/signup.html.twig', [
                     'registrationForm' => $form->createView(),
+                    'captcha_question' => $newCaptcha['question'],
+                ]);
+            }
+
+            $existingUser = $entityManager->getRepository(Utilisateur::class)
+                ->findOneBy(['email' => $user->getEmail()]);
+
+            if ($existingUser) {
+                $this->addFlash('error', 'Cet email est déjà utilisé. Vous avez déjà un compte ? <a href="' . $this->generateUrl('app_login') . '" class="alert-link">Connectez-vous ici</a>.');
+                $freshCaptcha = $this->generateWellnessCaptcha($request);
+                return $this->render('admin/signup.html.twig', [
+                    'registrationForm' => $form->createView(),
+                    'captcha_question' => $freshCaptcha['question'],
                 ]);
             }
             
@@ -165,9 +178,57 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        // Display form (GET or invalid): generate captcha so session has answer when user submits
+        $captcha = $this->generateWellnessCaptcha($request);
         return $this->render('admin/signup.html.twig', [
             'registrationForm' => $form->createView(),
+            'captcha_question' => $captcha['question'],
         ]);
+    }
+
+    // ==================== CAPTCHA HELPERS ====================
+
+    /**
+     * Generate a wellness-themed math captcha. Stores answer in session, returns question.
+     */
+    private function generateWellnessCaptcha(Request $request): array
+    {
+        $variants = [
+            ['q' => 'Si votre score bien-être est %d et vous progressez de %d, quel est votre nouveau score ?', 'a' => fn($x, $y) => $x + $y, 'r' => [50, 90, 5, 25]],
+            ['q' => 'Vous marchez %d min par jour. Cette semaine vous ajoutez %d min. Total en min ?', 'a' => fn($x, $y) => $x + $y, 'r' => [20, 60, 10, 30]],
+            ['q' => 'Vous buvez %d verres d\'eau. Vous en ajoutez %d. Combien au total ?', 'a' => fn($x, $y) => $x + $y, 'r' => [4, 8, 2, 5]],
+            ['q' => 'Score du jour : %d. Vous gagnez %d points. Nouveau score ?', 'a' => fn($x, $y) => $x + $y, 'r' => [30, 70, 5, 20]],
+            ['q' => 'Objectif : %d séances par semaine. Vous en faites %d de plus. Total ?', 'a' => fn($x, $y) => $x + $y, 'r' => [2, 5, 1, 3]],
+        ];
+        $v = $variants[array_rand($variants)];
+        $num1 = random_int($v['r'][0], $v['r'][1]);
+        $num2 = random_int($v['r'][2], $v['r'][3]);
+        $question = sprintf($v['q'], $num1, $num2);
+        $answer = $v['a']($num1, $num2);
+        $request->getSession()->set('captcha_answer', (string) $answer);
+        return ['question' => $question, 'answer' => $answer];
+    }
+
+    /**
+     * Validate honeypot, timestamp and math captcha. Returns error message or null.
+     */
+    private function validateCaptcha(Request $request): ?string
+    {
+        if (trim((string) $request->request->get('website', '')) !== '') {
+            return 'Requête invalide.';
+        }
+        $ts = (int) $request->request->get('form_timestamp', 0);
+        $now = time();
+        if ($now - $ts < 3) {
+            return 'Veuillez patienter quelques secondes avant d\'envoyer le formulaire.';
+        }
+        $userAnswer = trim((string) $request->request->get('captcha_answer', ''));
+        $correctAnswer = $request->getSession()->get('captcha_answer');
+        if ($correctAnswer === null || $userAnswer !== (string) $correctAnswer) {
+            return 'Vérification de sécurité incorrecte. Veuillez réessayer.';
+        }
+        $request->getSession()->remove('captcha_answer');
+        return null;
     }
 
     // ==================== HELPER METHOD ====================
