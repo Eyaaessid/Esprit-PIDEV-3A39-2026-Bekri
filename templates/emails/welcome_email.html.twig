@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background-color: white;
+            padding: 40px 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .welcome-message {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .features {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-item:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 12px;
+            padding: 20px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Bienvenue sur Bekri Wellbeing!</h1>
+        </div>
+        
+        <div class="content">
+            <p class="welcome-message">Bonjour {{ user.prenom }} {{ user.nom }},</p>
+            
+            <p>Nous sommes ravis de vous accueillir dans la communauté <strong>Bekri Wellbeing</strong>! 🌟</p>
+            
+            <p>Vous avez franchi la première étape vers une vie plus saine et équilibrée. Votre compte a été créé avec succès et vous pouvez maintenant accéder à tous nos services.</p>
+            
+            <div class="highlight">
+                <strong>📧 Votre email :</strong> {{ user.email }}<br>
+                <strong>📅 Date d'inscription :</strong> {{ user.createdAt|date('d/m/Y à H:i') }}
+            </div>
+            
+            <center>
+                <a href="{{ loginUrl }}" class="button">Se Connecter Maintenant</a>
+            </center>
+            
+            <div class="features">
+                <h3 style="margin-top: 0; color: #667eea;">🚀 Ce que vous pouvez faire :</h3>
+                <div class="feature-item">Suivre votre progression vers vos objectifs de bien-être</div>
+                <div class="feature-item">Participer à des événements et ateliers exclusifs</div>
+                <div class="feature-item">Échanger avec notre communauté de coachs et membres</div>
+                <div class="feature-item">Accéder à des ressources et articles sur le bien-être</div>
+                <div class="feature-item">Personnaliser votre profil et vos préférences</div>
+            </div>
+            
+            <p><strong>Premiers pas recommandés :</strong></p>
+            <ol>
+                <li>Complétez votre profil avec vos informations personnelles</li>
+                <li>Définissez vos premiers objectifs de bien-être</li>
+                <li>Explorez les événements à venir</li>
+                <li>Connectez-vous avec nos coachs professionnels</li>
+            </ol>
+            
+            <p style="margin-top: 30px;">Si vous avez des questions ou besoin d'aide, n'hésitez pas à nous contacter. Notre équipe est là pour vous accompagner! 💪</p>
+            
+            <p>À très bientôt,<br>
+            <strong>L'équipe Bekri Wellbeing</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>© {{ "now"|date("Y") }} Bekri Wellbeing Platform. Tous droits réservés.</p>
+            <p style="color: #999; margin-top: 10px;">
+                Vous recevez cet email car vous venez de créer un compte sur notre plateforme.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
