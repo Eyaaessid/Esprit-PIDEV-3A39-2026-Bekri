@@ -168,11 +168,19 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .forgot-password:hover {
             color: #1a8f89;
+            transform: translateX(2px);
+        }
+
+        .forgot-password i {
+            font-size: 12px;
         }
 
         .btn-login {
@@ -253,6 +261,12 @@
 
             .form-input {
                 padding: 14px 16px 14px 48px;
+            }
+            
+            .form-options {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
             }
         }
 
@@ -348,8 +362,10 @@
                     >
                     <label for="remember_me">Se souvenir de moi</label>
                 </div>
-                <a href="#" class="forgot-password">
-                    Mot de passe oublié ?
+                <!-- DIRECT URL INSTEAD OF path() FUNCTION -->
+                <a href="{{ path('forgot_password_request') }}" class="forgot-password">
+                    <i class="fas fa-key"></i>
+                    <span>Mot de passe oublié ?</span>
                 </a>
             </div>
 

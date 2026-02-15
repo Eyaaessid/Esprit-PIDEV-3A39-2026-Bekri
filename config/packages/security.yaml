@@ -30,8 +30,8 @@ security:
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
-        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
+        - { path: ^/reinitialiser-mot-de-passe, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/coach, roles: ROLE_COACH }
         - { path: ^/user, roles: ROLE_USER }

@@ -118,13 +118,13 @@ class RegistrationFormType extends AbstractType
                 'constraints' => [
                     new NotBlank(['message' => 'Le mot de passe est obligatoire.']),
                     new Length([
-                        'min' => 6,
+                        'min' => 8,
                         'max' => 4096,
                         'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
                     ]),
                     new Regex([
-                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-                        'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.'
+                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\-_])[A-Za-z\d@$!%*?&\-_]+$/',
+                        'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&-_).'
                     ]),
                 ],
             ])
