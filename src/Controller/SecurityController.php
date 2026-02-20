@@ -6,17 +6,16 @@ use App\Entity\Utilisateur;
 use App\Enum\UtilisateurRole;
 use App\Enum\UtilisateurStatut;
 use App\Form\RegistrationFormType;
+use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
@@ -61,7 +60,7 @@ class SecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer
+        EmailVerifier $emailVerifier
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute($this->getRedirectRouteByRole());
@@ -105,6 +104,7 @@ class SecurityController extends AbstractController
 
             $user->setRole(UtilisateurRole::USER);
             $user->setStatut(UtilisateurStatut::ACTIF);
+            $user->setIsVerified(false);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -115,67 +115,32 @@ class SecurityController extends AbstractController
                 'role' => $user->getRole()->value
             ]);
 
-            // ============================================
-            // 🎉 SEND WELCOME EMAIL
-            // ============================================
             try {
-                // Generate login URL
-                $loginUrl = $this->generateUrl(
-                    'app_login', 
-                    [], 
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                );
-
-                $this->logger->info('Attempting to send welcome email', [
-                    'to' => $user->getEmail(),
-                    'user_id' => $user->getId()
-                ]);
-
-                // Create welcome email
                 $email = (new TemplatedEmail())
-                    ->from(new Address('noreply@bekri.com', 'Bekri Wellbeing'))
+                    ->from(EmailVerifier::defaultFrom())
                     ->to(new Address($user->getEmail(), $user->getPrenom() . ' ' . $user->getNom()))
-                    ->subject('Bienvenue sur Bekri Wellbeing! 🎉')
-                    ->htmlTemplate('emails/welcome_email.html.twig')
+                    ->subject('Verify your email address')
+                    ->htmlTemplate('email/verification.html.twig')
                     ->context([
                         'user' => $user,
-                        'loginUrl' => $loginUrl,
+                        'supportEmail' => 'support@bekri.com',
                     ]);
 
-                // Send email
-                $mailer->send($email);
-
-                $this->logger->info('Welcome email sent successfully', [
-                    'to' => $user->getEmail(),
-                    'user_id' => $user->getId()
-                ]);
-
-                $this->addFlash('success', 
-                    '✅ Votre compte a été créé avec succès! Un email de bienvenue vous a été envoyé à ' . 
-                    htmlspecialchars($user->getEmail()) . '. Vous pouvez maintenant vous connecter.'
-                );
+                $emailVerifier->sendEmailConfirmation('app_verify_email', $user, $email);
+                $this->addFlash('success', 'Check your email to verify your account');
 
             } catch (\Exception $e) {
                 // Log error but don't prevent registration
-                $this->logger->error('Failed to send welcome email', [
+                $this->logger->error('Failed to send verification email', [
                     'user_id' => $user->getId(),
                     'email' => $user->getEmail(),
                     'error' => $e->getMessage()
                 ]);
 
-                // Still show success message for registration
-                $this->addFlash('success', 
-                    '✅ Votre compte a été créé avec succès! Vous pouvez maintenant vous connecter.'
-                );
-                $this->addFlash('warning', 
-                    '⚠️ Note: L\'email de bienvenue n\'a pas pu être envoyé, mais votre compte est bien actif.'
-                );
+                $this->addFlash('error', 'We could not send the verification email. Please try resending it from the login page.');
             }
-            // ============================================
-            // END WELCOME EMAIL
-            // ============================================
 
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_check_email', ['email' => $user->getEmail()]);
         }
 
         // Display form (GET or invalid): generate captcha so session has answer when user submits
@@ -183,6 +148,15 @@ class SecurityController extends AbstractController
         return $this->render('admin/signup.html.twig', [
             'registrationForm' => $form->createView(),
             'captcha_question' => $captcha['question'],
+        ]);
+    }
+
+    // ==================== CHECK EMAIL (VERIFY) ====================
+    #[Route('/register/check-email', name: 'app_check_email')]
+    public function checkEmail(Request $request): Response
+    {
+        return $this->render('security/check_email.html.twig', [
+            'email' => (string) $request->query->get('email', ''),
         ]);
     }
 

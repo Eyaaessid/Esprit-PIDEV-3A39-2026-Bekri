@@ -167,6 +167,14 @@ class FaceAuthController extends AbstractController
                 ], Response::HTTP_UNAUTHORIZED);
             }
 
+            // Check email verification
+            if (!$user->isVerified()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Please verify your email before logging in'
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
             // Validate face descriptor
             $isValid = $this->faceAuthService->validateFaceDescriptor($user, $data['descriptor']);
             

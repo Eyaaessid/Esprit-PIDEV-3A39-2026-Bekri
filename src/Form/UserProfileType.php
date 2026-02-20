@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
+use App\Validator\Constraints\RealEmail;
 
 class UserProfileType extends AbstractType
 {
@@ -55,7 +56,15 @@ class UserProfileType extends AbstractType
                 'attr' => ['class' => 'form-control', 'placeholder' => 'your.email@example.com'],
                 'constraints' => [
                     new NotBlank(['message' => 'Please enter your email']),
-                    new Email(['message' => 'Please enter a valid email address']),
+                    new Email([
+                        'message' => 'Please enter a valid email address',
+                        'mode' => 'strict',
+                    ]),
+                    new RealEmail([
+                        'message' => 'This email domain cannot receive emails.',
+                        'disposableMessage' => 'Disposable email addresses are not allowed.',
+                        'typoMessage' => 'Did you mean {{ suggestion }} instead of {{ value }}?',
+                    ]),
                 ],
             ])
             ->add('telephone', TelType::class, [

@@ -47,7 +47,7 @@
                     <hr class="my-4">
 
                     <!-- Face Authentication Section -->
-                    <div class="face-auth-section">
+                    <div class="face-auth-section mb-4">
                         <h6 class="mb-3 text-start">
                             <i class="bi bi-shield-check me-2"></i>Face Authentication
                         </h6>
@@ -73,6 +73,65 @@
                                 <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#faceRegistrationModal">
                                     <i class="bi bi-camera-video me-2"></i>Enable Face Login
                                 </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Two-Factor Authentication Section -->
+                    <div class="two-factor-section">
+                        <h6 class="mb-3 text-start">
+                            <i class="bi bi-shield-lock me-2"></i>Two-Factor Authentication
+                        </h6>
+                        
+                        <div id="2fa-status">
+                            {% if user.isTwoFactorEnabled() %}
+                                <div class="alert alert-success d-flex align-items-start text-start">
+                                    <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Enabled</strong>
+                                        <br>
+                                        <small>Enabled: {{ user.twoFactorEnabledAt ? user.twoFactorEnabledAt|date('M d, Y') : 'Unknown' }}</small>
+                                    </div>
+                                </div>
+                                <form method="post" action="{{ path('app_2fa_disable') }}" class="mb-2" id="disable-2fa-form">
+                                    <div class="mb-2 position-relative">
+                                        <input 
+                                            type="password" 
+                                            class="form-control form-control-sm" 
+                                            name="password" 
+                                            placeholder="Enter password to disable"
+                                            required
+                                        >
+                                        <i class="bi bi-eye toggle-password position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d;"></i>
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_disable') }}">
+                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to disable two-factor authentication?')">
+                                        <i class="bi bi-x-circle me-2"></i>Disable 2FA
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('app_2fa_regenerate_backup_codes') }}" id="regenerate-backup-codes-form">
+                                    <div class="mb-2">
+                                        <input 
+                                            type="password" 
+                                            class="form-control form-control-sm" 
+                                            name="password" 
+                                            placeholder="Enter password to regenerate"
+                                            required
+                                        >
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_regenerate') }}">
+                                    <button type="submit" class="btn btn-outline-warning w-100">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Regenerate Backup Codes
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-info text-start">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>Add an extra layer of security to your account with two-factor authentication.</small>
+                                </div>
+                                <a href="{{ path('app_2fa_enable') }}" class="btn btn-primary w-100">
+                                    <i class="bi bi-shield-lock me-2"></i>Enable 2FA
+                                </a>
                             {% endif %}
                         </div>
                     </div>
@@ -633,6 +692,26 @@ document.addEventListener('DOMContentLoaded', function() {
             lastDetectionConfidence = 0;
         });
     }
+
+    // Password visibility toggle for all password fields
+    document.querySelectorAll('.toggle-password').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const input = this.closest('.position-relative').querySelector('input[type="password"], input[type="text"]');
+            const icon = this;
+            
+            if (input && (input.type === 'password' || input.type === 'text')) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            }
+        });
+    });
 });
 </script>
 {% endblock %}

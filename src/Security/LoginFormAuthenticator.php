@@ -133,6 +133,10 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                 );
             }
 
+            if (!$user->isVerified()) {
+                throw new CustomUserMessageAuthenticationException('Please verify your email before logging in');
+            }
+
             return $user;
         };
 

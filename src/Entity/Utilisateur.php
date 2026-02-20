@@ -13,13 +13,16 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
+use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[UniqueEntity(
     fields: ['email'],
     message: 'Cet email est déjà utilisé par un autre compte.'
 )]
-class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -140,6 +143,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastLoginAt = null;
 
+    // ==================== EMAIL VERIFICATION ====================
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isVerified = false;
+
     // ==================== FACIAL RECOGNITION FIELDS ====================
 
     /**
@@ -172,6 +180,32 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastFaceAuthAttemptAt = null;
+
+    // ==================== TWO-FACTOR AUTHENTICATION FIELDS ====================
+
+    /**
+     * TOTP secret for two-factor authentication.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $totpSecret = null;
+
+    /**
+     * Whether two-factor authentication is enabled for this user.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isTwoFactorEnabled = false;
+
+    /**
+     * Hashed backup codes for 2FA recovery (stored as JSON array of hashed codes).
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $backupCodes = null;
+
+    /**
+     * When 2FA was enabled.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $twoFactorEnabledAt = null;
 
     /**
      * @var Collection<int, Post>
@@ -508,6 +542,19 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // ==================== EMAIL VERIFICATION METHODS ====================
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
     // ==================== FACIAL RECOGNITION METHODS ====================
 
     public function getFaceDescriptor(): ?string
@@ -787,6 +834,112 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    // ==================== TWO-FACTOR AUTHENTICATION METHODS ====================
+
+    public function isTotpAuthenticationEnabled(): bool
+    {
+        return $this->isTwoFactorEnabled;
+    }
+
+    public function getTotpAuthenticationUsername(): string
+    {
+        return $this->email;
+    }
+
+    public function getTotpAuthenticationConfiguration(): ?TotpConfiguration
+    {
+        if (!$this->totpSecret) {
+            return null;
+        }
+        
+        return new TotpConfiguration(
+            $this->totpSecret,
+            TotpConfiguration::ALGORITHM_SHA1,
+            30,
+            6
+        );
+    }
+
+    // Required by TotpConfigurationInterface (delegated to TotpConfiguration)
+    public function getSecret(): string
+    {
+        return $this->totpSecret ?? '';
+    }
+
+    public function getAlgorithm(): string
+    {
+        return TotpConfiguration::ALGORITHM_SHA1;
+    }
+
+    public function getPeriod(): int
+    {
+        return 30;
+    }
+
+    public function getDigits(): int
+    {
+        return 6;
+    }
+
+    public function getTotpSecret(): ?string
+    {
+        return $this->totpSecret;
+    }
+
+    public function setTotpSecret(?string $totpSecret): static
+    {
+        $this->totpSecret = $totpSecret;
+        return $this;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->isTwoFactorEnabled;
+    }
+
+    public function setIsTwoFactorEnabled(bool $isTwoFactorEnabled): static
+    {
+        $this->isTwoFactorEnabled = $isTwoFactorEnabled;
+        if ($isTwoFactorEnabled && $this->twoFactorEnabledAt === null) {
+            $this->twoFactorEnabledAt = new \DateTime();
+        }
+        return $this;
+    }
+
+    public function getBackupCodes(): ?string
+    {
+        return $this->backupCodes;
+    }
+
+    public function setBackupCodes(?string $backupCodes): static
+    {
+        $this->backupCodes = $backupCodes;
+        return $this;
+    }
+
+    public function getTwoFactorEnabledAt(): ?\DateTimeInterface
+    {
+        return $this->twoFactorEnabledAt;
+    }
+
+    public function setTwoFactorEnabledAt(?\DateTimeInterface $twoFactorEnabledAt): static
+    {
+        $this->twoFactorEnabledAt = $twoFactorEnabledAt;
+        return $this;
+    }
+
+    /**
+     * Reset 2FA data (used when disabling 2FA).
+     */
+    public function resetTwoFactorAuth(): static
+    {
+        $this->totpSecret = null;
+        $this->isTwoFactorEnabled = false;
+        $this->backupCodes = null;
+        $this->twoFactorEnabledAt = null;
         return $this;
     }
 }
