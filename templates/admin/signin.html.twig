@@ -778,6 +778,15 @@
 
         // FACE LOGIN FUNCTIONALITY
         let faceLoginStream = null;
+        
+        // Security settings
+        const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
+        const MIN_DETECTION_DURATION = 2000; // Minimum milliseconds face must be detected before authentication (longer for login)
+        const MIN_FACE_SIZE = 100; // Minimum face size in pixels
+        
+        let faceLoginDetectedStartTime = null;
+        let lastLoginDetectionConfidence = 0;
+        
         const faceLoginModal = document.getElementById('face-login-modal');
         const faceLoginBtn = document.getElementById('faceLoginBtn');
         const startFaceLoginBtn = document.getElementById('start-face-login-btn');
@@ -804,6 +813,8 @@
             stopFaceLoginCamera();
             isAuthenticating = false;
             detectionRunning = false;
+            faceLoginDetectedStartTime = null;
+            lastLoginDetectionConfidence = 0;
             faceLoginModal.classList.remove('active');
             emailStep.style.display = 'block';
             cameraStep.style.display = 'none';
@@ -822,6 +833,8 @@
             // Reset state
             isAuthenticating = false;
             detectionRunning = false;
+            faceLoginDetectedStartTime = null;
+            lastLoginDetectionConfidence = 0;
             
             emailStep.style.display = 'none';
             cameraStep.style.display = 'block';
@@ -918,15 +931,67 @@
             
             try {
                 const detection = await faceapi
-                    .detectSingleFace(faceLoginVideo, new faceapi.TinyFaceDetectorOptions())
+                    .detectSingleFace(faceLoginVideo, new faceapi.TinyFaceDetectorOptions({ 
+                        inputSize: 512, // Higher resolution for better accuracy
+                        scoreThreshold: MIN_DETECTION_CONFIDENCE 
+                    }))
                     .withFaceLandmarks()
                     .withFaceDescriptor();
                 
-                if (detection) {
-                    // Face detected
+                if (detection && detection.detection) {
+                    const confidence = detection.detection.score;
+                    const box = detection.detection.box;
+                    const faceSize = Math.max(box.width, box.height);
+                    
+                    // Check confidence threshold
+                    if (confidence < MIN_DETECTION_CONFIDENCE) {
+                        faceLoginStatusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
+                        faceLoginStatus.className = 'face-status-box error';
+                        faceLoginDetectedStartTime = null;
+                        
+                        if (faceLoginStream && faceLoginVideo.srcObject) {
+                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
+                        }
+                        return;
+                    }
+                    
+                    // Check minimum face size
+                    if (faceSize < MIN_FACE_SIZE) {
+                        faceLoginStatusText.textContent = 'Move closer to the camera for better detection.';
+                        faceLoginStatus.className = 'face-status-box error';
+                        faceLoginDetectedStartTime = null;
+                        
+                        if (faceLoginStream && faceLoginVideo.srcObject) {
+                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
+                        }
+                        return;
+                    }
+                    
+                    // Track detection duration
+                    const now = Date.now();
+                    if (!faceLoginDetectedStartTime) {
+                        faceLoginDetectedStartTime = now;
+                    }
+                    
+                    const detectionDuration = now - faceLoginDetectedStartTime;
+                    lastLoginDetectionConfidence = confidence;
+                    
+                    // Require minimum detection duration before authenticating
+                    if (detectionDuration < MIN_DETECTION_DURATION) {
+                        const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
+                        faceLoginStatusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
+                        faceLoginStatus.className = 'face-status-box info';
+                        
+                        if (faceLoginStream && faceLoginVideo.srcObject) {
+                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
+                        }
+                        return;
+                    }
+                    
+                    // Face detected with good confidence, size, and duration
                     if (!isAuthenticating) {
                         isAuthenticating = true;
-                        faceLoginStatusText.textContent = 'Face detected! Authenticating...';
+                        faceLoginStatusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Authenticating...`;
                         faceLoginStatus.className = 'face-status-box info';
                         
                         const descriptor = Array.from(detection.descriptor);
@@ -1005,6 +1070,7 @@
                         faceLoginStatusText.textContent = 'No face detected. Position your face in the frame...';
                         faceLoginStatus.className = 'face-status-box info';
                     }
+                    faceLoginDetectedStartTime = null;
                     // Continue detection loop
                     if (faceLoginStream && faceLoginVideo.srcObject) {
                         requestAnimationFrame(() => detectAndAuthenticateFace(email));
@@ -1013,6 +1079,7 @@
             } catch (error) {
                 console.error('Face detection error:', error);
                 isAuthenticating = false;
+                faceLoginDetectedStartTime = null;
                 // Continue detection loop even on error
                 if (faceLoginStream && faceLoginVideo.srcObject) {
                     requestAnimationFrame(() => detectAndAuthenticateFace(email));

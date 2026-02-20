@@ -286,6 +286,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let videoStream = null;
     let faceDescriptor = null;
     
+    // Security settings
+    const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
+    const MIN_DETECTION_DURATION = 1500; // Minimum milliseconds face must be detected before capture
+    const MIN_FACE_SIZE = 100; // Minimum face size in pixels
+    
+    let faceDetectedStartTime = null;
+    let lastDetectionConfidence = 0;
+    
     const video = document.getElementById('face-video');
     const canvas = document.getElementById('face-canvas');
     const startBtn = document.getElementById('start-face-capture-btn');
@@ -360,18 +368,66 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const detection = await faceapi
-                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ 
+                    inputSize: 512, // Higher resolution for better accuracy
+                    scoreThreshold: MIN_DETECTION_CONFIDENCE 
+                }))
                 .withFaceLandmarks()
                 .withFaceDescriptor();
             
-            if (detection) {
-                // Face detected - show green box
+            if (detection && detection.detection) {
+                const confidence = detection.detection.score;
                 const box = detection.detection.box;
+                const faceSize = Math.max(box.width, box.height);
+                
+                // Check confidence threshold
+                if (confidence < MIN_DETECTION_CONFIDENCE) {
+                    faceDetectionBox.style.display = 'none';
+                    statusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Check minimum face size
+                if (faceSize < MIN_FACE_SIZE) {
+                    faceDetectionBox.style.display = 'block';
+                    const videoRect = video.getBoundingClientRect();
+                    const videoWidth = video.videoWidth || videoRect.width;
+                    const videoHeight = video.videoHeight || videoRect.height;
+                    const scaleX = videoRect.width / videoWidth;
+                    const scaleY = videoRect.height / videoHeight;
+                    
+                    faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                    faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                    faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                    faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                    faceDetectionBox.style.borderColor = '#ffa500'; // Orange for too small
+                    
+                    statusText.textContent = 'Move closer to the camera for better detection.';
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Face detected with good confidence and size
                 const videoRect = video.getBoundingClientRect();
                 const videoWidth = video.videoWidth || videoRect.width;
                 const videoHeight = video.videoHeight || videoRect.height;
-                
-                // Calculate relative positions
                 const scaleX = videoRect.width / videoWidth;
                 const scaleY = videoRect.height / videoHeight;
                 
@@ -380,16 +436,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 faceDetectionBox.style.top = (box.y * scaleY) + 'px';
                 faceDetectionBox.style.width = (box.width * scaleX) + 'px';
                 faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                faceDetectionBox.style.borderColor = '#00ff00'; // Green for good detection
                 
-                statusText.textContent = 'Face detected! Click "Capture Face" to continue.';
-                captureBtn.disabled = false;
-                captureBtn.removeAttribute('disabled');
-                captureBtn.style.pointerEvents = 'auto';
-                captureBtn.style.opacity = '1';
-                captureBtn.style.cursor = 'pointer';
+                // Track detection duration
+                const now = Date.now();
+                if (!faceDetectedStartTime) {
+                    faceDetectedStartTime = now;
+                }
                 
-                // Store descriptor temporarily
-                faceDescriptor = Array.from(detection.descriptor);
+                const detectionDuration = now - faceDetectedStartTime;
+                lastDetectionConfidence = confidence;
+                
+                // Require minimum detection duration before allowing capture
+                if (detectionDuration < MIN_DETECTION_DURATION) {
+                    const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
+                    statusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                } else {
+                    statusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Click "Capture Face" to continue.`;
+                    captureBtn.disabled = false;
+                    captureBtn.removeAttribute('disabled');
+                    captureBtn.style.pointerEvents = 'auto';
+                    captureBtn.style.opacity = '1';
+                    captureBtn.style.cursor = 'pointer';
+                    
+                    // Store descriptor temporarily
+                    faceDescriptor = Array.from(detection.descriptor);
+                }
             } else {
                 // No face detected
                 faceDetectionBox.style.display = 'none';
@@ -398,9 +474,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 captureBtn.setAttribute('disabled', 'disabled');
                 captureBtn.style.opacity = '0.5';
                 captureBtn.style.cursor = 'not-allowed';
+                faceDetectedStartTime = null;
             }
         } catch (error) {
             console.error('Face detection error:', error);
+            faceDetectedStartTime = null;
             // Continue detection even if there's an error
         }
         
@@ -538,6 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 captureBtn.style.cursor = 'not-allowed';
             }
             faceDescriptor = null;
+            faceDetectedStartTime = null;
+            lastDetectionConfidence = 0;
         });
         
         // Reset button state when modal is shown
@@ -549,6 +629,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 captureBtn.style.cursor = 'not-allowed';
             }
             faceDescriptor = null;
+            faceDetectedStartTime = null;
+            lastDetectionConfidence = 0;
         });
     }
 });

@@ -14,7 +14,10 @@ class FaceAuthService
 {
     // Threshold for face matching (0.0 = identical, 1.0 = completely different)
     // Lower = stricter matching
-    private const MATCH_THRESHOLD = 0.6;
+    // 0.3 = very strict (only very similar faces match)
+    // 0.4 = strict (good balance for security)
+    // 0.6 = too permissive (was allowing different people)
+    private const MATCH_THRESHOLD = 0.3;
     
     // Maximum failed attempts before temporary lockout
     private const MAX_FAILED_ATTEMPTS = 5;
@@ -117,14 +120,19 @@ class FaceAuthService
             ]);
 
             // Check if match is within threshold
-            if ($distance < self::MATCH_THRESHOLD) {
+            $isMatch = $distance < self::MATCH_THRESHOLD;
+            
+            if ($isMatch) {
                 // Successful match - reset failed attempts
                 $user->resetFaceAuthFailedAttempts();
                 $this->entityManager->flush();
                 
                 $this->logger->info('Face authentication successful', [
                     'user_id' => $user->getId(),
-                    'distance' => $distance
+                    'email' => $user->getEmail(),
+                    'distance' => round($distance, 4),
+                    'threshold' => self::MATCH_THRESHOLD,
+                    'match_quality' => $distance < 0.2 ? 'excellent' : ($distance < 0.25 ? 'good' : 'acceptable')
                 ]);
                 
                 return true;
@@ -133,10 +141,14 @@ class FaceAuthService
                 $user->incrementFaceAuthFailedAttempts();
                 $this->entityManager->flush();
                 
-                $this->logger->warning('Face authentication failed', [
+                $this->logger->warning('Face authentication failed - distance exceeds threshold', [
                     'user_id' => $user->getId(),
-                    'distance' => $distance,
-                    'failed_attempts' => $user->getFaceAuthFailedAttempts()
+                    'email' => $user->getEmail(),
+                    'distance' => round($distance, 4),
+                    'threshold' => self::MATCH_THRESHOLD,
+                    'difference' => round($distance - self::MATCH_THRESHOLD, 4),
+                    'failed_attempts' => $user->getFaceAuthFailedAttempts(),
+                    'rejection_reason' => 'Face descriptor distance too high - not a match'
                 ]);
                 
                 return false;
