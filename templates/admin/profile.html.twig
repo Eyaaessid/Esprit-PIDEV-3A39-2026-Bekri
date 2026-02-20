@@ -2,77 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Admin Profile - DASHMIN</title>
+    <title>My Profile - DASHMIN</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <!-- Favicon -->
     <link href="{{ asset('admin/img/favicon.ico') }}" rel="icon">
-
-    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
     <link href="{{ asset('admin/css/bootstrap.min.css') }}" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
     <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
-    
-    <style>
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #009CFF;
-            box-shadow: 0 4px 12px rgba(0, 156, 255, 0.25);
-        }
-        
-        .profile-initials {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        .info-row {
-            padding: 0.75rem 0;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #64748b;
-        }
-        
-        .info-value {
-            color: #1e293b;
-        }
-        
-        .edit-profile-btn {
-            transition: all 0.2s ease;
-        }
-        
-        .edit-profile-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-        }
-    </style>
 </head>
 <body>
     <div class="container-xxl position-relative bg-white d-flex p-0">
@@ -84,8 +23,8 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        {% if user.avatar %}
-                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% if app.user.avatar %}
+                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
                         {% else %}
                             <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
                         {% endif %}
@@ -124,8 +63,8 @@
                 <div class="navbar-nav align-items-center ms-auto">
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            {% if user.avatar %}
-                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
                             {% else %}
                                 <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
                             {% endif %}
@@ -146,13 +85,12 @@
             <div class="container-fluid pt-4 px-4">
                 <!-- Flash Messages -->
                 {% for message in app.flashes('success') %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        {{ message }}
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fa fa-check-circle me-2"></i>{{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
-                
+
                 <div class="row g-4">
                     <!-- Profile Card -->
                     <div class="col-lg-4">
@@ -161,86 +99,109 @@
                                 {% if user.avatar %}
                                     <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" 
                                          alt="{{ user.prenom }}" 
-                                         class="profile-avatar mb-3">
+                                         class="rounded-circle mb-3"
+                                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #009CFF;">
                                 {% else %}
-                                    <div class="profile-initials mx-auto mb-3">
-                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                         style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <span class="text-white" style="font-size: 60px; font-weight: bold;">
+                                            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                        </span>
                                     </div>
                                 {% endif %}
                                 
-                                <h4 class="mb-1">{{ user.nom }} {{ user.prenom }}</h4>
+                                <h4 class="mb-1">{{ user.prenom }} {{ user.nom }}</h4>
                                 <p class="text-muted mb-3">{{ user.email }}</p>
-                                <span class="badge bg-danger">{{ user.role.getLabel() }}</span>
+                                <span class="badge bg-danger">Administrator</span>
                             </div>
-                            
+
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_profile_edit') }}" class="btn btn-primary">
+                                    <i class="fa fa-edit me-2"></i>Edit Profile
+                                </a>
+                                <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-secondary">
+                                    <i class="fa fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </div>
+
                             <hr class="my-4">
-                            
-                            <a href="{{ path('admin_profile_edit') }}" class="btn btn-primary w-100 edit-profile-btn">
-                                <i class="fa fa-edit me-2"></i>Edit Profile
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Profile Information -->
-                    <div class="col-lg-8">
-                        <div class="bg-light rounded p-4 mb-4">
-                            <h5 class="mb-4">
-                                <i class="fa fa-user me-2 text-primary"></i>
-                                Personal Information
-                            </h5>
-                            
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">First Name:</div>
-                                <div class="col-sm-8 info-value">{{ user.prenom }}</div>
-                            </div>
-                            <hr>
-                            
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Last Name:</div>
-                                <div class="col-sm-8 info-value">{{ user.nom }}</div>
-                            </div>
-                            <hr>
-                            
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Email:</div>
-                                <div class="col-sm-8 info-value">{{ user.email }}</div>
-                            </div>
-                            <hr>
-                            
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Role:</div>
-                                <div class="col-sm-8">
-                                    <span class="badge bg-danger">{{ user.role.getLabel() }}</span>
-                                </div>
-                            </div>
-                            <hr>
-                            
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Status:</div>
-                                <div class="col-sm-8">
-                                    {% if user.statut.value == 'actif' %}
-                                        <span class="badge bg-success">{{ user.statut.getLabel() }}</span>
-                                    {% elseif user.statut.value == 'bloque' %}
-                                        <span class="badge bg-danger">{{ user.statut.getLabel() }}</span>
+
+                            <!-- Face Authentication Section -->
+                            <div class="face-auth-section">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-shield-check me-2"></i>Face Authentication
+                                </h6>
+                                
+                                <div id="face-auth-status">
+                                    {% if user.isFaceAuthEnabled() %}
+                                        <div class="alert alert-success d-flex align-items-start">
+                                            <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                            <div>
+                                                <strong>Enabled</strong>
+                                                <br>
+                                                <small>Registered: {{ user.faceRegisteredAt|date('M d, Y') }}</small>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger w-100" id="disable-face-auth-btn">
+                                            <i class="bi bi-x-circle me-2"></i>Disable Face Login
+                                        </button>
                                     {% else %}
-                                        <span class="badge bg-secondary">{{ user.statut.getLabel() }}</span>
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <small>Enable face login for faster authentication.</small>
+                                        </div>
+                                        <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#faceRegistrationModal">
+                                            <i class="bi bi-camera-video me-2"></i>Enable Face Login
+                                        </button>
                                     {% endif %}
                                 </div>
                             </div>
-                            <hr>
+                        </div>
+                    </div>
+
+                    <!-- Profile Information -->
+                    <div class="col-lg-8">
+                        <div class="bg-light rounded p-4 mb-4">
+                            <h5 class="mb-4"><i class="fa fa-info-circle me-2"></i>Personal Information</h5>
                             
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Account Created:</div>
-                                <div class="col-sm-8 info-value">{{ user.createdAt|date('F d, Y') }}</div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>First Name:</strong></div>
+                                <div class="col-sm-8">{{ user.prenom }}</div>
                             </div>
-                            
-                            {% if user.updatedAt %}
                             <hr>
-                            <div class="info-row row">
-                                <div class="col-sm-4 info-label">Last Updated:</div>
-                                <div class="col-sm-8 info-value">{{ user.updatedAt|date('F d, Y') }}</div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Last Name:</strong></div>
+                                <div class="col-sm-8">{{ user.nom }}</div>
                             </div>
-                            {% endif %}
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Email:</strong></div>
+                                <div class="col-sm-8">{{ user.email }}</div>
+                            </div>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Phone:</strong></div>
+                                <div class="col-sm-8">{{ user.telephone ?? 'Not provided' }}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Date of Birth:</strong></div>
+                                <div class="col-sm-8">{{ user.dateNaissance ? user.dateNaissance|date('F d, Y') : 'Not provided' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-light rounded p-4">
+                            <h5 class="mb-4"><i class="fa fa-shield-alt me-2"></i>Account Details</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Account Created:</strong></div>
+                                <div class="col-sm-8">{{ user.createdAt|date('F d, Y') }}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Last Updated:</strong></div>
+                                <div class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('F d, Y') : 'Never' }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -257,12 +218,379 @@
                 </div>
             </div>
         </div>
-        <!-- Content End -->
     </div>
 
-    <!-- JavaScript Libraries -->
+    {# Face Registration Modal - Same as user profile #}
+    <div class="modal fade" id="faceRegistrationModal" tabindex="-1" aria-labelledby="faceRegistrationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faceRegistrationModalLabel">
+                        <i class="bi bi-camera-video me-2"></i>Enable Face Authentication
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="face-registration-steps">
+                        
+                        {# Step 1: Instructions #}
+                        <div id="step-instructions" class="text-center">
+                            <i class="bi bi-info-circle text-primary" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 mb-3">How Face Authentication Works</h5>
+                            <ul class="text-start" style="max-width: 500px; margin: 0 auto;">
+                                <li class="mb-2">Position your face in the camera frame</li>
+                                <li class="mb-2">Make sure you're in a well-lit area</li>
+                                <li class="mb-2">Look directly at the camera</li>
+                                <li class="mb-2">We'll capture your face data securely</li>
+                                <li class="mb-2">Your face data is encrypted and stored safely</li>
+                            </ul>
+                            <button type="button" class="btn btn-primary mt-4" id="start-face-capture-btn">
+                                <i class="bi bi-camera-fill me-2"></i>Start Camera
+                            </button>
+                        </div>
+
+                        {# Step 2: Camera Capture #}
+                        <div id="step-camera" style="display: none;">
+                            <div class="position-relative">
+                                <video id="face-video" width="100%" height="auto" autoplay muted style="border-radius: 12px; max-height: 400px;"></video>
+                                <canvas id="face-canvas" style="display: none;"></canvas>
+                                
+                                {# Face detection overlay #}
+                                <div id="face-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                                    <div id="face-detection-box" style="display: none; position: absolute; border: 3px solid #00ff00; border-radius: 8px; box-shadow: 0 0 20px rgba(0,255,0,0.5);"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <div id="face-status" class="alert alert-info">
+                                    <i class="bi bi-camera-video me-2"></i>
+                                    <span id="face-status-text">Initializing camera...</span>
+                                </div>
+                                
+                            <button type="button" class="btn btn-success" id="capture-face-btn" disabled style="pointer-events: auto; opacity: 0.5;">
+                                <i class="bi bi-check-circle me-2"></i>Capture Face
+                            </button>
+                                <button type="button" class="btn btn-secondary" id="cancel-capture-btn">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        {# Step 3: Processing #}
+                        <div id="step-processing" style="display: none;" class="text-center py-5">
+                            <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                            <h5>Processing your face data...</h5>
+                            <p class="text-muted">Please wait while we securely store your information.</p>
+                        </div>
+
+                        {# Step 4: Success #}
+                        <div id="step-success" style="display: none;" class="text-center py-5">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                            <h4 class="mt-3 mb-2">Face Authentication Enabled!</h4>
+                            <p class="text-muted">You can now use your face to log in quickly and securely.</p>
+                            <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">
+                                Done
+                            </button>
+                        </div>
+
+                        {# Step 5: Error #}
+                        <div id="step-error" style="display: none;" class="text-center py-5">
+                            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+                            <h4 class="mt-3 mb-2">Registration Failed</h4>
+                            <p class="text-muted" id="error-message">An error occurred. Please try again.</p>
+                            <button type="button" class="btn btn-primary mt-3" id="retry-face-capture-btn">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                            </button>
+                            <button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('admin/js/main.js') }}"></script>
+
+    {# JavaScript for Face Registration - Same as user profile #}
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let videoStream = null;
+        let faceDescriptor = null;
+        
+        const video = document.getElementById('face-video');
+        const canvas = document.getElementById('face-canvas');
+        const startBtn = document.getElementById('start-face-capture-btn');
+        const captureBtn = document.getElementById('capture-face-btn');
+        const cancelBtn = document.getElementById('cancel-capture-btn');
+        const retryBtn = document.getElementById('retry-face-capture-btn');
+        const disableBtn = document.getElementById('disable-face-auth-btn');
+        const statusText = document.getElementById('face-status-text');
+        const faceDetectionBox = document.getElementById('face-detection-box');
+
+        // Load face-api.js models
+        async function loadModels() {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                console.log('Face-api models loaded successfully');
+                return true;
+            } catch (error) {
+                console.error('Error loading face-api models:', error);
+                return false;
+            }
+        }
+
+        // Start camera
+        async function startCamera() {
+            try {
+                statusText.textContent = 'Starting camera...';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    } 
+                });
+                
+                video.srcObject = stream;
+                videoStream = stream;
+                
+                // Wait for video to be ready
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play().then(() => {
+                            statusText.textContent = 'Camera ready. Position your face in the frame.';
+                            resolve();
+                        });
+                    };
+                });
+                
+                // Start face detection
+                detectFace();
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showError('Unable to access camera. Please check permissions.');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+    // Detect face in video
+    async function detectFace() {
+        if (!video.srcObject || !videoStream) return;
+        
+        try {
+            const detection = await faceapi
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+            
+            if (detection) {
+                // Face detected - show green box
+                const box = detection.detection.box;
+                const videoRect = video.getBoundingClientRect();
+                const videoWidth = video.videoWidth || videoRect.width;
+                const videoHeight = video.videoHeight || videoRect.height;
+                
+                // Calculate relative positions
+                const scaleX = videoRect.width / videoWidth;
+                const scaleY = videoRect.height / videoHeight;
+                
+                faceDetectionBox.style.display = 'block';
+                faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                
+                statusText.textContent = 'Face detected! Click "Capture Face" to continue.';
+                captureBtn.disabled = false;
+                captureBtn.removeAttribute('disabled');
+                captureBtn.style.pointerEvents = 'auto';
+                captureBtn.style.opacity = '1';
+                captureBtn.style.cursor = 'pointer';
+                
+                // Store descriptor temporarily
+                faceDescriptor = Array.from(detection.descriptor);
+            } else {
+                // No face detected
+                faceDetectionBox.style.display = 'none';
+                statusText.textContent = 'No face detected. Please position your face in the frame.';
+                captureBtn.disabled = true;
+                captureBtn.setAttribute('disabled', 'disabled');
+                captureBtn.style.opacity = '0.5';
+                captureBtn.style.cursor = 'not-allowed';
+            }
+        } catch (error) {
+            console.error('Face detection error:', error);
+            // Continue detection even if there's an error
+        }
+        
+        // Continue detection loop
+        if (videoStream && video.srcObject) {
+            requestAnimationFrame(() => detectFace());
+        }
+    }
+
+        // Capture face and register
+        async function captureFace() {
+            if (!faceDescriptor) {
+                showError('No face detected. Please try again.');
+                return;
+            }
+            
+            showStep('step-processing');
+            stopCamera();
+            
+            try {
+                const response = await fetch('/api/face-auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        descriptor: faceDescriptor
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStep('step-success');
+                    // Reload page after 2 seconds to update UI
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Registration failed. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Error registering face:', error);
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Disable face authentication
+        async function disableFaceAuth() {
+            if (!confirm('Are you sure you want to disable face authentication?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/face-auth/disable', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Failed to disable face authentication. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Error disabling face auth:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Show specific step
+        function showStep(stepId) {
+            document.querySelectorAll('#face-registration-steps > div').forEach(div => {
+                div.style.display = 'none';
+            });
+            document.getElementById(stepId).style.display = 'block';
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            showStep('step-error');
+        }
+
+        // Event listeners
+        if (startBtn) {
+            startBtn.addEventListener('click', async function() {
+                showStep('step-camera');
+                const modelsLoaded = await loadModels();
+                if (modelsLoaded) {
+                    await startCamera();
+                } else {
+                    showError('Failed to load face detection models. Please refresh and try again.');
+                }
+            });
+        }
+
+        if (captureBtn) {
+            captureBtn.addEventListener('click', captureFace);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                stopCamera();
+                bootstrap.Modal.getInstance(document.getElementById('faceRegistrationModal')).hide();
+            });
+        }
+        
+        if (retryBtn) {
+            retryBtn.addEventListener('click', function() {
+                showStep('step-instructions');
+            });
+        }
+        
+        if (disableBtn) {
+            disableBtn.addEventListener('click', disableFaceAuth);
+        }
+
+        // Clean up on modal close
+        const modal = document.getElementById('faceRegistrationModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                stopCamera();
+                showStep('step-instructions');
+                if (captureBtn) {
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                }
+                faceDescriptor = null;
+            });
+            
+            // Reset button state when modal is shown
+            modal.addEventListener('show.bs.modal', function() {
+                if (captureBtn) {
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                }
+                faceDescriptor = null;
+            });
+        }
+    });
+    </script>
 </body>
 </html>

@@ -140,6 +140,39 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastLoginAt = null;
 
+    // ==================== FACIAL RECOGNITION FIELDS ====================
+
+    /**
+     * Encrypted face descriptor for facial recognition login.
+     * Stores the face-api.js descriptor as JSON.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $faceDescriptor = null;
+
+    /**
+     * Whether the user has enabled facial recognition authentication.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $faceAuthEnabled = false;
+
+    /**
+     * When the user registered their face for authentication.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $faceRegisteredAt = null;
+
+    /**
+     * Number of failed face authentication attempts (for rate limiting).
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $faceAuthFailedAttempts = 0;
+
+    /**
+     * Timestamp of last failed face auth attempt (for rate limiting).
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastFaceAuthAttemptAt = null;
+
     /**
      * @var Collection<int, Post>
      */
@@ -472,6 +505,96 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
     {
         $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
+    // ==================== FACIAL RECOGNITION METHODS ====================
+
+    public function getFaceDescriptor(): ?string
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?string $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    public function isFaceAuthEnabled(): bool
+    {
+        return $this->faceAuthEnabled;
+    }
+
+    public function setFaceAuthEnabled(bool $faceAuthEnabled): static
+    {
+        $this->faceAuthEnabled = $faceAuthEnabled;
+        return $this;
+    }
+
+    public function getFaceRegisteredAt(): ?\DateTimeInterface
+    {
+        return $this->faceRegisteredAt;
+    }
+
+    public function setFaceRegisteredAt(?\DateTimeInterface $faceRegisteredAt): static
+    {
+        $this->faceRegisteredAt = $faceRegisteredAt;
+        return $this;
+    }
+
+    public function getFaceAuthFailedAttempts(): int
+    {
+        return $this->faceAuthFailedAttempts;
+    }
+
+    public function setFaceAuthFailedAttempts(int $faceAuthFailedAttempts): static
+    {
+        $this->faceAuthFailedAttempts = $faceAuthFailedAttempts;
+        return $this;
+    }
+
+    public function getLastFaceAuthAttemptAt(): ?\DateTimeInterface
+    {
+        return $this->lastFaceAuthAttemptAt;
+    }
+
+    public function setLastFaceAuthAttemptAt(?\DateTimeInterface $lastFaceAuthAttemptAt): static
+    {
+        $this->lastFaceAuthAttemptAt = $lastFaceAuthAttemptAt;
+        return $this;
+    }
+
+    /**
+     * Reset face authentication data (used when disabling face auth).
+     */
+    public function resetFaceAuth(): static
+    {
+        $this->faceDescriptor = null;
+        $this->faceAuthEnabled = false;
+        $this->faceRegisteredAt = null;
+        $this->faceAuthFailedAttempts = 0;
+        $this->lastFaceAuthAttemptAt = null;
+        return $this;
+    }
+
+    /**
+     * Increment failed face auth attempts for rate limiting.
+     */
+    public function incrementFaceAuthFailedAttempts(): static
+    {
+        $this->faceAuthFailedAttempts++;
+        $this->lastFaceAuthAttemptAt = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * Reset failed face auth attempts after successful login.
+     */
+    public function resetFaceAuthFailedAttempts(): static
+    {
+        $this->faceAuthFailedAttempts = 0;
+        $this->lastFaceAuthAttemptAt = null;
         return $this;
     }
 

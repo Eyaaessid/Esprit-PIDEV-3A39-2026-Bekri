@@ -16,6 +16,9 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
         /* NOUVEAU DESIGN SIGNIN - VERSION 2 */
         * {
@@ -208,6 +211,52 @@
 
         .btn-login:active {
             transform: translateY(0);
+        }
+
+        /* Face Login Button */
+        .btn-face-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin-top: 12px;
+        }
+
+        .btn-face-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e8eef1;
+        }
+
+        .divider span {
+            padding: 0 16px;
+            color: #95a5a6;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .signup-link {
@@ -407,6 +456,94 @@
             color: white;
         }
         .captcha-modal-footer .btn-modal-primary:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        /* Face Login Modal */
+        .face-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .face-modal.active {
+            display: flex;
+        }
+
+        .face-modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .face-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+
+        .face-modal-body {
+            padding: 32px;
+        }
+
+        #face-login-video {
+            width: 100%;
+            border-radius: 12px;
+            max-height: 400px;
+        }
+
+        .face-status-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .face-status-box.info {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .face-status-box.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .face-status-box.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-close-modal {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-close-modal:hover {
+            background: #d1d5db;
+        }
     </style>
 </head>
 <body>
@@ -495,6 +632,15 @@
                 <div class="spinner"></div>
             </button>
 
+            <div class="divider">
+                <span>OU</span>
+            </div>
+
+            <button type="button" class="btn-face-login" id="faceLoginBtn">
+                <i class="bi bi-camera-video-fill"></i>
+                <span>Se connecter avec Face ID</span>
+            </button>
+
             <div class="signup-link">
                 Pas encore de compte ? <a href="{{ path('app_register') }}">Créer un compte</a>
             </div>
@@ -528,7 +674,47 @@
         </div>
     </div>
 
+    <!-- Face Login Modal -->
+    <div id="face-login-modal" class="face-modal" onclick="if(event.target === this) { document.getElementById('close-face-modal-btn').click(); }">
+        <div class="face-modal-content" onclick="event.stopPropagation();">
+            <div class="face-modal-header">
+                <h3><i class="bi bi-camera-video-fill me-2"></i>Face Authentication</h3>
+                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Look at the camera to sign in</p>
+            </div>
+            <div class="face-modal-body">
+                <div id="face-login-email-step">
+                    <label for="face-login-email" style="display: block; margin-bottom: 8px; font-weight: 500;">Enter your email first:</label>
+                    <input type="email" id="face-login-email" class="form-input" placeholder="your@email.com" style="margin-bottom: 16px;">
+                    <button type="button" class="btn-login" id="start-face-login-btn">
+                        <i class="bi bi-camera-video-fill"></i>
+                        <span>Start Face Login</span>
+                    </button>
+                </div>
+
+                <div id="face-login-camera-step" style="display: none;">
+                    <video id="face-login-video" autoplay muted></video>
+                    <div id="face-login-status" class="face-status-box info">
+                        <i class="bi bi-camera-video me-2"></i>
+                        <span id="face-login-status-text">Initializing camera...</span>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-close-modal" id="close-face-modal-btn">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
+        // Ensure faceapi is available globally
+        if (typeof faceapi === 'undefined') {
+            console.error('face-api.js library failed to load');
+        }
+    </script>
+    <script>
+        // Password CAPTCHA (existing code)
         var loginAttempts = {{ app.session.get('login_attempts', 0) }};
         var captchaVerified = false;
         var captchaQuestion = {{ captcha_question|default('')|json_encode|raw }};
@@ -589,6 +775,253 @@
             btn.classList.add('loading');
             btn.querySelector('span').textContent = 'Connexion...';
         });
+
+        // FACE LOGIN FUNCTIONALITY
+        let faceLoginStream = null;
+        const faceLoginModal = document.getElementById('face-login-modal');
+        const faceLoginBtn = document.getElementById('faceLoginBtn');
+        const startFaceLoginBtn = document.getElementById('start-face-login-btn');
+        const closeFaceModalBtn = document.getElementById('close-face-modal-btn');
+        const faceLoginEmail = document.getElementById('face-login-email');
+        const faceLoginVideo = document.getElementById('face-login-video');
+        const faceLoginStatus = document.getElementById('face-login-status');
+        const faceLoginStatusText = document.getElementById('face-login-status-text');
+        const emailStep = document.getElementById('face-login-email-step');
+        const cameraStep = document.getElementById('face-login-camera-step');
+
+        // Open face login modal
+        faceLoginBtn.addEventListener('click', function() {
+            faceLoginModal.classList.add('active');
+            // Pre-fill email if available
+            const emailInput = document.getElementById('email');
+            if (emailInput && emailInput.value) {
+                faceLoginEmail.value = emailInput.value;
+            }
+        });
+
+        // Close face login modal
+        closeFaceModalBtn.addEventListener('click', function() {
+            stopFaceLoginCamera();
+            isAuthenticating = false;
+            detectionRunning = false;
+            faceLoginModal.classList.remove('active');
+            emailStep.style.display = 'block';
+            cameraStep.style.display = 'none';
+            faceLoginStatusText.textContent = 'Initializing camera...';
+            faceLoginStatus.className = 'face-status-box info';
+        });
+
+        // Start face login process
+        startFaceLoginBtn.addEventListener('click', async function() {
+            const email = faceLoginEmail.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            // Reset state
+            isAuthenticating = false;
+            detectionRunning = false;
+            
+            emailStep.style.display = 'none';
+            cameraStep.style.display = 'block';
+
+            // Load models first
+            const modelsLoaded = await loadFaceLoginModels();
+            if (!modelsLoaded) {
+                emailStep.style.display = 'block';
+                cameraStep.style.display = 'none';
+                return;
+            }
+
+            // Start camera after models are loaded
+            await startFaceLoginCamera(email);
+        });
+
+        // Load face-api models
+        async function loadFaceLoginModels() {
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            try {
+                faceLoginStatusText.textContent = 'Loading AI models...';
+                faceLoginStatus.className = 'face-status-box info';
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                console.log('Face models loaded successfully');
+                return true;
+            } catch (error) {
+                console.error('Error loading models:', error);
+                showFaceLoginError('Failed to load face recognition models. Please refresh and try again.');
+                return false;
+            }
+        }
+
+        // Start camera for face login
+        async function startFaceLoginCamera(email) {
+            try {
+                faceLoginStatusText.textContent = 'Starting camera...';
+                faceLoginStatus.className = 'face-status-box info';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    } 
+                });
+                
+                faceLoginVideo.srcObject = stream;
+                faceLoginStream = stream;
+                
+                // Wait for video to be ready
+                await new Promise((resolve) => {
+                    faceLoginVideo.onloadedmetadata = () => {
+                        faceLoginVideo.play().then(() => {
+                            faceLoginStatusText.textContent = 'Camera ready. Position your face in the frame...';
+                            faceLoginStatus.className = 'face-status-box info';
+                            resolve();
+                        });
+                    };
+                });
+                
+                // Start face detection and authentication loop
+                detectAndAuthenticateFace(email);
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                showFaceLoginError('Unable to access camera. Please check permissions.');
+            }
+        }
+
+        // Stop camera
+        function stopFaceLoginCamera() {
+            if (faceLoginStream) {
+                faceLoginStream.getTracks().forEach(track => track.stop());
+                faceLoginStream = null;
+            }
+            if (faceLoginVideo.srcObject) {
+                faceLoginVideo.srcObject = null;
+            }
+            isAuthenticating = false;
+            detectionRunning = false;
+        }
+
+        // Detect face and authenticate
+        let isAuthenticating = false;
+        let detectionRunning = false;
+        
+        async function detectAndAuthenticateFace(email) {
+            if (!faceLoginStream || !faceLoginVideo.srcObject) return;
+            if (isAuthenticating) return; // Don't start new detection if already authenticating
+            
+            detectionRunning = true;
+            
+            try {
+                const detection = await faceapi
+                    .detectSingleFace(faceLoginVideo, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+                
+                if (detection) {
+                    // Face detected
+                    if (!isAuthenticating) {
+                        isAuthenticating = true;
+                        faceLoginStatusText.textContent = 'Face detected! Authenticating...';
+                        faceLoginStatus.className = 'face-status-box info';
+                        
+                        const descriptor = Array.from(detection.descriptor);
+                        
+                        try {
+                            // Send to server for authentication
+                            const response = await fetch('/api/face-auth/login', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    email: email,
+                                    descriptor: descriptor
+                                })
+                            });
+                            
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                showFaceLoginSuccess('Authentication successful! Redirecting...');
+                                stopFaceLoginCamera();
+                                
+                                // Redirect based on role
+                                setTimeout(() => {
+                                    if (data.user.role === 'admin') {
+                                        window.location.href = '/admin';
+                                    } else if (data.user.role === 'coach') {
+                                        window.location.href = '/coach';
+                                    } else {
+                                        window.location.href = '/user';
+                                    }
+                                }, 1500);
+                                return; // Stop detection loop
+                            } else {
+                                if (data.lockoutTime) {
+                                    showFaceLoginError(`Too many failed attempts. Try again in ${data.lockoutTime} minutes.`);
+                                    stopFaceLoginCamera();
+                                    return; // Stop detection loop
+                                } else {
+                                    faceLoginStatusText.textContent = data.message || 'Face not recognized. Please try again...';
+                                    faceLoginStatus.className = 'face-status-box error';
+                                    isAuthenticating = false;
+                                    // Wait a bit before continuing detection
+                                    setTimeout(() => {
+                                        if (faceLoginStream) {
+                                            detectAndAuthenticateFace(email);
+                                        }
+                                    }, 2000);
+                                    return;
+                                }
+                            }
+                        } catch (fetchError) {
+                            console.error('Authentication request error:', fetchError);
+                            faceLoginStatusText.textContent = 'Network error. Please try again...';
+                            faceLoginStatus.className = 'face-status-box error';
+                            isAuthenticating = false;
+                            setTimeout(() => {
+                                if (faceLoginStream) {
+                                    detectAndAuthenticateFace(email);
+                                }
+                            }, 2000);
+                            return;
+                        }
+                    }
+                } else {
+                    // No face detected
+                    if (!isAuthenticating) {
+                        faceLoginStatusText.textContent = 'No face detected. Position your face in the frame...';
+                        faceLoginStatus.className = 'face-status-box info';
+                    }
+                    // Continue detection loop
+                    if (faceLoginStream && faceLoginVideo.srcObject) {
+                        requestAnimationFrame(() => detectAndAuthenticateFace(email));
+                    }
+                }
+            } catch (error) {
+                console.error('Face detection error:', error);
+                isAuthenticating = false;
+                // Continue detection loop even on error
+                if (faceLoginStream && faceLoginVideo.srcObject) {
+                    requestAnimationFrame(() => detectAndAuthenticateFace(email));
+                }
+            }
+        }
+
+        function showFaceLoginSuccess(message) {
+            faceLoginStatusText.textContent = message;
+            faceLoginStatus.className = 'face-status-box success';
+        }
+
+        function showFaceLoginError(message) {
+            faceLoginStatusText.textContent = message;
+            faceLoginStatus.className = 'face-status-box error';
+        }
     </script>
 </body>
 </html>

@@ -37,3 +37,4 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/coach, roles: ROLE_COACH }
         - { path: ^/user, roles: ROLE_USER }
+        - { path: ^/api/mobile, roles: PUBLIC_ACCESS }

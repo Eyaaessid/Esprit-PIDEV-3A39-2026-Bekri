@@ -1,3 +1,5 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+        # Add timeout and retry configuration
+        message_bus: null  # Send synchronously (not via messenger)

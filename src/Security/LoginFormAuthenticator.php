@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\Utilisateur;
 use App\Enum\UtilisateurStatut;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +37,8 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         private LoginSuccessHandler $successHandler,
         private UserProviderInterface $userProvider,
         private EntityManagerInterface $entityManager,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -113,7 +115,12 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                 try {
                     $this->mailer->send($emailMessage);
                 } catch (\Throwable $e) {
-                    // Log but don't expose; user still sees "check your email" for consistency
+                    // SMTP blocked: log the link so the flow is still testable in dev
+                    $this->logger->error('Failed to send reactivation email', [
+                        'email' => $user->getEmail(),
+                        'error' => $e->getMessage(),
+                        'reactivationUrl' => $reactivationUrl,
+                    ]);
                 }
                 $message = $deactivatedBy === 'system'
                     ? 'Votre compte est inactif (30 jours sans connexion). Un email de réactivation vous a été envoyé.'
