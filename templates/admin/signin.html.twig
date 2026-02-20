@@ -457,6 +457,77 @@
         }
         .captcha-modal-footer .btn-modal-primary:hover { opacity: 0.95; transform: translateY(-1px); }
 
+        /* ── 2FA Login Modal ──────────────────────────────────────────────────── */
+        #twofa-login-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10100;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #twofa-login-overlay.active { display: flex; }
+        #twofa-login-box {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        #twofa-login-box .twofa-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #20b2aa, #3ecdc7, #667eea);
+        }
+        #twofa-login-box .twofa-body { padding: 36px 32px 28px; }
+        /* digit boxes */
+        .twofa-digits-row { display:flex; align-items:center; justify-content:center; gap:8px; }
+        .twofa-digit {
+            width:48px; height:58px; text-align:center;
+            font-size:1.6rem; font-weight:700;
+            border:2px solid #dee2e6; border-radius:12px;
+            background:#fff; color:#2c3e50; outline:none;
+            transition: border-color .2s, box-shadow .2s, transform .1s;
+        }
+        .twofa-digit:focus { border-color:#20b2aa; box-shadow:0 0 0 3px rgba(32,178,170,.18); transform:scale(1.05); }
+        .twofa-digit.filled { border-color:#20b2aa; background:#f0fffe; }
+        .twofa-digit.error  { border-color:#e74c3c !important; background:#fff5f5 !important; }
+        @keyframes twofaShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+        .twofa-digit.shake  { animation: twofaShake .35s ease; }
+        .twofa-digit-sep { color:#aaa; font-size:1.2rem; user-select:none; }
+        /* icon ring */
+        .twofa-icon-ring {
+            width:72px; height:72px; border-radius:50%;
+            background:linear-gradient(135deg,rgba(32,178,170,.13),rgba(62,205,199,.13));
+            border:3px solid rgba(32,178,170,.27);
+            display:flex; align-items:center; justify-content:center;
+            font-size:2rem; color:#20b2aa;
+            animation: twofaPulse 2s ease-in-out infinite;
+            margin: 0 auto;
+        }
+        @keyframes twofaPulse{0%,100%{box-shadow:0 0 0 0 rgba(32,178,170,.3)}50%{box-shadow:0 0 0 12px rgba(32,178,170,0)}}
+        /* submit btn */
+        .twofa-submit-btn {
+            background: linear-gradient(135deg,#20b2aa 0%,#3ecdc7 100%);
+            border:none; color:#fff; width:100%; padding:14px;
+            border-radius:12px; font-size:15px; font-weight:600;
+            cursor:pointer; transition:all .3s;
+            box-shadow:0 4px 15px rgba(32,178,170,.35);
+        }
+        .twofa-submit-btn:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 6px 25px rgba(32,178,170,.45); }
+        .twofa-submit-btn:disabled { opacity:.55; cursor:not-allowed; }
+        /* spinner */
+        .twofa-spinner {
+            display:inline-block; width:16px; height:16px;
+            border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+            border-radius:50%; animation:twofaSpin .7s linear infinite; vertical-align:middle; margin-right:6px;
+        }
+        @keyframes twofaSpin{to{transform:rotate(360deg)}}
+
         /* Face Login Modal */
         .face-modal {
             display: none;
@@ -659,6 +730,72 @@
         </form>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         2FA Login Modal — appears ON the login page after valid credentials
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="twofa-login-overlay">
+        <div id="twofa-login-box">
+            <div class="twofa-bar"></div>
+            <div class="twofa-body">
+                <!-- Logo -->
+                <div class="text-center" style="margin-bottom:20px;">
+                    <img src="{{ asset('images/logo.png') }}" alt="Bekri" style="max-width:80px;height:auto;" onerror="this.style.display='none'">
+                </div>
+
+                <!-- Icon + title -->
+                <div class="text-center" style="margin-bottom:24px;">
+                    <div class="twofa-icon-ring" style="margin-bottom:16px;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h5 style="color:#2c3e50;font-weight:700;margin:0 0 6px;">Authentification à deux facteurs</h5>
+                    <p style="color:#95a5a6;font-size:14px;margin:0;">Entrez le code à 6 chiffres de votre application TOTP</p>
+                </div>
+
+                <!-- Error area -->
+                <div id="twofa-login-error" style="display:none;" class="alert" style="background:#fff5f5;color:#e74c3c;border-left:4px solid #e74c3c;padding:12px 16px;border-radius:10px;font-size:14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="twofa-login-error-text">Code incorrect. Réessayez.</span>
+                </div>
+
+                <!-- Digit inputs -->
+                <div class="twofa-digits-row" id="twofa-login-digits" style="margin-bottom:24px;">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <span class="twofa-digit-sep">—</span>
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                </div>
+
+                <!-- Hidden assembled code -->
+                <input type="hidden" id="twofa-login-code" value="">
+
+                <!-- Timer -->
+                <p style="text-align:center;color:#95a5a6;font-size:13px;margin-bottom:20px;">
+                    <i class="bi bi-clock" style="margin-right:4px;"></i>Code valable 30 secondes
+                </p>
+
+                <!-- Submit -->
+                <button type="button" id="twofa-login-submit" class="twofa-submit-btn" disabled>
+                    <i class="bi bi-check-circle" style="margin-right:8px;"></i>Vérifier le code
+                </button>
+
+                <!-- Cancel -->
+                <div style="text-align:center;margin-top:16px;">
+                    <a href="{{ path('app_logout') }}" style="color:#95a5a6;font-size:14px;text-decoration:none;">
+                        <i class="bi bi-arrow-left" style="margin-right:4px;"></i>Annuler et se déconnecter
+                    </a>
+                </div>
+
+                <!-- Footer note -->
+                <p style="text-align:center;margin-top:20px;color:#bdc3c7;font-size:12px;">
+                    <i class="bi bi-lock" style="margin-right:4px;"></i>Connexion sécurisée · Bekri Wellbeing
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- CAPTCHA Modal (shown when login_attempts >= 2) -->
     <div id="captcha-modal" class="captcha-modal" style="display: none;">
         <div class="captcha-modal-overlay" onclick="closeCaptchaModal()"></div>
@@ -753,7 +890,13 @@
             input.value = userAnswer;
             captchaVerified = true;
             closeCaptchaModal();
-            document.getElementById('loginForm').submit();
+            // Use requestSubmit() so the async submit listener runs (not native bypass)
+            var form = document.getElementById('loginForm');
+            if (form.requestSubmit) {
+                form.requestSubmit();
+            } else {
+                form.submit(); // Fallback for old browsers
+            }
         }
         document.addEventListener('DOMContentLoaded', function() {
             var captchaInput = document.getElementById('captcha-modal-input');
@@ -763,27 +906,208 @@
                 });
             }
         });
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        /* ══════════════════════════════════════════════════════════════════════
+           LOGIN FORM — AJAX submission with 2FA-modal detection
+           ══════════════════════════════════════════════════════════════════════ */
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // ── clientside guards (honeypot, timestamp, captcha) ──────────────
             var honeypot = document.querySelector('input[name="website"]');
-            if (honeypot && honeypot.value !== '') {
-                e.preventDefault();
-                return false;
-            }
+            if (honeypot && honeypot.value !== '') return;
+
             var ts = parseInt(document.querySelector('input[name="form_timestamp"]').value, 10);
             if (ts && (Math.floor(Date.now() / 1000) - ts) < 3) {
-                e.preventDefault();
                 alert('Veuillez patienter quelques secondes avant de vous connecter.');
-                return false;
+                return;
             }
             if (loginAttempts >= 2 && !captchaVerified) {
-                e.preventDefault();
                 showCaptchaModal();
-                return false;
+                return;
             }
+
+            // ── show loading state ────────────────────────────────────────────
             var btn = document.getElementById('loginBtn');
             btn.classList.add('loading');
             btn.querySelector('span').textContent = 'Connexion...';
+
+            // ── POST credentials via fetch() ──────────────────────────────────
+            var formData = new FormData(this);
+            var response;
+            try {
+                response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow',
+                    credentials: 'same-origin',
+                });
+            } catch (err) {
+                // Network failure — fall back to normal submit
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+                this.submit();
+                return;
+            }
+
+            var finalPath = '';
+            try { finalPath = new URL(response.url).pathname; } catch(e) {}
+
+            // ── 2FA required? ─────────────────────────────────────────────────
+            if (finalPath === '/2fa' || finalPath.startsWith('/2fa')) {
+                // Reset login button
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+
+                // Show the 2FA modal on this page (no navigation!)
+                openTwofaLoginModal();
+                return;
+            }
+
+            // ── Normal success / error: navigate to wherever server sent us ───
+            if (response.url && response.url !== window.location.href) {
+                window.location.href = response.url;
+            } else {
+                // Likely an auth error — reload the page so Symfony renders the error
+                window.location.reload();
+            }
         });
+
+        /* ══════════════════════════════════════════════════════════════════════
+           2FA LOGIN MODAL — digit UX + AJAX code verification
+           ══════════════════════════════════════════════════════════════════════ */
+        function openTwofaLoginModal() {
+            var overlay = document.getElementById('twofa-login-overlay');
+            overlay.classList.add('active');
+
+            // Reset state
+            clearTwofaError();
+            var digits = document.querySelectorAll('#twofa-login-digits .twofa-digit');
+            digits.forEach(function(d) {
+                d.value = '';
+                d.classList.remove('filled', 'error', 'shake');
+            });
+            document.getElementById('twofa-login-code').value = '';
+            document.getElementById('twofa-login-submit').disabled = true;
+
+            // Focus first digit
+            if (digits[0]) setTimeout(function() { digits[0].focus(); }, 150);
+
+            // Wire digit inputs (only once)
+            if (!overlay.dataset.wired) {
+                overlay.dataset.wired = '1';
+                initTwofaDigits();
+                document.getElementById('twofa-login-submit').addEventListener('click', submitTwofaCode);
+            }
+        }
+
+        function initTwofaDigits() {
+            var digits = Array.from(document.querySelectorAll('#twofa-login-digits .twofa-digit'));
+            var hidden = document.getElementById('twofa-login-code');
+            var btn    = document.getElementById('twofa-login-submit');
+
+            function sync() {
+                var val = digits.map(function(d) { return d.value; }).join('');
+                hidden.value = val;
+                btn.disabled = val.length < 6;
+                digits.forEach(function(d) { d.classList.toggle('filled', d.value !== ''); });
+                return val;
+            }
+
+            digits.forEach(function(d, i) {
+                d.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !d.value && i > 0) digits[i-1].focus();
+                });
+                d.addEventListener('input', function() {
+                    d.value = d.value.replace(/[^0-9]/g, '').slice(-1);
+                    var val = sync();
+                    if (d.value && i < digits.length - 1) digits[i+1].focus();
+                    if (val.length === 6) setTimeout(submitTwofaCode, 250);
+                });
+                d.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    var nums = (e.clipboardData || window.clipboardData)
+                        .getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                    Array.from(nums).forEach(function(n, j) { if (digits[j]) digits[j].value = n; });
+                    var val = sync();
+                    digits[Math.min(nums.length, digits.length - 1)].focus();
+                    if (val.length === 6) setTimeout(submitTwofaCode, 250);
+                });
+            });
+        }
+
+        function clearTwofaError() {
+            var err = document.getElementById('twofa-login-error');
+            if (err) err.style.display = 'none';
+        }
+
+        function showTwofaError(msg) {
+            var err = document.getElementById('twofa-login-error');
+            var txt = document.getElementById('twofa-login-error-text');
+            if (txt) txt.textContent = msg || 'Code incorrect. Réessayez.';
+            if (err) { err.style.display = 'flex'; }
+        }
+
+        async function submitTwofaCode() {
+            var code = document.getElementById('twofa-login-code').value;
+            if (code.length < 6) return;
+
+            var btn = document.getElementById('twofa-login-submit');
+            var origHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="twofa-spinner"></span>Vérification…';
+            clearTwofaError();
+
+            var fd = new FormData();
+            fd.append('_auth_code', code);
+
+            var response;
+            try {
+                response = await fetch('/2fa_check', {
+                    method: 'POST',
+                    body: fd,
+                    redirect: 'follow',
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+            } catch(err) {
+                // Network error — navigate to 2FA page as fallback
+                window.location.href = '/2fa';
+                return;
+            }
+
+            var finalPath = '';
+            try { finalPath = new URL(response.url).pathname; } catch(e) {}
+
+            var is2faFail = finalPath === '/2fa' || finalPath.startsWith('/2fa');
+
+            if (is2faFail) {
+                // Wrong code — shake digits, show error
+                var digits = document.querySelectorAll('#twofa-login-digits .twofa-digit');
+                digits.forEach(function(d) {
+                    d.classList.remove('shake');
+                    void d.offsetWidth; // reflow to restart animation
+                    d.classList.add('shake', 'error');
+                    d.value = '';
+                    d.classList.remove('filled');
+                });
+                document.getElementById('twofa-login-code').value = '';
+                btn.disabled = true;
+                btn.innerHTML = origHTML;
+
+                showTwofaError('Code incorrect. Réessayez.');
+
+                // Remove error styling after shake
+                setTimeout(function() {
+                    digits.forEach(function(d) { d.classList.remove('shake', 'error'); });
+                    var first = document.querySelector('#twofa-login-digits .twofa-digit');
+                    if (first) first.focus();
+                }, 400);
+                return;
+            }
+
+            // ✅ 2FA passed — navigate to dashboard
+            window.location.href = response.url || '/';
+        }
 
         // FACE LOGIN FUNCTIONALITY
         let faceLoginStream = null;

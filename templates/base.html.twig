@@ -605,6 +605,10 @@
 
     {% block scripts_extra %}{% endblock %}
 
-    {% block javascripts %}{% endblock %}
+    {# ── 2FA Modal Interceptor (only for authenticated users) #}
+    {% if app.user %}
+    <script src="{{ asset('assets/js/twofa-interceptor.js') }}" defer></script>
+    {% endif %}
+
 </body>
 </html>
