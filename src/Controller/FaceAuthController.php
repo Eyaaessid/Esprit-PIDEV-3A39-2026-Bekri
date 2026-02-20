@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/face-auth', name: 'api_face_auth_')]
@@ -20,7 +24,10 @@ class FaceAuthController extends AbstractController
     public function __construct(
         private FaceAuthService $faceAuthService,
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private UserProviderInterface $userProvider,
+        private TokenStorageInterface $tokenStorage,
+        private UrlGeneratorInterface $urlGenerator
     ) {}
 
     /**
@@ -165,19 +172,36 @@ class FaceAuthController extends AbstractController
             
             if ($isValid) {
                 // Face authentication successful
+                // Reload user to ensure we have the latest data
+                $user = $this->userProvider->loadUserByIdentifier($user->getUserIdentifier());
+                
                 // Update last login
                 $user->setLastLoginAt(new \DateTime());
                 $this->entityManager->flush();
                 
-                // Store user in session for authentication
-                $request->getSession()->set('_security_main', serialize([
-                    'user' => $user,
-                    'authenticated' => true
-                ]));
+                // Create authentication token
+                $token = new UsernamePasswordToken(
+                    $user,
+                    'main', // firewall name
+                    $user->getRoles()
+                );
+                
+                // Store token in security token storage
+                // TokenStorage will automatically persist to session via TokenStorageListener
+                $this->tokenStorage->setToken($token);
+                
+                // Ensure session is saved (TokenStorageListener handles this, but we ensure it's saved)
+                $session = $request->getSession();
+                $session->remove('login_attempts');
+                $session->save();
+                
+                // Get redirect URL based on user role using LoginSuccessHandler logic
+                $redirectUrl = $this->getRedirectUrlForUser($user);
                 
                 return $this->json([
                     'success' => true,
                     'message' => 'Face authentication successful',
+                    'redirectUrl' => $redirectUrl,
                     'user' => [
                         'id' => $user->getId(),
                         'email' => $user->getEmail(),
@@ -227,12 +251,30 @@ class FaceAuthController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
         
-        return $this->json([
+            return $this->json([
             'enabled' => $user->isFaceAuthEnabled(),
             'registeredAt' => $user->getFaceRegisteredAt()?->format('Y-m-d H:i:s'),
             'failedAttempts' => $user->getFaceAuthFailedAttempts(),
             'isLockedOut' => $this->faceAuthService->getRemainingLockoutTime($user) > 0,
             'lockoutTime' => $this->faceAuthService->getRemainingLockoutTime($user)
         ]);
+    }
+
+    /**
+     * Get redirect URL based on user role.
+     */
+    private function getRedirectUrlForUser(Utilisateur $user): string
+    {
+        $roles = $user->getRoles();
+        
+        if (in_array('ROLE_ADMIN', $roles)) {
+            return $this->urlGenerator->generate('admin_dashboard');
+        }
+        
+        if (in_array('ROLE_COACH', $roles)) {
+            return $this->urlGenerator->generate('coach_dashboard');
+        }
+        
+        return $this->urlGenerator->generate('user_dashboard');
     }
 }

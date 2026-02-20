@@ -950,16 +950,23 @@
                                 showFaceLoginSuccess('Authentication successful! Redirecting...');
                                 stopFaceLoginCamera();
                                 
-                                // Redirect based on role
+                                // Redirect to URL provided by backend
+                                // The backend has already authenticated the user and set the session
                                 setTimeout(() => {
-                                    if (data.user.role === 'admin') {
-                                        window.location.href = '/admin';
-                                    } else if (data.user.role === 'coach') {
-                                        window.location.href = '/coach';
+                                    if (data.redirectUrl) {
+                                        // Use the redirect URL from backend
+                                        window.location.href = data.redirectUrl;
                                     } else {
-                                        window.location.href = '/user';
+                                        // Fallback to role-based redirect if redirectUrl not provided
+                                        if (data.user.role === 'admin') {
+                                            window.location.href = '/admin';
+                                        } else if (data.user.role === 'coach') {
+                                            window.location.href = '/coach';
+                                        } else {
+                                            window.location.href = '/user';
+                                        }
                                     }
-                                }, 1500);
+                                }, 500);
                                 return; // Stop detection loop
                             } else {
                                 if (data.lockoutTime) {
