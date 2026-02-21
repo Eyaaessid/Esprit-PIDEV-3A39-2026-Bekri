@@ -6,8 +6,8 @@ use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
-use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Psr\Log\LoggerInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
@@ -67,20 +67,18 @@ class TwoFactorController extends AbstractController
             $this->entityManager->flush();
         }
 
-        // Generate QR code content
+        // Generate QR code content (v7 API)
         $qrCodeContent = $this->totpAuthenticator->getQRContent($user);
 
-        // Generate QR code image using endroid/qr-code v6
+        // Generate QR code image using endroid/qr-code
         $result = Builder::create()
             ->writer(new PngWriter())
-            ->writerOptions([])
             ->data($qrCodeContent)
             ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
             ->size(300)
             ->margin(10)
-            ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
-            ->validateResult(false)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
             ->build();
 
         $qrCodeDataUri = $result->getDataUri();

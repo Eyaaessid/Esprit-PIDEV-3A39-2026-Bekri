@@ -48,14 +48,22 @@ class WeeklyInsightController extends AbstractController
         $insights = $this->calculateWeeklyInsights($dailies);
         $recommendations = $this->getAIRecommendations($dailies, $insights);
 
+        // Compute global average
+        $globalAvg = 0;
+        if (!empty($insights['averageScores'])) {
+            $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
+        }
+
         return $this->render('insight/weekly.html.twig', [
             'dailies' => $dailies,
             'insights' => $insights,
             'recommendations' => $recommendations,
+            'globalAvg' => $globalAvg,
             'periodStart' => $startDate,
             'periodEnd' => $today,
         ]);
     }
+    
     #[Route('/weekly/pdf', name: 'insight_weekly_pdf')]
     public function downloadPdf(
         SuiviQuotidienRepository $suiviRepo
@@ -126,6 +134,7 @@ class WeeklyInsightController extends AbstractController
             ]
         );
     }
+    
     private function calculateWeeklyInsights(array $dailies): array
     {
         $insights = [
@@ -351,7 +360,7 @@ Règles :
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations personnalisées. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.'
+                            'content' => 'Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations personnalisées. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.' 
                         ],
                         ['role' => 'user', 'content' => $prompt],
                     ],

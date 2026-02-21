@@ -283,14 +283,25 @@
             margin-bottom: 24px;
             font-size: 14px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
+            line-height: 1.5;
         }
 
         .alert-danger {
             background: #fff5f5;
             color: #e74c3c;
             border-left: 4px solid #e74c3c;
+        }
+
+        .alert-danger a {
+            color: #c0392b;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .alert-danger a:hover {
+            color: #a93226;
         }
 
         .alert-success {
@@ -631,20 +642,24 @@
         {% if error %}
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle"></i>
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-            <div style="margin-top: -10px; margin-bottom: 18px; font-size: 14px;">
-                <a class="forgot-password" href="{{ path('app_verify_resend', { email: last_username }) }}">
-                    <i class="fas fa-envelope"></i>
-                    <span>Resend verification email</span>
-                </a>
+                <div>{{ error.messageKey|trans(error.messageData, 'security')|raw }}</div>
             </div>
         {% endif %}
+
+        {# Fallback: login_error flash is set by LoginFormAuthenticator when the AJAX
+           login form's fetch(redirect:'follow') silently consumes the standard Symfony
+           session error key before the browser's navigation GET reaches the controller. #}
+        {% for message in app.flashes('login_error') %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>{{ message|raw }}</div>
+            </div>
+        {% endfor %}
 
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i>
-                {{ message }}
+                <div>{{ message|raw }}</div>
             </div>
         {% endfor %}
 
@@ -932,6 +947,17 @@
             btn.querySelector('span').textContent = 'Connexion...';
 
             // ── POST credentials via fetch() ──────────────────────────────────
+            // We send X-Requested-With:fetch so LoginFormAuthenticator detects
+            // this is an AJAX call and returns JSON {error, redirect} on auth
+            // failure instead of the standard 302 + session redirect.
+            // This eliminates the double-GET session-consumption bug:
+            //   OLD: fetch follows 302→/login (GET) → SecurityController reads
+            //        and CONSUMES the one-time session error → browser GET to
+            //        /login finds no error → nothing displayed.
+            //   NEW: fetch gets 401 JSON with the error text directly.  JS
+            //        injects the error into the DOM — zero session involvement.
+            // On success Symfony still redirects (302→dashboard/2fa);
+            // fetch follows it and we detect the destination via response.url.
             var formData = new FormData(this);
             var response;
             try {
@@ -940,6 +966,7 @@
                     body: formData,
                     redirect: 'follow',
                     credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'fetch' },
                 });
             } catch (err) {
                 // Network failure — fall back to normal submit
@@ -949,8 +976,23 @@
                 return;
             }
 
+            // ── Auth failure: server returns 401 JSON ─────────────────────────
+            if (response.status === 401) {
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+                loginAttempts++;
+                try {
+                    var data = await response.json();
+                    showLoginError(data.error || 'Identifiants incorrects.');
+                } catch(jsonErr) {
+                    showLoginError('Identifiants incorrects.');
+                }
+                return;
+            }
+
+            var finalUrl  = response.url || window.location.href;
             var finalPath = '';
-            try { finalPath = new URL(response.url).pathname; } catch(e) {}
+            try { finalPath = new URL(finalUrl).pathname; } catch(parseErr) {}
 
             // ── 2FA required? ─────────────────────────────────────────────────
             if (finalPath === '/2fa' || finalPath.startsWith('/2fa')) {
@@ -963,18 +1005,34 @@
                 return;
             }
 
-            // ── Normal success / error: navigate to wherever server sent us ───
-            if (response.url && response.url !== window.location.href) {
-                window.location.href = response.url;
-            } else {
-                // Likely an auth error — reload the page so Symfony renders the error
-                window.location.reload();
-            }
+            // ── Normal success: navigate to wherever server sent us ───────────
+            window.location.href = finalUrl;
         });
+
+        /**
+         * Display an authentication error inline in the login form.
+         * Creates or reuses a dedicated #login-ajax-error <div>.
+         */
+        function showLoginError(htmlMessage) {
+            var container = document.getElementById('login-ajax-error');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'login-ajax-error';
+                container.className = 'alert alert-danger';
+                container.style.display = 'flex';
+                container.innerHTML = '<i class="fas fa-exclamation-circle"></i><div id="login-ajax-error-text"></div>';
+                // Insert before the form
+                var form = document.getElementById('loginForm');
+                form.parentNode.insertBefore(container, form);
+            }
+            document.getElementById('login-ajax-error-text').innerHTML = htmlMessage;
+            container.style.display = 'flex';
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
         /* ══════════════════════════════════════════════════════════════════════
            2FA LOGIN MODAL — digit UX + AJAX code verification
-           ══════════════════════════════════════════════════════════════════════ */
+           ═════════════════════════════���════════════════════════════════════════ */
         function openTwofaLoginModal() {
             var overlay = document.getElementById('twofa-login-overlay');
             overlay.classList.add('active');

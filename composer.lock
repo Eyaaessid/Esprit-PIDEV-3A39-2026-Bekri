@@ -4,33 +4,32 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08b8df2202da4eb6815c18a4154665f1",
+    "content-hash": "c1368ab0e423eea2804c8f14376af557",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
-            "version": "v3.0.3",
+            "version": "2.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Bacon/BaconQrCode.git",
-                "reference": "36a1cb2b81493fa5b82e50bf8068bf84d1542563"
+                "reference": "8674e51bb65af933a5ffaf1c308a660387c35c22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Bacon/BaconQrCode/zipball/36a1cb2b81493fa5b82e50bf8068bf84d1542563",
-                "reference": "36a1cb2b81493fa5b82e50bf8068bf84d1542563",
+                "url": "https://api.github.com/repos/Bacon/BaconQrCode/zipball/8674e51bb65af933a5ffaf1c308a660387c35c22",
+                "reference": "8674e51bb65af933a5ffaf1c308a660387c35c22",
                 "shasum": ""
             },
             "require": {
                 "dasprid/enum": "^1.0.3",
                 "ext-iconv": "*",
-                "php": "^8.1"
+                "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "phly/keep-a-changelog": "^2.12",
-                "phpunit/phpunit": "^10.5.11 || ^11.0.4",
-                "spatie/phpunit-snapshot-assertions": "^5.1.5",
-                "spatie/pixelmatch-php": "^1.2.0",
-                "squizlabs/php_codesniffer": "^3.9"
+                "phly/keep-a-changelog": "^2.1",
+                "phpunit/phpunit": "^7 | ^8 | ^9",
+                "spatie/phpunit-snapshot-assertions": "^4.2.9",
+                "squizlabs/php_codesniffer": "^3.4"
             },
             "suggest": {
                 "ext-imagick": "to generate QR code images"
@@ -57,9 +56,9 @@
             "homepage": "https://github.com/Bacon/BaconQrCode",
             "support": {
                 "issues": "https://github.com/Bacon/BaconQrCode/issues",
-                "source": "https://github.com/Bacon/BaconQrCode/tree/v3.0.3"
+                "source": "https://github.com/Bacon/BaconQrCode/tree/2.0.8"
             },
-            "time": "2025-11-19T17:15:36+00:00"
+            "time": "2022-12-07T17:46:57+00:00"
         },
         {
             "name": "composer/semver",
@@ -1531,38 +1530,39 @@
         },
         {
             "name": "endroid/qr-code",
-            "version": "6.0.9",
+            "version": "4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/endroid/qr-code.git",
-                "reference": "21e888e8597440b2205e2e5c484b6c8e556bcd1a"
+                "reference": "6fa27c4bcc87eddd4f8eb4f1ba796552a7d85f1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/endroid/qr-code/zipball/21e888e8597440b2205e2e5c484b6c8e556bcd1a",
-                "reference": "21e888e8597440b2205e2e5c484b6c8e556bcd1a",
+                "url": "https://api.github.com/repos/endroid/qr-code/zipball/6fa27c4bcc87eddd4f8eb4f1ba796552a7d85f1e",
+                "reference": "6fa27c4bcc87eddd4f8eb4f1ba796552a7d85f1e",
                 "shasum": ""
             },
             "require": {
-                "bacon/bacon-qr-code": "^3.0",
-                "php": "^8.2"
+                "bacon/bacon-qr-code": "^2.0",
+                "php": "^7.3||^8.0"
             },
             "require-dev": {
-                "endroid/quality": "dev-main",
+                "endroid/quality": "dev-master",
                 "ext-gd": "*",
-                "khanamiryan/qrcode-detector-decoder": "^2.0.2",
+                "khanamiryan/qrcode-detector-decoder": "^1.0.4",
                 "setasign/fpdf": "^1.8.2"
             },
             "suggest": {
                 "ext-gd": "Enables you to write PNG images",
                 "khanamiryan/qrcode-detector-decoder": "Enables you to use the image validator",
                 "roave/security-advisories": "Makes sure package versions with known security issues are not installed",
-                "setasign/fpdf": "Enables you to use the PDF writer"
+                "setasign/fpdf": "Enables you to use the PDF writer.",
+                "symfony/security-checker": "Checks your composer.lock for vulnerabilities"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "6.x-dev"
+                    "dev-master": "4.x-dev"
                 }
             },
             "autoload": {
@@ -1591,7 +1591,7 @@
             ],
             "support": {
                 "issues": "https://github.com/endroid/qr-code/issues",
-                "source": "https://github.com/endroid/qr-code/tree/6.0.9"
+                "source": "https://github.com/endroid/qr-code/tree/4.0.0"
             },
             "funding": [
                 {
@@ -1599,7 +1599,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-13T19:59:45+00:00"
+            "time": "2021-02-28T00:21:41+00:00"
         },
         {
             "name": "masterminds/html5",
