@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat avec Eya - Bekri</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            50:  '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                        },
+                        amber: {
+                            100: '#fef3c7',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Header simple (pas de sidebar) -->
+    <header class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold text-xl">
+                E
+            </div>
+            <div>
+                <h1 class="text-xl font-semibold text-gray-900">Chat avec Eya</h1>
+                <p class="text-sm text-gray-600">Votre coach bien-être personnel</p>
+            </div>
+        </div>
+        <a href="{{ path('insight_weekly') }}" class="text-teal-600 hover:text-teal-800">
+            <i class="fas fa-arrow-left"></i> Retour au résumé
+        </a>
+    </header>
+
+    <!-- Zone des messages -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
+        <!-- Message de bienvenue (bot) -->
+        <div class="flex items-start space-x-4">
+            <div class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                E
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow max-w-3xl">
+                <p class="text-gray-800">
+                    Bonjour ! Je suis Eya, votre coach bien-être sur Bekri.<br>
+                    Comment vous sentez-vous aujourd'hui ? 😊
+                </p>
+            </div>
+        </div>
+
+        <!-- Les messages seront ajoutés ici dynamiquement via JS -->
+        <div id="messages"></div>
+    </main>
+
+    <!-- Zone de saisie -->
+    <footer class="bg-white border-t p-4">
+        <div class="max-w-4xl mx-auto flex items-center gap-3">
+            <input id="messageInput" type="text" placeholder="Tapez votre message..." 
+                   class="flex-1 px-5 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none">
+            <button id="sendBtn" class="p-4 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- JavaScript pour envoyer et afficher les messages -->
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const input = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        function addMessage(text, isBot = false) {
+            const div = document.createElement('div');
+            div.className = isBot ? 'flex items-start space-x-4' : 'flex justify-end';
+
+            const bubble = document.createElement('div');
+            bubble.className = isBot 
+                ? 'bg-white rounded-2xl p-4 shadow max-w-3xl' 
+                : 'bg-teal-600 text-white rounded-2xl p-4 max-w-3xl';
+
+            bubble.innerHTML = text.replace(/\n/g, '<br>');
+            div.appendChild(bubble);
+
+            if (isBot) {
+                const avatar = document.createElement('div');
+                avatar.className = 'w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0';
+                avatar.textContent = 'E';
+                div.insertBefore(avatar, bubble);
+            }
+
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Afficher le message utilisateur
+            addMessage(message, false);
+            input.value = '';
+
+            // Désactiver l'input pendant l'envoi
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetch('{{ path('chat_send') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `message=${encodeURIComponent(message)}`
+                });
+
+                if (response.ok) {
+                    const botReply = await response.text();
+                    addMessage(botReply, true);
+                } else {
+                    addMessage('Désolé, une erreur s\'est produite...', true);
+                }
+            } catch (err) {
+                addMessage('Désolé, impossible de contacter Eya pour le moment...', true);
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                input.focus();
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

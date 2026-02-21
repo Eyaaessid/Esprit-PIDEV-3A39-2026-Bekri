@@ -10,17 +10,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        teal: {
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                        }
+                        primary: { 50:'#eff6ff', 100:'#dbeafe', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8' },
+                        teal: { 500:'#14b8a6', 600:'#0d9488' }
                     }
                 }
             }
@@ -34,8 +25,7 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div class="mb-8">
-            <a href="{{ path('admin_question_index') }}"
-               class="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
+            <a href="{{ path('admin_question_index') }}" class="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
                 <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
             </a>
             <h1 class="text-3xl font-bold text-gray-900 mt-3">Nouvelle question</h1>
@@ -44,51 +34,76 @@
 
         <div class="bg-white rounded-xl shadow border border-gray-200 p-8">
 
-            {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+            {# novalidate disables HTML5 browser validation — Assert handles everything server-side #}
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+            {# Global error summary #}
+            {% if not form.vars.valid and form.vars.submitted %}
+            <div class="flex items-start gap-3 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-lg">
+                <i class="fas fa-circle-xmark text-red-500 mt-0.5"></i>
+                <div>
+                    <p class="font-semibold mb-1">Veuillez corriger les erreurs suivantes :</p>
+                    <ul class="list-disc list-inside text-sm space-y-1">
+                        {% for child in form %}
+                            {% for error in child.vars.errors %}
+                                <li>{{ error.message }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Texte de la question -->
             <div>
                 {{ form_label(form.texte, 'Texte de la question', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                {{ form_widget(form.texte) }}
-                {{ form_errors(form.texte) }}
+                {{ form_widget(form.texte, {'attr': {'class': 'w-full px-4 py-3 border ' ~ (form.texte.vars.errors|length > 0 ? 'border-red-400 bg-red-50' : 'border-gray-300') ~ ' rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition'}}) }}
+                {% for error in form.texte.vars.errors %}
+                    <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-circle-exclamation"></i> {{ error.message }}</p>
+                {% endfor %}
             </div>
 
             <!-- Catégorie -->
             <div>
                 {{ form_label(form.category, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                {{ form_widget(form.category) }}
-                {{ form_errors(form.category) }}
+                {{ form_widget(form.category, {'attr': {'class': 'w-full px-4 py-3 border ' ~ (form.category.vars.errors|length > 0 ? 'border-red-400 bg-red-50' : 'border-gray-300') ~ ' rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition'}}) }}
+                {% for error in form.category.vars.errors %}
+                    <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-circle-exclamation"></i> {{ error.message }}</p>
+                {% endfor %}
             </div>
 
             <!-- Les 3 options -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     {{ form_label(form.option1, 'Option 1', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                    {{ form_widget(form.option1) }}
-                    {{ form_errors(form.option1) }}
+                    {{ form_widget(form.option1, {'attr': {'class': 'w-full px-4 py-3 border ' ~ (form.option1.vars.errors|length > 0 ? 'border-red-400 bg-red-50' : 'border-gray-300') ~ ' rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition'}}) }}
+                    {% for error in form.option1.vars.errors %}
+                        <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-circle-exclamation"></i> {{ error.message }}</p>
+                    {% endfor %}
                 </div>
                 <div>
                     {{ form_label(form.option2, 'Option 2', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                    {{ form_widget(form.option2) }}
-                    {{ form_errors(form.option2) }}
+                    {{ form_widget(form.option2, {'attr': {'class': 'w-full px-4 py-3 border ' ~ (form.option2.vars.errors|length > 0 ? 'border-red-400 bg-red-50' : 'border-gray-300') ~ ' rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition'}}) }}
+                    {% for error in form.option2.vars.errors %}
+                        <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-circle-exclamation"></i> {{ error.message }}</p>
+                    {% endfor %}
                 </div>
                 <div>
                     {{ form_label(form.option3, 'Option 3', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                    {{ form_widget(form.option3) }}
-                    {{ form_errors(form.option3) }}
+                    {{ form_widget(form.option3, {'attr': {'class': 'w-full px-4 py-3 border ' ~ (form.option3.vars.errors|length > 0 ? 'border-red-400 bg-red-50' : 'border-gray-300') ~ ' rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition'}}) }}
+                    {% for error in form.option3.vars.errors %}
+                        <p class="mt-1 text-xs text-red-600 flex items-center gap-1"><i class="fas fa-circle-exclamation"></i> {{ error.message }}</p>
+                    {% endfor %}
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="pt-8 flex justify-end gap-4 border-t border-gray-100">
-                <a href="{{ path('admin_question_index') }}"
-                   class="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                <a href="{{ path('admin_question_index') }}" class="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                     Annuler
                 </a>
-                <button type="submit"
-                        class="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm transition flex items-center">
-                    <i class="fas fa-save mr-2"></i>
-                    Créer la question
+                <button type="submit" class="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm transition flex items-center">
+                    <i class="fas fa-save mr-2"></i> Créer la question
                 </button>
             </div>
 

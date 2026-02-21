@@ -84,31 +84,12 @@ class ObjectifBienEtreController extends AbstractController
         $form = $this->createForm(ObjectifBienEtreType::class, $objectif);
         $form->handleRequest($request);
 
-        // DEBUG - Check form validation
-        if ($form->isSubmitted()) {
-            error_log('DEBUG: Form was submitted');
-            error_log('DEBUG: Form valid? ' . ($form->isValid() ? 'YES' : 'NO'));
-            
-            if (!$form->isValid()) {
-                error_log('DEBUG: Form has validation errors');
-                foreach ($form->getErrors(true) as $error) {
-                    $errorMsg = $error->getMessage();
-                    error_log('ERROR: ' . $errorMsg);
-                    $this->addFlash('error', 'Validation error: ' . $errorMsg);
-                }
-            }
-        }
-
         if ($form->isSubmitted() && $form->isValid()) {
-            error_log('DEBUG: Form is valid, saving objectif...');
-            
             $objectif->setUtilisateur($user);
             $objectif->setCreatedAt(new \DateTimeImmutable());
 
             $em->persist($objectif);
             $em->flush();
-
-            error_log('DEBUG: Objectif saved successfully with ID: ' . $objectif->getId());
 
             $this->addFlash('success', 'Objectif créé avec succès !');
 
@@ -155,6 +136,7 @@ class ObjectifBienEtreController extends AbstractController
     #[Route('/{id}/delete', name: 'objectif_delete', methods: ['POST'])]
     public function delete(
         ObjectifBienEtre $objectif,
+        Request $request,
         EntityManagerInterface $em
     ): Response
     {
@@ -166,6 +148,10 @@ class ObjectifBienEtreController extends AbstractController
 
         if ($objectif->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cet objectif.');
+        }
+
+        if (!$this->isCsrfTokenValid('objectif_delete_' . $objectif->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
         }
 
         $em->remove($objectif);

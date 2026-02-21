@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résumé Bekri - {{ periodStart|date('d M Y') }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            font-size: 13px;
+            color: #1f2937;
+            background: #ffffff;
+            padding: 0;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: #0d9488;
+            color: white;
+            padding: 30px 40px;
+            margin-bottom: 30px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .logo span {
+            font-size: 14px;
+            font-weight: normal;
+            display: block;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        .header-meta {
+            text-align: right;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .header-meta strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 22px;
+            margin-top: 20px;
+            font-weight: normal;
+        }
+        .header h1 strong { font-weight: bold; }
+
+        /* ── Content wrapper ── */
+        .content { padding: 0 40px 40px; }
+
+        /* ── Section titles ── */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #0d9488;
+            border-bottom: 2px solid #ccfbf1;
+            padding-bottom: 6px;
+            margin-bottom: 16px;
+            margin-top: 28px;
+        }
+
+        /* ── Stats grid ── */
+        .stats-grid {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+            margin-bottom: 10px;
+        }
+        .stats-row { display: table-row; }
+        .stat-card {
+            display: table-cell;
+            width: 25%;
+            background: #f0fdfa;
+            border: 1px solid #ccfbf1;
+            border-radius: 8px;
+            padding: 14px 16px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: bold;
+            color: #0d9488;
+        }
+        .stat-value.red   { color: #dc2626; }
+        .stat-value.green { color: #16a34a; }
+
+        /* ── Score table ── */
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .score-table th {
+            background: #0d9488;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .score-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+        }
+        .score-table tr:nth-child(even) td { background: #f9fafb; }
+
+        /* ── Progress bar ── */
+        .progress-wrap {
+            background: #e5e7eb;
+            border-radius: 6px;
+            height: 14px;
+            width: 200px;
+            display: inline-block;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+        }
+        .fill-green  { background: #14b8a6; }
+        .fill-yellow { background: #f59e0b; }
+        .fill-red    { background: #ef4444; }
+
+        .score-pct {
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 13px;
+        }
+        .pct-green  { color: #0d9488; }
+        .pct-yellow { color: #b45309; }
+        .pct-red    { color: #dc2626; }
+
+        /* ── Recommendations ── */
+        .reco-card {
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-left: 4px solid #0d9488;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+        }
+        .reco-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #0f766e;
+            margin-bottom: 5px;
+        }
+        .reco-desc {
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .reco-objectif {
+            font-size: 11px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .reco-objectif strong { color: #0d9488; }
+
+        /* ── Trends ── */
+        .trend-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-green { background: #d1fae5; color: #065f46; }
+        .badge-red   { background: #fee2e2; color: #991b1b; }
+
+        /* ── Highlights ── */
+        .highlight-grid {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+        }
+        .highlight-row { display: table-row; }
+        .highlight-card {
+            display: table-cell;
+            width: 50%;
+            border-radius: 8px;
+            padding: 14px 18px;
+            vertical-align: top;
+        }
+        .highlight-card.green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .highlight-card.red   { background: #fff1f2; border: 1px solid #fecdd3; }
+        .highlight-card-title { font-weight: bold; font-size: 13px; margin-bottom: 6px; }
+        .highlight-card.green .highlight-card-title { color: #15803d; }
+        .highlight-card.red   .highlight-card-title { color: #be123c; }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 36px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .footer strong { color: #0d9488; }
+
+        /* ── Global score badge ── */
+        .global-score-box {
+            text-align: center;
+            background: #f0fdfa;
+            border: 2px solid #0d9488;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+        .global-score-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0d9488;
+        }
+        .global-score-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-top">
+        <div class="logo">
+            bekri
+            <span>Plateforme bien-être</span>
+        </div>
+        <div class="header-meta">
+            <strong>Résumé hebdomadaire</strong>
+            {{ periodStart|date('d M Y') }} — {{ periodEnd|date('d M Y') }}<br>
+            Généré le {{ generatedAt|date('d M Y à H:i') }}
+        </div>
+    </div>
+    <h1>Bonjour, <strong>{{ user.prenom ?? user.email }}</strong> 👋</h1>
+</div>
+
+<div class="content">
+
+    <!-- STATS CARDS -->
+    <div class="section-title">📊 Résumé de la semaine</div>
+    <table class="stats-grid">
+        <tr class="stats-row">
+            <td class="stat-card">
+                <div class="stat-label">Jours complétés</div>
+                <div class="stat-value">{{ insights.totalDays }}/7</div>
+            </td>
+            <td class="stat-card">
+                <div class="stat-label">Score moyen global</div>
+                <div class="stat-value {% if globalAvg >= 66 %}green{% elseif globalAvg >= 40 %}{% else %}red{% endif %}">
+                    {{ globalAvg }}%
+                </div>
+            </td>
+            <td class="stat-card">
+                <div class="stat-label">Meilleur jour</div>
+                <div class="stat-value green">
+                    {% if insights.highlights.bestDay %}
+                        {{ insights.highlights.bestDay|date('d M') }}
+                    {% else %}—{% endif %}
+                </div>
+            </td>
+            <td class="stat-card">
+                <div class="stat-label">Jour le plus difficile</div>
+                <div class="stat-value red">
+                    {% if insights.highlights.worstDay %}
+                        {{ insights.highlights.worstDay|date('d M') }}
+                    {% else %}—{% endif %}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- SCORES PAR CATEGORIE -->
+    <div class="section-title">📈 Scores par catégorie</div>
+    {% if insights.averageScores is not empty %}
+        <table class="score-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Score</th>
+                    <th>Progression</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat, avg in insights.averageScores %}
+                <tr>
+                    <td><strong>{{ cat|capitalize }}</strong></td>
+                    <td>
+                        <span class="score-pct {% if avg >= 66 %}pct-green{% elseif avg >= 40 %}pct-yellow{% else %}pct-red{% endif %}">
+                            {{ avg }}%
+                        </span>
+                    </td>
+                    <td>
+                        <div class="progress-wrap">
+                            <div class="progress-fill {% if avg >= 66 %}fill-green{% elseif avg >= 40 %}fill-yellow{% else %}fill-red{% endif %}"
+                                 style="width: {{ avg }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color:#6b7280; font-style:italic;">Aucune donnée disponible.</p>
+    {% endif %}
+
+    <!-- TENDANCES -->
+    {% if insights.trends is not empty %}
+    <div class="section-title">📉 Tendances observées</div>
+    {% for category, trend in insights.trends %}
+    <div class="trend-row">
+        <span style="font-weight:600; text-transform:capitalize;">{{ category }}</span>
+        <span class="badge {% if trend == 'Improving' %}badge-green{% else %}badge-red{% endif %}">
+            {{ trend == 'Improving' ? '↑ En amélioration' : '↓ En déclin' }}
+        </span>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- POINTS FORTS -->
+    <div class="section-title">🏆 Points forts & à améliorer</div>
+    <table class="highlight-grid">
+        <tr class="highlight-row">
+            <td class="highlight-card green">
+                <div class="highlight-card-title">🏆 Meilleur jour</div>
+                {% if insights.highlights.bestDay %}
+                    Le {{ insights.highlights.bestDay|date('d M Y') }} — score : <strong>{{ insights.highlights.bestScore }}%</strong>
+                {% else %}
+                    Pas encore de données suffisantes.
+                {% endif %}
+            </td>
+            <td class="highlight-card red">
+                <div class="highlight-card-title">💪 Jour le plus difficile</div>
+                {% if insights.highlights.worstDay %}
+                    Le {{ insights.highlights.worstDay|date('d M Y') }} — score : <strong>{{ insights.highlights.worstScore }}%</strong>
+                {% else %}
+                    Pas encore de données suffisantes.
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <!-- RECOMMANDATIONS IA -->
+    {% if recommendations is not empty %}
+    <div class="section-title">💡 Recommandations personnalisées (IA)</div>
+    {% for reco in recommendations %}
+    <div class="reco-card">
+        <div class="reco-title">{{ reco.title }}</div>
+        <div class="reco-desc">{{ reco.description }}</div>
+        <div class="reco-objectif">
+            Objectif suggéré : <strong>{{ reco.suggestedObjectif }}</strong>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Ce rapport a été généré automatiquement par <strong>bekri</strong> — votre plateforme bien-être personnelle.<br>
+        Les recommandations sont générées par intelligence artificielle et ne remplacent pas un avis médical professionnel.
+    </div>
+
+</div>
+</body>
+</html>
