@@ -48,7 +48,7 @@
                         <a href="{{ path('objectif_index') }}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
                             <i class="fas fa-bullseye w-5 mr-3"></i> Mes objectifs
                         </a>
-                        <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
+                        <a href="{{ path('insight_weekly') }}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
                             <i class="fas fa-chart-line w-5 mr-3"></i> Mes progrès
                         </a>
                         <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors">
@@ -153,7 +153,7 @@
                                             {% if objectif.statut == 'en_cours' %}bg-amber-100 text-amber-700
                                             {% elseif objectif.statut == 'atteint' %}bg-teal-50 text-teal-700
                                             {% else %}bg-red-50 text-red-700{% endif %}">
-                                            {{ objectif.statut|capitalize }}
+                                            {{ objectif.statut|replace({'_': ' '})|capitalize }}
                                         </span>
                                     </div>
 
@@ -191,6 +191,7 @@
                                         </a>
                                         <form method="post" action="{{ path('objectif_delete', {id: objectif.id}) }}" class="inline"
                                               onsubmit="return confirm('Voulez-vous vraiment supprimer cet objectif ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('objectif_delete_' ~ objectif.id) }}">
                                             <button type="submit"
                                                     class="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors">
                                                 <i class="fas fa-trash-alt mr-2"></i> Supprimer
