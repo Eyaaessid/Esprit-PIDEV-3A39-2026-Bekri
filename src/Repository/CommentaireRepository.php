@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Commentaire;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,25 @@ class CommentaireRepository extends ServiceEntityRepository
         parent::__construct($registry, Commentaire::class);
     }
 
-//    /**
-//     * @return Commentaire[] Returns an array of Commentaire objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function createFeedQueryBuilder(string $sort = 'most_recent', ?int $postId = null): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.post', 'p')
+            ->addSelect('p')
+            ->where('c.deletedAt IS NULL')
+            ->andWhere('p.deletedAt IS NULL');
 
-//    public function findOneBySomeField($value): ?Commentaire
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($postId !== null) {
+            $qb->andWhere('p.id = :postId')
+                ->setParameter('postId', $postId);
+        }
+
+        if ($sort === 'oldest') {
+            $qb->orderBy('c.createdAt', 'ASC');
+        } else {
+            $qb->orderBy('c.createdAt', 'DESC');
+        }
+
+        return $qb;
+    }
 }

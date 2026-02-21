@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -246,11 +247,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     // ==================== Regular Entity Methods ====================
 
+    #[Groups(['post:read', 'comment:read', 'like:read', 'admin:read'])]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    #[Groups(['post:read', 'comment:read', 'like:read', 'admin:read'])]
     public function getNom(): ?string
     {
         return $this->nom;
@@ -262,6 +265,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['post:read', 'comment:read', 'like:read', 'admin:read'])]
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -273,6 +277,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['admin:read'])]
     public function getEmail(): ?string
     {
         return $this->email;
@@ -328,6 +333,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[Groups(['post:read', 'comment:read', 'like:read', 'admin:read'])]
     public function getRole(): UtilisateurRole
     {
         return $this->role;
