@@ -369,7 +369,7 @@ class AdminController extends AbstractController
                     $this->addFlash('error', 'Failed to upload avatar.');
                 }
             }
-
+            $user->setIsVerified(true); 
             $entityManager->persist($user);
             $entityManager->flush();
 
