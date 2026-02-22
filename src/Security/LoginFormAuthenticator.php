@@ -4,11 +4,10 @@ namespace App\Security;
 
 use App\Entity\Utilisateur;
 use App\Enum\UtilisateurStatut;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
@@ -21,9 +20,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Doctrine\ORM\EntityManagerInterface;
 
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -35,8 +32,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         private UrlGeneratorInterface $urlGenerator,
         private LoginSuccessHandler $successHandler,
         private UserProviderInterface $userProvider,
-        private EntityManagerInterface $entityManager,
-        private MailerInterface $mailer
+        private LoggerInterface $logger
     ) {
     }
 
@@ -71,55 +67,17 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             }
 
             $statut = $user->getStatut();
+
+            // Hard-block statuses: cannot reach password verification at all.
+            // INACTIF and unverified checks are intentionally delegated to
+            // UserChecker::checkPreAuth(), which runs after the user is loaded
+            // and provides HTML-enriched error messages with clickable links.
             if ($statut === UtilisateurStatut::BLOQUE) {
                 throw new CustomUserMessageAuthenticationException(
-                    'Votre compte a été bloqué par un administrateur.'
+                    'Votre compte a été bloqué par un administrateur. Contactez le support à <a href="mailto:support@bekri.com" class="alert-link">support@bekri.com</a> pour plus d\'informations.'
                 );
             }
-            if ($statut === UtilisateurStatut::INACTIF) {
-                $deactivatedBy = $user->getDeactivatedBy();
-                if ($deactivatedBy === 'admin') {
-                    throw new CustomUserMessageAuthenticationException(
-                        'Votre compte est temporairement inactif. Contactez l\'administrateur ou demandez une réactivation.'
-                    );
-                }
-                // user, system, or null: send reactivation email and block
-                $token = bin2hex(random_bytes(32));
-                $expiresAt = new \DateTime('+24 hours');
-                $user->setReactivationToken($token);
-                $user->setReactivationTokenExpiresAt($expiresAt);
-                $this->entityManager->flush();
 
-                $reactivationUrl = $this->urlGenerator->generate(
-                    'reactivate_account',
-                    ['token' => $token],
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                );
-                $deactivationReason = match ($deactivatedBy) {
-                    'user' => 'Vous avez désactivé votre compte.',
-                    'system' => 'Votre compte a été marqué inactif après 30 jours sans connexion.',
-                    default => 'Votre compte est inactif.',
-                };
-                $emailMessage = (new TemplatedEmail())
-                    ->from(new Address('noreply@bekri.com', 'Bekri Wellbeing'))
-                    ->to(new Address($user->getEmail(), $user->getPrenom() . ' ' . $user->getNom()))
-                    ->subject('Réactivation de votre compte Bekri')
-                    ->htmlTemplate('emails/reactivate_account.html.twig')
-                    ->context([
-                        'user' => $user,
-                        'reactivationUrl' => $reactivationUrl,
-                        'deactivationReason' => $deactivationReason,
-                    ]);
-                try {
-                    $this->mailer->send($emailMessage);
-                } catch (\Throwable $e) {
-                    // Log but don't expose; user still sees "check your email" for consistency
-                }
-                $message = $deactivatedBy === 'system'
-                    ? 'Votre compte est inactif (30 jours sans connexion). Un email de réactivation vous a été envoyé.'
-                    : 'Votre compte est désactivé. Un email de réactivation vous a été envoyé.';
-                throw new CustomUserMessageAuthenticationException($message);
-            }
             if ($statut === UtilisateurStatut::SUPPRIME) {
                 throw new CustomUserMessageAuthenticationException(
                     'Ce compte n\'est plus disponible.'
@@ -150,6 +108,24 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $session = $request->getSession();
         $attempts = $session->get('login_attempts', 0) + 1;
         $session->set('login_attempts', $attempts);
+
+        // For AJAX/fetch requests: return JSON with the error message instead of the
+        // standard 302→/login redirect.  This solves the double-GET session problem:
+        //   1. fetch(redirect:'follow') follows the 302, rendering /login via GET
+        //   2. SecurityController::login() calls getLastAuthenticationError() which
+        //      CONSUMES the one-time _security session error
+        //   3. window.location.href causes a second GET to /login, but error is gone
+        // By returning JSON directly to the AJAX caller, no session read happens and
+        // the error is displayed without any session involvement.
+        if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'fetch') {
+            $message = $exception->getMessageKey() ?? $exception->getMessage();
+            return new JsonResponse([
+                'error'    => $message,
+                'redirect' => $this->urlGenerator->generate(self::LOGIN_ROUTE),
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Standard (non-AJAX) flow: store in session and redirect
         return parent::onAuthenticationFailure($request, $exception);
     }
 

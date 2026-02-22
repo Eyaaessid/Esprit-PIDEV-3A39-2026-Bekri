@@ -1,0 +1,14 @@
+# Development-specific mailer configuration
+framework:
+    mailer:
+        # In dev, you can use null transport to test without sending real emails
+        # Uncomment the line below and comment out the dsn line to use null transport:
+        # dsn: 'null://null'
+        
+        # Or keep using real SMTP but with debug headers
+        dsn: '%env(MAILER_DSN)%'
+        
+        # Add debug headers
+        headers:
+            X-Debug: 'true'
+            X-Environment: '%kernel.environment%'

@@ -40,9 +40,101 @@
                     <a href="{{ path('user_profile_edit') }}" class="btn btn-primary w-100 mb-2">
                         <i class="bi bi-pencil-square me-2"></i>Edit Profile
                     </a>
-                    <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
+                    <button type="button" class="btn btn-outline-danger w-100 mb-3" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
                         <i class="bi bi-x-circle me-2"></i>Désactiver mon compte
                     </button>
+
+                    <hr class="my-4">
+
+                    <!-- Face Authentication Section -->
+                    <div class="face-auth-section mb-4">
+                        <h6 class="mb-3 text-start">
+                            <i class="bi bi-shield-check me-2"></i>Face Authentication
+                        </h6>
+                        
+                        <div id="face-auth-status">
+                            {% if user.isFaceAuthEnabled() %}
+                                <div class="alert alert-success d-flex align-items-start text-start">
+                                    <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Enabled</strong>
+                                        <br>
+                                        <small>Registered: {{ user.faceRegisteredAt|date('M d, Y') }}</small>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger w-100" id="disable-face-auth-btn">
+                                    <i class="bi bi-x-circle me-2"></i>Disable Face Login
+                                </button>
+                            {% else %}
+                                <div class="alert alert-info text-start">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>Enable face login for faster, passwordless authentication.</small>
+                                </div>
+                                <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#faceRegistrationModal">
+                                    <i class="bi bi-camera-video me-2"></i>Enable Face Login
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Two-Factor Authentication Section -->
+                    <div class="two-factor-section">
+                        <h6 class="mb-3 text-start">
+                            <i class="bi bi-shield-lock me-2"></i>Two-Factor Authentication
+                        </h6>
+                        
+                        <div id="2fa-status">
+                            {% if user.isTwoFactorEnabled() %}
+                                <div class="alert alert-success d-flex align-items-start text-start">
+                                    <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Enabled</strong>
+                                        <br>
+                                        <small>Enabled: {{ user.twoFactorEnabledAt ? user.twoFactorEnabledAt|date('M d, Y') : 'Unknown' }}</small>
+                                    </div>
+                                </div>
+                                <form method="post" action="{{ path('app_2fa_disable') }}" class="mb-2" id="disable-2fa-form">
+                                    <div class="mb-2 position-relative">
+                                        <input 
+                                            type="password" 
+                                            class="form-control form-control-sm" 
+                                            name="password" 
+                                            placeholder="Enter password to disable"
+                                            required
+                                        >
+                                        <i class="bi bi-eye toggle-password position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d;"></i>
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_disable') }}">
+                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to disable two-factor authentication?')">
+                                        <i class="bi bi-x-circle me-2"></i>Disable 2FA
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('app_2fa_regenerate_backup_codes') }}" id="regenerate-backup-codes-form">
+                                    <div class="mb-2">
+                                        <input 
+                                            type="password" 
+                                            class="form-control form-control-sm" 
+                                            name="password" 
+                                            placeholder="Enter password to regenerate"
+                                            required
+                                        >
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_regenerate') }}">
+                                    <button type="submit" class="btn btn-outline-warning w-100">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Regenerate Backup Codes
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-info text-start">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>Add an extra layer of security to your account with two-factor authentication.</small>
+                                </div>
+                                <a href="{{ path('app_2fa_enable') }}" class="btn btn-primary w-100">
+                                    <i class="bi bi-shield-lock me-2"></i>Enable 2FA
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,4 +243,475 @@
         </div>
     </div>
 </div>
+
+{# Face Registration Modal #}
+<div class="modal fade" id="faceRegistrationModal" tabindex="-1" aria-labelledby="faceRegistrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="faceRegistrationModalLabel">
+                    <i class="bi bi-camera-video me-2"></i>Enable Face Authentication
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="face-registration-steps">
+                    
+                    {# Step 1: Instructions #}
+                    <div id="step-instructions" class="text-center">
+                        <i class="bi bi-info-circle text-primary" style="font-size: 4rem;"></i>
+                        <h5 class="mt-3 mb-3">How Face Authentication Works</h5>
+                        <ul class="text-start" style="max-width: 500px; margin: 0 auto;">
+                            <li class="mb-2">Position your face in the camera frame</li>
+                            <li class="mb-2">Make sure you're in a well-lit area</li>
+                            <li class="mb-2">Look directly at the camera</li>
+                            <li class="mb-2">We'll capture your face data securely</li>
+                            <li class="mb-2">Your face data is encrypted and stored safely</li>
+                        </ul>
+                        <button type="button" class="btn btn-primary mt-4" id="start-face-capture-btn">
+                            <i class="bi bi-camera-fill me-2"></i>Start Camera
+                        </button>
+                    </div>
+
+                    {# Step 2: Camera Capture #}
+                    <div id="step-camera" style="display: none;">
+                        <div class="position-relative">
+                            <video id="face-video" width="100%" height="auto" autoplay muted style="border-radius: 12px; max-height: 400px;"></video>
+                            <canvas id="face-canvas" style="display: none;"></canvas>
+                            
+                            {# Face detection overlay #}
+                            <div id="face-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                                <div id="face-detection-box" style="display: none; position: absolute; border: 3px solid #00ff00; border-radius: 8px; box-shadow: 0 0 20px rgba(0,255,0,0.5);"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <div id="face-status" class="alert alert-info">
+                                <i class="bi bi-camera-video me-2"></i>
+                                <span id="face-status-text">Initializing camera...</span>
+                            </div>
+                            
+                            <button type="button" class="btn btn-success" id="capture-face-btn" disabled style="pointer-events: auto; opacity: 0.5;">
+                                <i class="bi bi-check-circle me-2"></i>Capture Face
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancel-capture-btn">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    {# Step 3: Processing #}
+                    <div id="step-processing" style="display: none;" class="text-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <h5>Processing your face data...</h5>
+                        <p class="text-muted">Please wait while we securely store your information.</p>
+                    </div>
+
+                    {# Step 4: Success #}
+                    <div id="step-success" style="display: none;" class="text-center py-5">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                        <h4 class="mt-3 mb-2">Face Authentication Enabled!</h4>
+                        <p class="text-muted">You can now use your face to log in quickly and securely.</p>
+                        <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">
+                            Done
+                        </button>
+                    </div>
+
+                    {# Step 5: Error #}
+                    <div id="step-error" style="display: none;" class="text-center py-5">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+                        <h4 class="mt-3 mb-2">Registration Failed</h4>
+                        <p class="text-muted" id="error-message">An error occurred. Please try again.</p>
+                        <button type="button" class="btn btn-primary mt-3" id="retry-face-capture-btn">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                        </button>
+                        <button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# JavaScript for Face Registration #}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let videoStream = null;
+    let faceDescriptor = null;
+    
+    // Security settings
+    const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
+    const MIN_DETECTION_DURATION = 1500; // Minimum milliseconds face must be detected before capture
+    const MIN_FACE_SIZE = 100; // Minimum face size in pixels
+    
+    let faceDetectedStartTime = null;
+    let lastDetectionConfidence = 0;
+    
+    const video = document.getElementById('face-video');
+    const canvas = document.getElementById('face-canvas');
+    const startBtn = document.getElementById('start-face-capture-btn');
+    const captureBtn = document.getElementById('capture-face-btn');
+    const cancelBtn = document.getElementById('cancel-capture-btn');
+    const retryBtn = document.getElementById('retry-face-capture-btn');
+    const disableBtn = document.getElementById('disable-face-auth-btn');
+    const statusText = document.getElementById('face-status-text');
+    const faceDetectionBox = document.getElementById('face-detection-box');
+
+    // Load face-api.js models
+    async function loadModels() {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+        try {
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            console.log('Face-api models loaded successfully');
+            return true;
+        } catch (error) {
+            console.error('Error loading face-api models:', error);
+            return false;
+        }
+    }
+
+    // Start camera
+    async function startCamera() {
+        try {
+            statusText.textContent = 'Starting camera...';
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } 
+            });
+            
+            video.srcObject = stream;
+            videoStream = stream;
+            
+            // Wait for video to be ready
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    video.play().then(() => {
+                        statusText.textContent = 'Camera ready. Position your face in the frame.';
+                        resolve();
+                    });
+                };
+            });
+            
+            // Start face detection
+            detectFace();
+            
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            showError('Unable to access camera. Please check permissions.');
+        }
+    }
+
+    // Stop camera
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+    }
+
+    // Detect face in video
+    async function detectFace() {
+        if (!video.srcObject || !videoStream) return;
+        
+        try {
+            const detection = await faceapi
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ 
+                    inputSize: 512, // Higher resolution for better accuracy
+                    scoreThreshold: MIN_DETECTION_CONFIDENCE 
+                }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+            
+            if (detection && detection.detection) {
+                const confidence = detection.detection.score;
+                const box = detection.detection.box;
+                const faceSize = Math.max(box.width, box.height);
+                
+                // Check confidence threshold
+                if (confidence < MIN_DETECTION_CONFIDENCE) {
+                    faceDetectionBox.style.display = 'none';
+                    statusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Check minimum face size
+                if (faceSize < MIN_FACE_SIZE) {
+                    faceDetectionBox.style.display = 'block';
+                    const videoRect = video.getBoundingClientRect();
+                    const videoWidth = video.videoWidth || videoRect.width;
+                    const videoHeight = video.videoHeight || videoRect.height;
+                    const scaleX = videoRect.width / videoWidth;
+                    const scaleY = videoRect.height / videoHeight;
+                    
+                    faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                    faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                    faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                    faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                    faceDetectionBox.style.borderColor = '#ffa500'; // Orange for too small
+                    
+                    statusText.textContent = 'Move closer to the camera for better detection.';
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Face detected with good confidence and size
+                const videoRect = video.getBoundingClientRect();
+                const videoWidth = video.videoWidth || videoRect.width;
+                const videoHeight = video.videoHeight || videoRect.height;
+                const scaleX = videoRect.width / videoWidth;
+                const scaleY = videoRect.height / videoHeight;
+                
+                faceDetectionBox.style.display = 'block';
+                faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                faceDetectionBox.style.borderColor = '#00ff00'; // Green for good detection
+                
+                // Track detection duration
+                const now = Date.now();
+                if (!faceDetectedStartTime) {
+                    faceDetectedStartTime = now;
+                }
+                
+                const detectionDuration = now - faceDetectedStartTime;
+                lastDetectionConfidence = confidence;
+                
+                // Require minimum detection duration before allowing capture
+                if (detectionDuration < MIN_DETECTION_DURATION) {
+                    const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
+                    statusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                } else {
+                    statusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Click "Capture Face" to continue.`;
+                    captureBtn.disabled = false;
+                    captureBtn.removeAttribute('disabled');
+                    captureBtn.style.pointerEvents = 'auto';
+                    captureBtn.style.opacity = '1';
+                    captureBtn.style.cursor = 'pointer';
+                    
+                    // Store descriptor temporarily
+                    faceDescriptor = Array.from(detection.descriptor);
+                }
+            } else {
+                // No face detected
+                faceDetectionBox.style.display = 'none';
+                statusText.textContent = 'No face detected. Please position your face in the frame.';
+                captureBtn.disabled = true;
+                captureBtn.setAttribute('disabled', 'disabled');
+                captureBtn.style.opacity = '0.5';
+                captureBtn.style.cursor = 'not-allowed';
+                faceDetectedStartTime = null;
+            }
+        } catch (error) {
+            console.error('Face detection error:', error);
+            faceDetectedStartTime = null;
+            // Continue detection even if there's an error
+        }
+        
+        // Continue detection loop
+        if (videoStream && video.srcObject) {
+            requestAnimationFrame(() => detectFace());
+        }
+    }
+
+    // Capture face and register
+    async function captureFace() {
+        if (!faceDescriptor) {
+            showError('No face detected. Please try again.');
+            return;
+        }
+        
+        showStep('step-processing');
+        stopCamera();
+        
+        try {
+            const response = await fetch('/api/face-auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    descriptor: faceDescriptor
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showStep('step-success');
+                // Reload page after 2 seconds to update UI
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                showError(data.message || 'Registration failed. Please try again.');
+            }
+            
+        } catch (error) {
+            console.error('Error registering face:', error);
+            showError('Network error. Please check your connection and try again.');
+        }
+    }
+
+    // Disable face authentication
+    async function disableFaceAuth() {
+        if (!confirm('Are you sure you want to disable face authentication?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/face-auth/disable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to disable face authentication. Please try again.');
+            }
+            
+        } catch (error) {
+            console.error('Error disabling face auth:', error);
+            alert('Network error. Please try again.');
+        }
+    }
+
+    // Show specific step
+    function showStep(stepId) {
+        document.querySelectorAll('#face-registration-steps > div').forEach(div => {
+            div.style.display = 'none';
+        });
+        document.getElementById(stepId).style.display = 'block';
+    }
+
+    // Show error
+    function showError(message) {
+        document.getElementById('error-message').textContent = message;
+        showStep('step-error');
+    }
+
+    // Event listeners
+    if (startBtn) {
+        startBtn.addEventListener('click', async function() {
+            showStep('step-camera');
+            const modelsLoaded = await loadModels();
+            if (modelsLoaded) {
+                await startCamera();
+            } else {
+                showError('Failed to load face detection models. Please refresh and try again.');
+            }
+        });
+    }
+
+    if (captureBtn) {
+        captureBtn.addEventListener('click', captureFace);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            stopCamera();
+            bootstrap.Modal.getInstance(document.getElementById('faceRegistrationModal')).hide();
+        });
+    }
+    
+    if (retryBtn) {
+        retryBtn.addEventListener('click', function() {
+            showStep('step-instructions');
+        });
+    }
+    
+    if (disableBtn) {
+        disableBtn.addEventListener('click', disableFaceAuth);
+    }
+
+    // Clean up on modal close
+    const modal = document.getElementById('faceRegistrationModal');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            stopCamera();
+            showStep('step-instructions');
+            if (captureBtn) {
+                captureBtn.disabled = true;
+                captureBtn.setAttribute('disabled', 'disabled');
+                captureBtn.style.opacity = '0.5';
+                captureBtn.style.cursor = 'not-allowed';
+            }
+            faceDescriptor = null;
+            faceDetectedStartTime = null;
+            lastDetectionConfidence = 0;
+        });
+        
+        // Reset button state when modal is shown
+        modal.addEventListener('show.bs.modal', function() {
+            if (captureBtn) {
+                captureBtn.disabled = true;
+                captureBtn.setAttribute('disabled', 'disabled');
+                captureBtn.style.opacity = '0.5';
+                captureBtn.style.cursor = 'not-allowed';
+            }
+            faceDescriptor = null;
+            faceDetectedStartTime = null;
+            lastDetectionConfidence = 0;
+        });
+    }
+
+    // Password visibility toggle for all password fields
+    document.querySelectorAll('.toggle-password').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const input = this.closest('.position-relative').querySelector('input[type="password"], input[type="text"]');
+            const icon = this;
+            
+            if (input && (input.type === 'password' || input.type === 'text')) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

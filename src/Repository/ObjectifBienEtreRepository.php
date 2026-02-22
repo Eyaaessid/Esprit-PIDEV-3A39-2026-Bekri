@@ -28,7 +28,7 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->andWhere('o.utilisateur = :user')
             ->andWhere('o.statut = :statut')
             ->setParameter('user', $user)
-            ->setParameter('statut', 'en_cours')
+            ->setParameter('statut', 'en cours')
             ->orderBy('o.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -61,7 +61,7 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->andWhere('o.utilisateur = :user')
             ->andWhere('o.statut = :statut')
             ->setParameter('user', $user)
-            ->setParameter('statut', 'en_cours')
+            ->setParameter('statut', 'en cours')
             ->getQuery()
             ->getResult();
 
@@ -78,7 +78,7 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->andWhere('o.utilisateur = :user')
             ->andWhere('o.statut = :statut')
             ->setParameter('user', $user)
-            ->setParameter('statut', 'en_cours')
+            ->setParameter('statut', 'en cours')
             ->getQuery()
             ->getSingleScalarResult();
     }

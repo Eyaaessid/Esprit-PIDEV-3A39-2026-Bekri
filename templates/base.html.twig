@@ -598,5 +598,10 @@
 
     {# No importmap('app') on main site - keeps posts/list/detail fast; like & forms use vanilla JS #}
     {% block javascripts %}{% endblock %}
+    {# ── 2FA Modal Interceptor (only for authenticated users) #}
+    {% if app.user %}
+    <script src="{{ asset('assets/js/twofa-interceptor.js') }}" defer></script>
+    {% endif %}
+
 </body>
 </html>
