@@ -122,6 +122,10 @@ PROMPT;
                 'self-harm', 'self harm',
                 'want to die', 'end my life', 'end it all', 'take my life',
                 'hurt myself', 'harm myself',
+                // Common English variants
+                'i wanna die', 'wanna die', 'i want die', 'wish i was dead',
+                // Common French variants
+                'je veux mourir', 'envie de mourir', 'me suicider', 'je vais me tuer',
             ],
             'medium' => [
                 'worthless', 'no reason to live', 'give up', 'toxic', 'violent',
