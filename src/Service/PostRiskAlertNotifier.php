@@ -26,12 +26,18 @@ class PostRiskAlertNotifier
         $signals = $matchedSignals === [] ? 'n/a' : implode(', ', $matchedSignals);
         $authorEmail = $author?->getEmail();
 
+        $senderEmail = trim($this->senderEmail);
+        if ($senderEmail === '' || filter_var($senderEmail, FILTER_VALIDATE_EMAIL) === false) {
+            $senderEmail = 'noreply@localhost';
+        }
+
         $recipients = [];
-        if (is_string($authorEmail) && $authorEmail !== '') {
+        if (is_string($authorEmail) && trim($authorEmail) !== '' && filter_var($authorEmail, FILTER_VALIDATE_EMAIL) !== false) {
             $recipients[] = $authorEmail;
         }
-        if ($this->alertRecipient !== '') {
-            $recipients[] = $this->alertRecipient;
+        $alertRecipient = trim($this->alertRecipient);
+        if ($alertRecipient !== '' && filter_var($alertRecipient, FILTER_VALIDATE_EMAIL) !== false) {
+            $recipients[] = $alertRecipient;
         }
 
         $recipients = array_values(array_unique($recipients));
@@ -40,7 +46,7 @@ class PostRiskAlertNotifier
         }
 
         $email = (new Email())
-            ->from($this->senderEmail)
+            ->from($senderEmail)
             ->to(...$recipients)
             ->subject(sprintf('High-risk post detected (post #%d)', $post->getId() ?? 0))
             ->text(
