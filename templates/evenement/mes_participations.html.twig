@@ -1,0 +1,530 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Participations - BEKRI{% endblock %}
+
+{% block body_class %}my-events-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title" data-aos="fade">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1>Mes Participations</h1>
+                        <p class="mb-0">Historique de vos événements passés et à venir</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{{ path('home') }}">Accueil</a></li>
+                    <li><a href="{{ path('evenement_liste') }}">Événements</a></li>
+                    <li class="current">Mes Participations</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Flash Messages -->
+    {% for label, messages in app.flashes %}
+        <div class="container mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <!-- My Participations Section -->
+    <section id="my-participations" class="my-participations section">
+        <div class="container">
+
+            {% if utilisateur %}
+            <!-- User Info Card -->
+            <div class="row mb-4" data-aos="fade-up">
+                <div class="col-12">
+                    <div class="user-info-card">
+                        <div class="user-avatar">
+                            <div class="avatar-circle">
+                                {{ utilisateur.prenom|slice(0, 1) }}{{ utilisateur.nom|slice(0, 1) }}
+                            </div>
+                        </div>
+                        <div class="user-details">
+                            <h2>{{ utilisateur.nomComplet }}</h2>
+                            <p><i class="bi bi-envelope me-2"></i>{{ utilisateur.email }}</p>
+                            {% if utilisateur.telephone %}
+                                <p><i class="bi bi-telephone me-2"></i>{{ utilisateur.telephone }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="user-stats">
+                            <div class="stat-box">
+                                <div class="stat-number">{{ participations|length }}</div>
+                                <div class="stat-label">Participations</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">
+                                    {{ participations|filter(p => p.statut == 'confirmé')|length }}
+                                </div>
+                                <div class="stat-label">Confirmées</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Participations List -->
+            <div class="row" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-12">
+                    <div class="participations-header">
+                        <h3><i class="bi bi-calendar-check me-2"></i>Historique des participations</h3>
+                        <a href="{{ path('evenement_liste') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Découvrir plus d'événements
+                        </a>
+                    </div>
+
+                    {% if participations is empty %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-calendar-x"></i>
+                            </div>
+                            <h4>Aucune participation pour le moment</h4>
+                            <p>Vous n'avez pas encore participé à nos événements. Découvrez nos prochains ateliers et séances !</p>
+                            <a href="{{ path('evenement_liste') }}" class="btn btn-primary">
+                                <i class="bi bi-calendar-event me-2"></i>Voir les événements disponibles
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="participations-timeline">
+                            {% for participation in participations %}
+                                <div class="timeline-item {{ participation.statut }}" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                                    <div class="timeline-marker">
+                                        {% if participation.statut == 'confirmé' %}
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        {% elseif participation.statut == 'annulé' %}
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-clock-fill"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="participation-card">
+                                            <div class="card-header">
+                                                <div class="event-info">
+                                                    <span class="event-type {{ participation.evenement.type }}">
+                                                        {% if participation.evenement.type == 'atelier' %}
+                                                            <i class="bi bi-people"></i> Atelier
+                                                        {% elseif participation.evenement.type == 'meditation' %}
+                                                            <i class="bi bi-heart-pulse"></i> Méditation
+                                                        {% elseif participation.evenement.type == 'defi' %}
+                                                            <i class="bi bi-trophy"></i> Défi Santé
+                                                        {% else %}
+                                                            <i class="bi bi-calendar-event"></i> {{ participation.evenement.type|capitalize }}
+                                                        {% endif %}
+                                                    </span>
+                                                    <span class="participation-status {{ participation.statut }}">
+                                                        {{ participation.statut|capitalize }}
+                                                    </span>
+                                                </div>
+                                                <h4>{{ participation.evenement.titre }}</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="event-details">
+                                                    <div class="detail-item">
+                                                        <i class="bi bi-calendar3"></i>
+                                                        <span>{{ participation.evenement.dateDebut|date('d/m/Y à H:i') }}</span>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <i class="bi bi-geo-alt"></i>
+                                                        <span>{{ participation.evenement.lieu }}</span>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <i class="bi bi-clock"></i>
+                                                        <span>Inscrit le {{ participation.dateInscription|date('d/m/Y') }}</span>
+                                                    </div>
+                                                </div>
+                                                {% if participation.commentaire %}
+                                                    <div class="participation-comment">
+                                                        <i class="bi bi-chat-left-text"></i>
+                                                        <p>{{ participation.commentaire }}</p>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="card-footer">
+                                                <a href="{{ path('evenement_detail', {id: participation.evenement.id}) }}" class="btn btn-outline">
+                                                    <i class="bi bi-eye me-2"></i>Voir l'événement
+                                                </a>
+                                                {% if participation.statut == 'confirmé' and participation.evenement.dateDebut > date() %}
+                                                    <form method="post" action="{{ path('evenement_annuler', {id: participation.evenement.id}) }}" style="display: inline;">
+                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler votre participation ?')">
+                                                            <i class="bi bi-x-lg me-2"></i>Annuler
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block head_extra %}
+<style>
+.user-info-card {
+    background: linear-gradient(135deg, var(--accent-color), var(--contrast-color));
+    padding: 40px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    color: #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.user-avatar .avatar-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 4px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-details h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.user-details p {
+    margin: 5px 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.user-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 20px 30px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.participations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 25px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.participations-header h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--heading-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.empty-icon {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.empty-state h4 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.participations-timeline {
+    position: relative;
+}
+
+.participations-timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 80px;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    z-index: 1;
+}
+
+.timeline-item.confirmé .timeline-marker {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.timeline-item.annulé .timeline-marker {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.participation-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.participation-card:hover {
+    transform: translateX(10px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.participation-card .card-header {
+    padding: 25px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.event-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.event-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.participation-status {
+    padding: 6px 15px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.participation-status.confirmé {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.participation-status.annulé {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.participation-card h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.participation-card .card-body {
+    padding: 25px;
+}
+
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #666;
+}
+
+.detail-item i {
+    color: var(--accent-color);
+    font-size: 18px;
+}
+
+.participation-comment {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.participation-comment i {
+    color: var(--accent-color);
+    margin-right: 10px;
+}
+
+.participation-comment p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    font-style: italic;
+}
+
+.participation-card .card-footer {
+    padding: 20px 25px;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-outline {
+    padding: 10px 20px;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    background: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-outline:hover {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.btn-danger {
+    padding: 10px 20px;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+@media (max-width: 768px) {
+    .user-info-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .user-stats {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .participations-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .timeline-item {
+        padding-left: 60px;
+    }
+
+    .participations-timeline::before {
+        left: 20px;
+    }
+
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .participation-card .card-footer {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Questions Management - Admin Dashboard{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .action-buttons {
+            white-space: nowrap;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="bg-light rounded p-4 d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-0">Evaluation Questions</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Questions</li>
+                    </ol>
+                </nav>
+            </div>
+            <a href="{{ path('admin_question_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>New Question
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="bg-light rounded p-4">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search by text or category...">
+                </div>
+                <div class="col-md-4 d-flex align-items-center gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                    {% if search %}
+                        <a href="{{ path('admin_question_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Questions Table Start -->
+    <div class="container-fluid pt-4 px-4 pb-4">
+        <div class="bg-light text-center rounded p-4">
+            {% if questions is empty %}
+                <div class="py-5">
+                    <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+                    <h2 class="h4 text-muted">No questions found</h2>
+                    <a href="{{ path('admin_question_new') }}" class="btn btn-primary mt-3">
+                        Create first question
+                    </a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table text-start align-middle table-bordered table-hover mb-0">
+                        <thead class="bg-white">
+                            <tr class="text-dark">
+                                <th scope="col">
+                                    <a href="{{ path('admin_question_index', {'sort': 'texte', 'direction': sort == 'texte' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none text-dark">
+                                        Question
+                                        {% if sort == 'texte' %}
+                                            <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort ms-1"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th scope="col" style="width: 150px;">
+                                    <a href="{{ path('admin_question_index', {'sort': 'category', 'direction': sort == 'category' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none text-dark">
+                                        Category
+                                        {% if sort == 'category' %}
+                                            <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort ms-1"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th scope="col">Options</th>
+                                <th scope="col" style="width: 120px;" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in questions %}
+                                <tr>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 400px;" title="{{ question.texte }}">
+                                            {{ question.texte }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            {{ question.category|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% if question.option1 %}<span class="badge bg-secondary">{{ question.option1 }}</span>{% endif %}
+                                            {% if question.option2 %}<span class="badge bg-secondary">{{ question.option2 }}</span>{% endif %}
+                                            {% if question.option3 %}<span class="badge bg-secondary">{{ question.option3 }}</span>{% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-end action-buttons">
+                                        <a href="{{ path('admin_question_edit', {id: question.id}) }}" class="btn btn-sm btn-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('admin_question_delete', {id: question.id}) }}" class="d-inline"
+                                              onsubmit="return confirm('Confirm deletion?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ question.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Questions Table End -->
+{% endblock %}

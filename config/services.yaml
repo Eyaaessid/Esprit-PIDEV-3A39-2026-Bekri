@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+parameters:
+    avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
+    uploads_directory: '%kernel.project_dir%/public/uploads/posts'
+    app.ai_provider: '%env(AI_PROVIDER)%'
+    app.ai_api_key: '%env(AI_API_KEY)%'
+    app.ai_model: '%env(AI_MODEL)%'
+    app.risk_alert_email: '%env(RISK_ALERT_EMAIL)%'
+    app.sender_email: '%env(SENDER_EMAIL)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    App\Serializer\AdminGroupsContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        arguments:
+            - '@App\Serializer\AdminGroupsContextBuilder.inner'
+            - '@security.authorization_checker'
+
+    App\Service\EmotionalAnalysisService:
+        arguments:
+            $aiProvider: '%app.ai_provider%'
+            $aiApiKey: '%app.ai_api_key%'
+            $aiModel: '%app.ai_model%'
+
+    App\Service\PostRiskAlertNotifier:
+        arguments:
+            $alertRecipient: '%app.risk_alert_email%'
+            $senderEmail: '%app.sender_email%'

@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Backup Codes - Bekri Wellbeing{% endblock %}
+
+{% block body_class %}profile-page{% endblock %}
+
+{% block main %}
+<div class="container" style="margin-top: 100px; margin-bottom: 80px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-4">
+                    <h4 class="mb-0">
+                        <i class="bi bi-key me-2"></i>Your Backup Codes
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Save these backup codes in a safe place. You can use them to access your account if you lose access to your authenticator app.
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-shield-exclamation me-2"></i>
+                        <strong>This is the only time you'll see these codes.</strong> Make sure to save them now!
+                    </div>
+
+                    <div class="bg-light p-4 rounded mb-4">
+                        <h5 class="mb-3">Your Backup Codes:</h5>
+                        <div class="row">
+                            {% for code in backupCodes %}
+                                <div class="col-md-6 mb-2">
+                                    <code class="d-block p-2 bg-white border rounded text-center" style="font-size: 1rem; letter-spacing: 1px; font-weight: 600;">{{ code }}</code>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>How to use backup codes:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Each code can only be used once</li>
+                            <li>Use them when you can't access your authenticator app</li>
+                            <li>Enter a backup code instead of the 6-digit code during login</li>
+                            <li>You can regenerate new codes from your profile settings</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="printBackupCodes()">
+                            <i class="bi bi-printer me-2"></i>Print Backup Codes
+                        </button>
+                        <a href="{{ path(app.user.role.value == 'admin' ? 'admin_profile' : (app.user.role.value == 'coach' ? 'coach_profile' : 'user_profile')) }}" class="btn btn-success">
+                            <i class="bi bi-check-circle me-2"></i>I've Saved My Codes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function printBackupCodes() {
+    window.print();
+}
+
+// Prevent back button from showing codes again
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
+</script>
+
+<style>
+@media print {
+    .card-header, .alert, .btn, nav, footer {
+        display: none !important;
+    }
+    .card-body {
+        padding: 20px !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,402 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Edit Profile - DASHMIN{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .page-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title i {
+            color: #20b2aa;
+            font-size: 1.75rem;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .card-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-header i {
+            color: #20b2aa;
+            font-size: 1.25rem;
+        }
+        
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #20b2aa 0%, #17a398 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .upload-info {
+            flex: 1;
+        }
+        
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            z-index: 10;
+        }
+        
+        .toggle-password:hover {
+            color: #20b2aa;
+        }
+        
+        .password-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-notice p {
+            margin: 0;
+            color: #92400e;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .password-notice i {
+            color: #f59e0b;
+            font-size: 1rem;
+        }
+        
+        .password-requirements {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+        
+        .password-requirements ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            list-style: none;
+        }
+        
+        .password-requirements li {
+            position: relative;
+            padding-left: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .password-requirements li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #20b2aa;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .custom-file-input {
+            display: none;
+        }
+        
+        .custom-file-label {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .custom-file-label:hover {
+            border-color: #20b2aa;
+            color: #20b2aa;
+            background: #f0fdfa;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="page-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-pencil-square"></i>
+                Edit Profile
+            </h1>
+            <p class="page-subtitle">Update your personal information and settings</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span>{{ message|raw }}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm'}}) }}
+
+        <!-- Profile Picture Card -->
+        <div class="card-section">
+            <h3 class="section-header">
+                <i class="bi bi-camera"></i>
+                Profile Picture
+            </h3>
+            <div class="avatar-wrapper">
+                <div class="avatar-circle" id="avatarPreview">
+                    {% if user.avatar %}
+                        <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar">
+                    {% else %}
+                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="upload-info">
+                    <label for="{{ form.avatarFile.vars.id }}" class="custom-file-label">
+                        <i class="bi bi-upload me-2"></i>Choose File
+                    </label>
+                    {{ form_widget(form.avatarFile, {'attr': {'class': 'custom-file-input'}}) }}
+                    <div class="file-info mt-2">
+                        <p class="file-name text-muted small mb-0" id="fileName">No file chosen</p>
+                        <small class="text-muted d-block mt-1">JPG, PNG or GIF. Max size 2MB</small>
+                    </div>
+                    {{ form_errors(form.avatarFile) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information Card -->
+        <div class="card-section">
+            <h3 class="section-header">
+                <i class="bi bi-person-badge"></i>
+                Personal Information
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    {{ form_row(form.prenom) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_row(form.nom) }}
+                </div>
+                <div class="col-12">
+                    {{ form_row(form.email) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="card-section">
+            <h3 class="section-header">
+                <i class="bi bi-shield-lock"></i>
+                Change Password
+            </h3>
+            <div class="password-notice">
+                <p>
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Leave blank to keep your current password.</strong>
+                </p>
+            </div>
+            
+            <div class="password-requirements mb-4">
+                <strong class="d-block mb-2" style="color: #1e293b;">Password Requirements:</strong>
+                <ul>
+                    <li>Minimum 6 characters</li>
+                    <li>At least one uppercase letter (A-Z)</li>
+                    <li>At least one lowercase letter (a-z)</li>
+                    <li>At least one number (0-9)</li>
+                </ul>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="password-wrapper">
+                        {{ form_label(form.plainPassword.first) }}
+                        {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
+                        <i class="bi bi-eye toggle-password" data-target="password-first"></i>
+                        {{ form_errors(form.plainPassword.first) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="password-wrapper">
+                        {{ form_label(form.plainPassword.second) }}
+                        {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
+                        <i class="bi bi-eye toggle-password" data-target="password-second"></i>
+                        {{ form_errors(form.plainPassword.second) }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ path('admin_profile') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Save Changes
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File input preview and name display
+        const fileInput = document.querySelector('input[name*="[avatarFile]"]');
+        const fileName = document.getElementById('fileName');
+        const avatarPreview = document.getElementById('avatarPreview');
+        
+        if (fileInput && fileName && avatarPreview) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    // Update file name display
+                    fileName.textContent = file.name;
+                    fileName.classList.add('text-primary');
+                    fileName.classList.remove('text-muted');
+                    
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.innerHTML = '<img src="' + e.target.result + '" alt="Avatar">';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fileName.textContent = 'No file chosen';
+                    fileName.classList.remove('text-primary');
+                    fileName.classList.add('text-muted');
+                }
+            });
+        }
+        
+        // Password toggle functionality
+        const passwordToggles = document.querySelectorAll('.toggle-password');
+        
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const passwordField = this.previousElementSibling;
+                
+                if (passwordField && (passwordField.type === 'password' || passwordField.type === 'text')) {
+                    if (passwordField.type === 'password') {
+                        passwordField.type = 'text';
+                        this.classList.remove('bi-eye');
+                        this.classList.add('bi-eye-slash');
+                    } else {
+                        passwordField.type = 'password';
+                        this.classList.remove('bi-eye-slash');
+                        this.classList.add('bi-eye');
+                    }
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}

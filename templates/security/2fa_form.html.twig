@@ -1,0 +1,107 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Authentification à deux facteurs{% endblock %}
+
+{% block body %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #e0f2f7 0%, #f0f8fa 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card shadow-lg border-0 rounded-4" style="border-top: 4px solid #20b2aa;">
+                    <div class="card-body p-5">
+                        {# Logo #}
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('images/logo.png') }}" alt="Bekri Logo" style="max-width: 140px; height: auto;" onerror="this.style.display='none'">
+                        </div>
+
+                        {# Title #}
+                        <h3 class="text-center mb-2 fw-bold" style="color: #2c3e50;">Authentification à deux facteurs</h3>
+                        <p class="text-center text-muted mb-4">Entrez le code à 6 chiffres de votre application</p>
+
+                        {# Error message #}
+                        {% if authenticationError %}
+                            <div class="alert alert-danger d-flex align-items-center mb-4">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                <span>{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</span>
+                            </div>
+                        {% endif %}
+
+                        {# Form #}
+                        <form action="{{ checkPathUrl ? checkPathUrl : path(checkPathRoute) }}" method="post">
+                            <div class="mb-4">
+                                <label for="_auth_code" class="form-label fw-semibold">Code de vérification</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-shield-lock text-muted"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        id="_auth_code"
+                                        name="{{ authCodeParameterName }}"
+                                        class="form-control border-start-0 ps-2 text-center"
+                                        placeholder="000000"
+                                        required
+                                        autofocus
+                                        autocomplete="one-time-code"
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
+                                        maxlength="6"
+                                        style="font-size: 1.8rem; letter-spacing: 0.5rem; font-weight: 600;"
+                                    >
+                                </div>
+                                <small class="text-muted">Le code expire après 30 secondes</small>
+                            </div>
+
+                            {% if isCsrfProtectionEnabled %}
+                                <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold rounded-3 mb-3" style="background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%); border: none;">
+                                <i class="bi bi-check-circle me-2"></i>Vérifier
+                            </button>
+
+                            <div class="text-center">
+                                <a href="{{ logoutPath }}" class="text-decoration-none" style="color: #0891b2;">
+                                    <i class="bi bi-arrow-left me-1"></i>Annuler et se déconnecter
+                                </a>
+                            </div>
+                        </form>
+
+                        {# Help text #}
+                        <div class="mt-4 pt-3 border-top text-center">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Vérifiez votre application d'authentification
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('_auth_code');
+    
+    if (codeInput) {
+        codeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            
+            if (e.target.value.length === 6) {
+                setTimeout(() => e.target.form.submit(), 300);
+            }
+        });
+        
+        codeInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            const numbers = pasted.replace(/[^0-9]/g, '').substring(0, 6);
+            e.target.value = numbers;
+        });
+    }
+});
+</script>
+{% endblock %}

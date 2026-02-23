@@ -1,0 +1,441 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Coach - BEKRI{% endblock %}
+
+{% block body_class %}coach-dashboard-page{% endblock %}
+
+{% block head_extra %}
+<style>
+.coach-dashboard-page {
+    background: #f8f9fa;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #009cff 0%, #0082d6 100%);
+    color: white;
+    padding: 40px 0;
+    margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: rgba(255,255,255,0.9);
+    font-size: 16px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.stat-icon.primary {
+    background: rgba(0, 156, 255, 0.1);
+    color: #009cff;
+}
+
+.stat-icon.success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.stat-icon.warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.stat-icon.info {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.stat-trend {
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.stat-trend.up {
+    color: #28a745;
+}
+
+.stat-trend.down {
+    color: #dc3545;
+}
+
+.quick-actions {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.action-btn {
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.events-table-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.events-table-card .card-header {
+    background: white;
+    border-bottom: 2px solid #f8f9fa;
+    padding: 20px 25px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.event-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.event-type-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.capacity-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.capacity-bar {
+    width: 60px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.capacity-fill {
+    height: 100%;
+    background: #009cff;
+    transition: width 0.3s;
+}
+
+.capacity-fill.warning {
+    background: #ffc107;
+}
+
+.capacity-fill.danger {
+    background: #dc3545;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    height: 100%;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="bi bi-speedometer2 me-2"></i>Dashboard Coach</h1>
+                    <p>Bienvenue {{ coach.prenom }} {{ coach.nom }} - Gérez vos événements et suivez les participations</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ path('coach_evenement_new') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Créer un Événement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="dashboard-content section">
+        <div class="container">
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div class="stat-number">{{ stats.total }}</div>
+                        <div class="stat-label">Total Événements</div>
+                        <div class="stat-trend up">
+                            <i class="bi bi-arrow-up"></i> Actif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="stat-number">{{ stats.participants }}</div>
+                        <div class="stat-label">Total Participants</div>
+                        <div class="stat-trend up">
+                            <i class="bi bi-arrow-up"></i> En croissance
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="stat-number">{{ stats.upcoming }}</div>
+                        <div class="stat-label">Événements à Venir</div>
+                        <div class="stat-trend">
+                            <i class="bi bi-clock"></i> Planifiés
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="stat-number">{{ stats.completed }}</div>
+                        <div class="stat-label">Événements Terminés</div>
+                        <div class="stat-trend">
+                            <i class="bi bi-check"></i> Complétés
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions" data-aos="fade-up">
+                <h5 class="mb-3"><i class="bi bi-lightning-fill me-2"></i>Actions Rapides</h5>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ path('coach_evenement_new') }}" class="action-btn btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Créer un Événement
+                    </a>
+                    <a href="{{ path('coach_evenement_index') }}" class="action-btn btn btn-outline-primary">
+                        <i class="bi bi-list-ul"></i>
+                        Tous mes Événements
+                    </a>
+                    <a href="{{ path('evenement_calendar') }}" class="action-btn btn btn-outline-secondary">
+                        <i class="bi bi-calendar-range"></i>
+                        Calendrier
+                    </a>
+                    <a href="{{ path('evenement_stats') }}" class="action-btn btn btn-outline-info">
+                        <i class="bi bi-graph-up"></i>
+                        Statistiques
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Events Table -->
+            <div class="events-table-card" data-aos="fade-up">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2 text-primary"></i>
+                            Mes Événements Récents
+                        </h5>
+                        <a href="{{ path('coach_evenement_index') }}" class="btn btn-sm btn-outline-primary">
+                            Voir tout <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if evenements|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Événement</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th>Capacité</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for evenement in evenements|slice(0, 10) %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div>
+                                                    <strong>{{ evenement.titre }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-geo-alt"></i> {{ evenement.lieu }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="event-type-badge bg-primary text-white">
+                                                {{ evenement.type }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-calendar3 text-muted"></i>
+                                            {{ evenement.dateDebut|date('d/m/Y') }}
+                                            <br>
+                                            <small class="text-muted">{{ evenement.dateDebut|date('H:i') }}</small>
+                                        </td>
+                                        <td>
+                                            {% if evenement.statut == 'ouvert' %}
+                                                <span class="event-status-badge bg-success text-white">Ouvert</span>
+                                            {% elseif evenement.statut == 'complet' %}
+                                                <span class="event-status-badge bg-danger text-white">Complet</span>
+                                            {% elseif evenement.statut == 'terminé' %}
+                                                <span class="event-status-badge bg-secondary text-white">Terminé</span>
+                                            {% else %}
+                                                <span class="event-status-badge bg-info text-white">{{ evenement.statut|capitalize }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="capacity-indicator">
+                                                <span class="small">{{ evenement.nombreParticipants }}/{{ evenement.capaciteMax }}</span>
+                                                <div class="capacity-bar">
+                                                    {% set percentage = (evenement.nombreParticipants / evenement.capaciteMax * 100)|round %}
+                                                    <div class="capacity-fill {% if percentage >= 90 %}danger{% elseif percentage >= 70 %}warning{% endif %}" 
+                                                         style="width: {{ percentage }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="table-actions justify-content-center">
+                                                <a href="{{ path('coach_evenement_detail', {id: evenement.id}) }}" 
+                                                   class="btn btn-icon btn-outline-primary" 
+                                                   title="Voir détails">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ path('coach_evenement_participants', {id: evenement.id}) }}" 
+                                                   class="btn btn-icon btn-outline-success" 
+                                                   title="Participants">
+                                                    <i class="bi bi-people"></i>
+                                                </a>
+                                                <a href="{{ path('coach_evenement_edit', {id: evenement.id}) }}" 
+                                                   class="btn btn-icon btn-outline-warning" 
+                                                   title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form method="post" 
+                                                      action="{{ path('coach_evenement_delete', {id: evenement.id}) }}" 
+                                                      style="display: inline;"
+                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
+                                                    <button type="submit" 
+                                                            class="btn btn-icon btn-outline-danger" 
+                                                            title="Supprimer"
+                                                            {% if evenement.nombreParticipants > 0 %}disabled{% endif %}>
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x d-block"></i>
+                            <h5 class="text-muted mb-3">Aucun événement créé</h5>
+                            <p class="text-muted mb-4">Commencez par créer votre premier événement pour gérer vos sessions.</p>
+                            <a href="{{ path('coach_evenement_new') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Créer mon Premier Événement
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}

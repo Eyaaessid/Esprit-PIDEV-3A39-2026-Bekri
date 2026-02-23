@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer Événement - Coach{% endblock %}
+
+{% block body_class %}coach-new-page{% endblock %}
+
+{% block main %}
+<div class="page-title" data-aos="fade">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1><i class="bi bi-plus-circle me-2"></i>Créer un Nouvel Événement</h1>
+                    <p class="mb-0">Organisez un atelier, une séance de méditation ou un défi santé</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs">
+        <div class="container">
+            <ol>
+                <li><a href="{{ path('home') }}">Accueil</a></li>
+                <li><a href="{{ path('evenement_liste') }}">Événements</a></li>
+                <li><a href="{{ path('coach_evenement_index') }}">Gestion Coach</a></li>
+                <li class="current">Créer</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card">
+                    <form method="post" action="{{ path('coach_evenement_new') }}" enctype="multipart/form-data">
+                        <div class="row gy-4">
+                            <div class="col-md-8">
+                                <label for="titre" class="form-label">Titre de l'événement *</label>
+                                <input type="text" class="form-control" id="titre" name="titre" placeholder="Ex: Atelier Yoga du Matin" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="type" class="form-label">Type *</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="">Choisir...</option>
+                                    <option value="atelier">Atelier</option>
+                                    <option value="meditation">Méditation</option>
+                                    <option value="defi">Défi Santé</option>
+                                    <option value="session">Session</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="description" class="form-label">Description *</label>
+                                <textarea class="form-control" id="description" name="description" rows="5" placeholder="Décrivez votre événement..." required></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="dateDebut" class="form-label">Date et heure de début *</label>
+                                <input type="datetime-local" class="form-control" id="dateDebut" name="dateDebut" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="dateFin" class="form-label">Date et heure de fin *</label>
+                                <input type="datetime-local" class="form-control" id="dateFin" name="dateFin" required>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label for="lieu" class="form-label">Lieu *</label>
+                                <input type="text" class="form-control" id="lieu" name="lieu" placeholder="Ex: Salle de Yoga, Bâtiment A" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="capaciteMax" class="form-label">Capacité maximale *</label>
+                                <input type="number" class="form-control" id="capaciteMax" name="capaciteMax" placeholder="30" min="1" required>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    L'événement sera créé avec le statut "Ouvert" par défaut.
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-2"></i>Créer l'événement
+                                    </button>
+                                    <a href="{{ path('coach_evenement_index') }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-2"></i>Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.form-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--heading-color);
+    margin-bottom: 8px;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 15px;
+    transition: all 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.25);
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--contrast-color);
+    transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: #fff;
+}
+</style>
+{% endblock %}

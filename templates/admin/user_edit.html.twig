@@ -1,0 +1,109 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Edit User - DASHMIN{% endblock %}
+
+{% block content %}
+    <!-- Edit User Form -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="mb-3">
+            <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left me-2"></i>Back to Users List
+            </a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fa fa-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fa fa-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <div class="row g-4">
+            <!-- User Info Display -->
+            <div class="col-lg-4">
+                <div class="bg-light rounded p-4">
+                    <h6 class="mb-4"><i class="fa fa-user me-2"></i>User Information</h6>
+                    <div class="text-center mb-3">
+                        {% if user.avatar %}
+                            <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; background: #007bff; color: white; font-size: 40px;">
+                                {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Name:</strong></td>
+                            <td>{{ user.prenom }} {{ user.nom }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phone:</strong></td>
+                            <td>{{ user.telephone ?? 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Joined:</strong></td>
+                            <td>{{ user.createdAt|date('M d, Y') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Edit Role & Status Form -->
+            <div class="col-lg-8">
+                <div class="bg-light rounded p-4">
+                    <h5 class="mb-4"><i class="fa fa-user-edit me-2"></i>Edit User Role & Status</h5>
+                    
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle me-2"></i>
+                        <strong>Admin Note:</strong> You can only modify the user's role and account status. Personal information cannot be changed from here.
+                    </div>
+
+                    {{ form_start(form) }}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            {{ form_row(form.role) }}
+                            <small class="text-muted">
+                                <i class="fa fa-info-circle me-1"></i>
+                                User: Regular user | Coach: Wellness coach | Admin: System administrator
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.statut) }}
+                            <small class="text-muted">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Active: Can login | Blocked: Cannot login | Inactive: Suspended account
+                            </small>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
+                            <i class="fa fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save me-2"></i>Update User
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

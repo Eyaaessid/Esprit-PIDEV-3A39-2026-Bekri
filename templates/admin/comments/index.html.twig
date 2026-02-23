@@ -1,0 +1,275 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Comments Management - Admin Dashboard{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .action-buttons {
+            white-space: nowrap;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .badge-status {
+            font-size: 0.85rem;
+            padding: 0.35em 0.65em;
+        }
+        .text-truncate-content {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="bg-light rounded p-4">
+            <h4 class="mb-0">Comments Management</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Comments</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-6 col-xl-4">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-comments fa-3x text-primary"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Total Comments</p>
+                        <h6 class="mb-0">{{ totalComments }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-4">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-calendar fa-3x text-success"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Current Page</p>
+                        <h6 class="mb-0">Page {{ currentPage }} of {{ totalPages }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-4">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-list fa-3x text-info"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Showing</p>
+                        <h6 class="mb-0">{{ comments|length }} comments</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="bg-light text-center rounded p-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h6 class="mb-0">All Comments</h6>
+                <div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSelectedComments()">
+                        <i class="fa fa-trash me-2"></i>Delete Selected
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Flash Messages -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa fa-check-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa fa-exclamation-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-dark">
+                            <th scope="col" style="width: 30px;">
+                                <input type="checkbox" id="selectAllComments" onclick="toggleSelectAll(this)">
+                            </th>
+                            <th scope="col" style="width: 50px;">#</th>
+                            <th scope="col">Comment</th>
+                            <th scope="col" style="width: 150px;">Author</th>
+                            <th scope="col" style="width: 200px;">Post</th>
+                            <th scope="col" style="width: 100px;">Status</th>
+                            <th scope="col" style="width: 120px;">Date</th>
+                            <th scope="col" style="width: 180px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in comments %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="comment-checkbox" value="{{ comment.id }}">
+                            </td>
+                            <td>{{ comment.id }}</td>
+                            <td>
+                                <div class="text-truncate-content" title="{{ comment.contenu }}">
+                                    {{ comment.contenu|striptags|slice(0, 100) }}{% if comment.contenu|length > 100 %}...{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {{ comment.utilisateur.nom ?? 'Anonymous' }}<br>
+                                <small class="text-muted">{{ comment.utilisateur.email ?? '' }}</small>
+                            </td>
+                            <td>
+                                <div class="text-truncate-content" title="{{ comment.post.titre }}">
+                                    {{ comment.post.titre }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if comment.deletedAt is null %}
+                                    <span class="badge badge-status bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-status bg-danger">Deleted</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ comment.createdAt|date('Y-m-d H:i') }}</td>
+                            <td class="action-buttons">
+                                <a href="{{ path('admin_comment_view', {id: comment.id}) }}" class="btn btn-sm btn-info" title="View">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-primary" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="deleteComment({{ comment.id }})" 
+                                        title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                No comments found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Showing {{ comments|length }} of {{ totalComments }} comments
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ currentPage > 1 ? path('admin_comment_list', {page: currentPage - 1}) : '#' }}">Previous</a>
+                        </li>
+                        
+                        {% for i in 1..totalPages %}
+                            {% if i == currentPage %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                            {% elseif i == 1 or i == totalPages or (i >= currentPage - 2 and i <= currentPage + 2) %}
+                                <li class="page-item"><a class="page-link" href="{{ path('admin_comment_list', {page: i}) }}">{{ i }}</a></li>
+                            {% elseif i == currentPage - 3 or i == currentPage + 3 %}
+                                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ currentPage < totalPages ? path('admin_comment_list', {page: currentPage + 1}) : '#' }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Comments Table End -->
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Delete Comment Function
+        function deleteComment(commentId) {
+            if (confirm('Are you sure you want to delete this comment?')) {
+                const url = '/admin/comments/' + commentId + '/delete';
+                
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Comment deleted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error deleting comment: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the comment.');
+                });
+            }
+        }
+
+        // Toggle Select All Checkboxes
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.comment-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        // Delete Selected Comments
+        function deleteSelectedComments() {
+            const selectedIds = Array.from(document.querySelectorAll('.comment-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one comment to delete.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${selectedIds.length} comment(s)?`)) {
+                fetch('/admin/comments/bulk-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ ids: selectedIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`${selectedIds.length} comment(s) deleted successfully!`);
+                        location.reload();
+                    } else {
+                        alert('Error deleting comments: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting comments.');
+                });
+            }
+        }
+    </script>
+{% endblock %}

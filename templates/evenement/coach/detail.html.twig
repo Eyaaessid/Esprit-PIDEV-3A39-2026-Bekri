@@ -1,0 +1,371 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.titre }} - Détails Coach - BEKRI{% endblock %}
+
+{% block body_class %}coach-event-detail-page{% endblock %}
+
+{% block head_extra %}
+<style>
+.event-detail-header {
+    background: linear-gradient(135deg, #009cff 0%, #0082d6 100%);
+    color: white;
+    padding: 40px 0;
+    margin-bottom: 40px;
+}
+
+.event-detail-header h1 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.detail-card h4 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.info-row {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6c757d;
+    width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-value {
+    flex: 1;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.participants-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background 0.3s;
+}
+
+.participant-item:hover {
+    background: #f8f9fa;
+}
+
+.participant-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #009cff, #0082d6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    margin-right: 15px;
+}
+
+.participant-info {
+    flex: 1;
+}
+
+.participant-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 3px;
+}
+
+.participant-email {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.participant-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    flex: 1;
+    min-width: 150px;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+
+    <!-- Event Detail Header -->
+    <div class="event-detail-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="bi bi-calendar-event me-2"></i>{{ evenement.titre }}</h1>
+                    <p class="mb-0">Gestion et suivi de l'événement</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ path('coach_evenement_dashboard') }}" class="btn btn-light">
+                        <i class="bi bi-arrow-left me-2"></i>Retour au Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="event-detail-content section">
+        <div class="container">
+
+            <div class="row">
+                <!-- Left Column - Event Information -->
+                <div class="col-lg-8">
+                    
+                    <!-- Event Details Card -->
+                    <div class="detail-card" data-aos="fade-up">
+                        <h4><i class="bi bi-info-circle me-2 text-primary"></i>Informations de l'Événement</h4>
+                        
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-tag"></i>
+                                Type
+                            </div>
+                            <div class="info-value">
+                                <span class="badge bg-primary">{{ evenement.type|capitalize }}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-calendar3"></i>
+                                Date de début
+                            </div>
+                            <div class="info-value">
+                                {{ evenement.dateDebut|date('l d F Y à H:i') }}
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-calendar-check"></i>
+                                Date de fin
+                            </div>
+                            <div class="info-value">
+                                {{ evenement.dateFin|date('l d F Y à H:i') }}
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-geo-alt"></i>
+                                Lieu
+                            </div>
+                            <div class="info-value">
+                                {{ evenement.lieu }}
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-people"></i>
+                                Capacité
+                            </div>
+                            <div class="info-value">
+                                {{ evenement.nombreParticipants }} / {{ evenement.capaciteMax }} participants
+                                <div class="progress mt-2" style="height: 8px;">
+                                    {% set percentage = (evenement.nombreParticipants / evenement.capaciteMax * 100)|round %}
+                                    <div class="progress-bar {% if percentage >= 90 %}bg-danger{% elseif percentage >= 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         style="width: {{ percentage }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-flag"></i>
+                                Statut
+                            </div>
+                            <div class="info-value">
+                                {% if evenement.statut == 'ouvert' %}
+                                    <span class="badge bg-success">Ouvert</span>
+                                {% elseif evenement.statut == 'complet' %}
+                                    <span class="badge bg-danger">Complet</span>
+                                {% elseif evenement.statut == 'terminé' %}
+                                    <span class="badge bg-secondary">Terminé</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ evenement.statut|capitalize }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-file-text"></i>
+                                Description
+                            </div>
+                            <div class="info-value">
+                                {{ evenement.description }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Participants List Card -->
+                    <div class="detail-card" data-aos="fade-up" data-aos-delay="100">
+                        <h4><i class="bi bi-people-fill me-2 text-success"></i>Liste des Participants ({{ participations|length }})</h4>
+                        
+                        {% if participations|length > 0 %}
+                            <div class="participants-list">
+                                {% for participation in participations %}
+                                    <div class="participant-item">
+                                        <div class="participant-avatar">
+                                            {{ participation.utilisateur.prenom|slice(0, 1) }}{{ participation.utilisateur.nom|slice(0, 1) }}
+                                        </div>
+                                        <div class="participant-info">
+                                            <div class="participant-name">
+                                                {{ participation.utilisateur.prenom }} {{ participation.utilisateur.nom }}
+                                            </div>
+                                            <div class="participant-email">
+                                                <i class="bi bi-envelope"></i> {{ participation.utilisateur.email }}
+                                            </div>
+                                            {% if participation.utilisateur.telephone %}
+                                                <div class="participant-email">
+                                                    <i class="bi bi-telephone"></i> {{ participation.utilisateur.telephone }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="participant-date">
+                                            <i class="bi bi-calendar-plus"></i>
+                                            {{ participation.dateInscription|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+                                <p class="text-muted">Aucun participant inscrit pour le moment.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <!-- Right Column - Actions & Stats -->
+                <div class="col-lg-4">
+                    
+                    <!-- Quick Actions Card -->
+                    <div class="detail-card" data-aos="fade-up">
+                        <h4><i class="bi bi-lightning-fill me-2 text-warning"></i>Actions</h4>
+                        
+                        <div class="action-buttons">
+                            <a href="{{ path('coach_evenement_edit', {id: evenement.id}) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil me-2"></i>Modifier
+                            </a>
+                            
+                            <a href="{{ path('coach_evenement_participants', {id: evenement.id}) }}" class="btn btn-success">
+                                <i class="bi bi-people me-2"></i>Participants
+                            </a>
+                            
+                            <a href="{{ path('coach_evenement_export_participants', {id: evenement.id}) }}" class="btn btn-info">
+                                <i class="bi bi-file-pdf me-2"></i>Exporter PDF
+                            </a>
+                            
+                            <a href="{{ path('evenement_detail', {id: evenement.id}) }}" class="btn btn-outline-primary" target="_blank">
+                                <i class="bi bi-eye me-2"></i>Vue Publique
+                            </a>
+                            
+                            <form method="post" action="{{ path('coach_evenement_delete', {id: evenement.id}) }}" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')"
+                                  class="w-100">
+                                <button type="submit" class="btn btn-danger w-100" 
+                                        {% if evenement.nombreParticipants > 0 %}disabled title="Impossible de supprimer un événement avec des participants"{% endif %}>
+                                    <i class="bi bi-trash me-2"></i>Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Card -->
+                    <div class="detail-card" data-aos="fade-up" data-aos-delay="100">
+                        <h4><i class="bi bi-graph-up me-2 text-info"></i>Statistiques</h4>
+                        
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-check-circle"></i>
+                                Confirmés
+                            </div>
+                            <div class="info-value">
+                                <strong>{{ participations|length }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-hourglass-split"></i>
+                                Places restantes
+                            </div>
+                            <div class="info-value">
+                                <strong>{{ evenement.placesRestantes }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-percent"></i>
+                                Taux de remplissage
+                            </div>
+                            <div class="info-value">
+                                <strong>{{ ((evenement.nombreParticipants / evenement.capaciteMax) * 100)|round }}%</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-clock"></i>
+                                Durée
+                            </div>
+                            <div class="info-value">
+                                {% set duration = date(evenement.dateFin).diff(date(evenement.dateDebut)) %}
+                                {% if duration.h > 0 %}
+                                    <strong>{{ duration.h }}h{% if duration.i > 0 %}{{ duration.i }}{% endif %}</strong>
+                                {% else %}
+                                    <strong>{{ duration.i }} minutes</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}

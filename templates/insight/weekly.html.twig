@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résumé des 7 derniers jours - Bekri</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            50:  '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                        },
+                        amber: {
+                            100: '#fef3c7',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="h-full antialiased bg-gray-50">
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex md:w-64 md:flex-shrink-0 bg-white border-r border-gray-200">
+        <div class="flex flex-col w-full">
+            <div class="p-6 border-b border-gray-200 bg-teal-600 text-white">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-bold text-teal-600 text-2xl">B</div>
+                    <span class="text-2xl font-bold">bekri</span>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-6 overflow-y-auto">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="{{ path('home') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-home w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Accueil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('user_profile') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-user w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Mon profil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('objectif_index') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-bullseye w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Mes objectifs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('suivi_today') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-calendar-check w-6 text-center"></i>
+                            <span class="ml-3">Mes suivis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-brain w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Tests mentaux</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-comment-dots w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Posts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-xl hover:bg-teal-50 hover:text-teal-700 transition">
+                            <i class="fas fa-calendar-alt w-6 text-center"></i>
+                            <span class="ml-3 font-medium">Événements</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <a href="{{ path('app_logout') }}" class="flex items-center px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 transition">
+                    <i class="fas fa-sign-out-alt w-6 text-center"></i>
+                    <span class="ml-3 font-medium">Déconnexion</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex flex-col flex-1 overflow-hidden">
+
+        <!-- HEADER with PDF button -->
+        <header class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-gray-900">Résumé des 7 derniers jours</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-600">
+                    {{ periodStart|date('d M Y') }} — {{ periodEnd|date('d M Y') }}
+                </span>
+                <a href="{{ path('insight_weekly_pdf') }}"
+                   class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition text-sm font-medium shadow-sm">
+                    <i class="fas fa-file-pdf"></i>
+                    Télécharger PDF
+                </a>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-5xl mx-auto">
+
+                {% if insights.totalDays == 0 %}
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-xl">
+                        <h3 class="text-lg font-medium text-amber-800 mb-2">Aucune donnée disponible</h3>
+                        <p class="text-amber-700">Vous n'avez pas encore rempli de check-in quotidien cette semaine. Commencez dès aujourd'hui !</p>
+                        <a href="{{ path('suivi_today') }}" class="mt-4 inline-block px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
+                            Faire mon check-in aujourd'hui
+                        </a>
+                    </div>
+                {% else %}
+
+                    {# Compute global average percentage #}
+                    {% set totalScore = 0 %}
+                    {% set catCount = 0 %}
+                    {% for avg in insights.averageScores %}
+                        {% set totalScore = totalScore + avg %}
+                        {% set catCount = catCount + 1 %}
+                    {% endfor %}
+                    {% set globalAvg = catCount > 0 ? (totalScore / catCount)|round(1) : 0 %}
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                        <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-600 mb-1">Jours complétés</h3>
+                            <p class="text-3xl font-bold text-teal-600">{{ insights.totalDays }} / 7</p>
+                        </div>
+                        {% if insights.highlights.bestDay %}
+                        <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-600 mb-1">Meilleur jour</h3>
+                            <p class="text-3xl font-bold text-green-600">{{ insights.highlights.bestDay|date('d M') }}</p>
+                            <p class="text-sm text-gray-500 mt-1">Score : {{ insights.highlights.bestScore }}%</p>
+                        </div>
+                        {% endif %}
+                        {% if insights.highlights.worstDay %}
+                        <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-600 mb-1">Jour le plus difficile</h3>
+                            <p class="text-3xl font-bold text-red-600">{{ insights.highlights.worstDay|date('d M') }}</p>
+                            <p class="text-sm text-gray-500 mt-1">Score : {{ insights.highlights.worstScore }}%</p>
+                        </div>
+                        {% endif %}
+                        <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-600 mb-1">Score moyen global</h3>
+                            <p class="text-3xl font-bold text-teal-600">{{ globalAvg }}%</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    {% if recommendations is not empty %}
+                    <div class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl shadow-lg p-8 border border-teal-200 mb-10">
+                        <h2 class="text-2xl font-bold text-teal-800 mb-6 flex items-center gap-3">
+                            <i class="fas fa-lightbulb text-amber-500 text-3xl"></i>
+                            Recommandations personnalisées
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for reco in recommendations %}
+                            <div class="bg-white rounded-xl p-6 shadow border border-gray-100 hover:shadow-lg transition-all">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl flex-shrink-0">
+                                        <i class="fas {{ reco.icon }}"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold mb-2 {{ reco.color }}">{{ reco.title }}</h3>
+                                        <p class="text-gray-700 text-sm mb-4">{{ reco.description }}</p>
+                                        <a href="{{ path('objectif_new') }}" class="text-sm text-teal-600 hover:text-teal-800 font-medium flex items-center gap-2">
+                                            Ajouter comme objectif <i class="fas fa-arrow-right text-xs"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                        <div class="bg-white rounded-2xl shadow p-8">
+                            <h2 class="text-xl font-bold text-gray-900 mb-2">Progression globale</h2>
+                            <p class="text-sm text-gray-500 mb-4">Score moyen toutes catégories confondues</p>
+                            <canvas id="progressChart" height="220"></canvas>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow p-8">
+                            <h2 class="text-xl font-bold text-gray-900 mb-2">Scores par catégorie</h2>
+                            <p class="text-sm text-gray-500 mb-4">En pourcentage (0–100%)</p>
+                            <canvas id="categoryChart" height="220"></canvas>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow p-8 lg:col-span-2">
+                            <h2 class="text-xl font-bold text-gray-900 mb-2">Évolution de l'humeur</h2>
+                            <p class="text-sm text-gray-500 mb-4">Score humeur quotidien en %</p>
+                            <canvas id="moodTrendChart" height="100"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Trends & Highlights -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                        <div class="bg-white rounded-2xl shadow p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Tendances observées</h2>
+                            {% if insights.trends is empty %}
+                                <p class="text-gray-600">Pas assez de données pour détecter des tendances.</p>
+                            {% else %}
+                                <div class="space-y-4">
+                                    {% for category, trend in insights.trends %}
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                        <span class="font-medium text-gray-800 capitalize">{{ category }}</span>
+                                        <span class="px-4 py-1 rounded-full text-sm font-medium {{ trend == 'Improving' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ trend == 'Improving' ? '↑ En amélioration' : '↓ En déclin' }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Points forts & à améliorer</h2>
+                            <div class="space-y-6">
+                                <div class="p-4 bg-green-50 rounded-xl border border-green-100">
+                                    <h3 class="font-semibold text-green-800 mb-2">🏆 Meilleur jour</h3>
+                                    <p class="text-gray-700">
+                                        {% if insights.highlights.bestDay %}
+                                            Le {{ insights.highlights.bestDay|date('d M') }} — score moyen : <strong>{{ insights.highlights.bestScore }}%</strong>
+                                        {% else %}
+                                            Pas encore de données suffisantes.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                                    <h3 class="font-semibold text-red-800 mb-2">💪 Jour le plus difficile</h3>
+                                    <p class="text-gray-700">
+                                        {% if insights.highlights.worstDay %}
+                                            Le {{ insights.highlights.worstDay|date('d M') }} — score moyen : <strong>{{ insights.highlights.worstScore }}%</strong>
+                                        {% else %}
+                                            Pas encore de données suffisantes.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Encouragement + second PDF button -->
+                    <div class="mt-10 bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center">
+                        <h2 class="text-2xl font-bold text-teal-800 mb-4">Continuez sur cette lancée !</h2>
+                        <p class="text-lg text-teal-700 mb-6">
+                            Vous avez rempli votre suivi {{ insights.totalDays }} jour{{ insights.totalDays > 1 ? 's' : '' }} sur les 7 derniers.
+                            {% if globalAvg >= 66 %}
+                                Vous êtes en bonne forme cette semaine — bravo ! 🎉
+                            {% elseif globalAvg >= 40 %}
+                                Vous progressez doucement — chaque jour compte. 💪
+                            {% else %}
+                                C'est une semaine plus difficile, mais vous n'êtes pas seul(e). 🌱
+                            {% endif %}
+                        </p>
+                        <div class="flex items-center justify-center gap-4 flex-wrap">
+                            <a href="{{ path('suivi_today') }}"
+                               class="inline-block px-8 py-4 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 transition">
+                                Faire mon check-in aujourd'hui
+                            </a>
+                            <a href="{{ path('insight_weekly_pdf') }}"
+                               class="inline-flex items-center gap-2 px-8 py-4 bg-white text-teal-700 font-medium rounded-xl border-2 border-teal-600 hover:bg-teal-50 transition">
+                                <i class="fas fa-file-pdf"></i>
+                                Télécharger mon résumé PDF
+                            </a>
+                        </div>
+                    </div>
+
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Floating Chat Bubble -->
+<button class="fixed bottom-6 right-6 z-50 w-16 h-16 bg-teal-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-teal-700 transition-all transform hover:scale-110"
+        onclick="window.location.href='{{ path('chat_index') }}'">
+    <i class="fas fa-comment-dots text-2xl"></i>
+</button>
+
+<!-- Charts JS -->
+<script>
+    const progressCtx = document.getElementById('progressChart')?.getContext('2d');
+    const globalAvg = {{ globalAvg }};
+    if (progressCtx) {
+        new Chart(progressCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Score', 'Restant'],
+                datasets: [{
+                    data: [globalAvg, 100 - globalAvg],
+                    backgroundColor: [
+                        globalAvg >= 66 ? '#14b8a6' : globalAvg >= 40 ? '#f59e0b' : '#ef4444',
+                        '#e5e7eb'
+                    ],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                cutout: '70%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            },
+            plugins: [{
+                id: 'centerText',
+                beforeDraw(chart) {
+                    const {ctx, chartArea: {width, height}} = chart;
+                    ctx.restore();
+                    ctx.font = 'bold 28px sans-serif';
+                    ctx.fillStyle = globalAvg >= 66 ? '#14b8a6' : globalAvg >= 40 ? '#f59e0b' : '#ef4444';
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(globalAvg + '%', width / 2, height / 2);
+                    ctx.save();
+                }
+            }]
+        });
+    }
+
+    const categoryCtx = document.getElementById('categoryChart')?.getContext('2d');
+    if (categoryCtx) {
+        const catLabels = [{% for cat in insights.averageScores|keys %}'{{ cat|capitalize }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+        const catData   = [{% for avg in insights.averageScores %}{{ avg }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        const barColors = catData.map(v => v >= 66 ? '#14b8a6' : v >= 40 ? '#f59e0b' : '#ef4444');
+
+        new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: catLabels,
+                datasets: [{ label: 'Score (%)', data: catData, backgroundColor: barColors, borderRadius: 8 }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { callback: val => val + '%' }, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+                }
+            }
+        });
+    }
+
+    const moodCtx = document.getElementById('moodTrendChart')?.getContext('2d');
+    if (moodCtx) {
+        const moodLabels = [{% for daily in dailies %}'{{ daily.date|date('d M') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+        const moodData = [
+            {% for daily in dailies %}
+                {% set moodResponses = daily.reponses|filter(r => r.question.category == 'humeur') %}
+                {% set moodCount = moodResponses|length %}
+                {% set moodSum = 0 %}
+                {% for r in moodResponses %}
+                    {% set val = r.valeur|lower|trim %}
+                    {% set score = 0 %}
+                    {% if val in ['positive', 'positif', 'oui, plusieurs', 'très optimiste', 'oui, beaucoup', 'oui, très'] %}
+                        {% set score = 100 %}
+                    {% elseif val in ['neutre', 'oui, un peu', 'moyennement'] %}
+                        {% set score = 66 %}
+                    {% elseif val in ['négative', 'négatif', 'plutôt pessimiste', 'pas terrible'] %}
+                        {% set score = 33 %}
+                    {% endif %}
+                    {% set moodSum = moodSum + score %}
+                {% endfor %}
+                {{ moodCount > 0 ? (moodSum / moodCount)|round(1) : 0 }}
+                {% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        new Chart(moodCtx, {
+            type: 'line',
+            data: {
+                labels: moodLabels,
+                datasets: [{
+                    label: 'Humeur (%)',
+                    data: moodData,
+                    borderColor: '#14b8a6',
+                    backgroundColor: 'rgba(20, 184, 166, 0.15)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#14b8a6',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { min: 0, max: 100, ticks: { callback: val => val + '%' }, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => 'Humeur : ' + ctx.parsed.y + '%' } }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

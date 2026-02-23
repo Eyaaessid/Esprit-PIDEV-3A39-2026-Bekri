@@ -1,0 +1,59 @@
+{#
+  2FA Modal Fragment — pure HTML, no <html>/<body>, injected into the Bootstrap modal body
+  by twofa-interceptor.js
+#}
+
+{# ── Shield icon + heading ─────────────────────────────────────────────────── #}
+<div class="text-center mb-3">
+    <div class="twofa-icon-ring twofa-icon-ring--modal mb-3">
+        <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <h5 class="fw-bold mb-1" style="color: #2c3e50;">Authentification à deux facteurs</h5>
+    <p class="text-muted small mb-0">Entrez le code à 6 chiffres de votre application TOTP</p>
+</div>
+
+{# ── Error ─────────────────────────────────────────────────────────────────── #}
+{% if authenticationError %}
+    <div class="alert alert-danger d-flex align-items-center py-2 mb-3">
+        <i class="bi bi-exclamation-circle-fill me-2 flex-shrink-0"></i>
+        <small>{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</small>
+    </div>
+{% endif %}
+
+{# ── Form ──────────────────────────────────────────────────────────────────── #}
+<form id="twofa-modal-inner-form"
+      action="{{ checkPathUrl }}"
+      method="post" autocomplete="off">
+
+    <div class="twofa-digits-row mb-4" id="twofa-modal-digits">
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <span class="twofa-digit-sep">—</span>
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    </div>
+
+    <input type="hidden" id="_auth_code_modal" name="{{ authCodeParameterName }}" value="">
+    <input type="hidden" name="_target_path" value="{{ targetPath }}">
+
+    {% if isCsrfProtectionEnabled %}
+        <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+    {% endif %}
+
+    <button type="submit" id="twofa-modal-submit"
+            class="btn twofa-submit-btn w-100 py-2 fw-semibold rounded-3 mb-2" disabled>
+        <i class="bi bi-check-circle me-2"></i>Vérifier le code
+    </button>
+
+    <div class="text-center mt-1">
+        <a href="{{ logoutPath }}" class="text-decoration-none small text-muted" data-no-intercept>
+            <i class="bi bi-arrow-left me-1"></i>Annuler et se déconnecter
+        </a>
+    </div>
+</form>
+
+<div class="text-center mt-3">
+    <small class="text-muted"><i class="bi bi-clock me-1"></i>Code valable 30 secondes</small>
+</div>

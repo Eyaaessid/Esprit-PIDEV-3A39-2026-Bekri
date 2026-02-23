@@ -1,0 +1,318 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}User Management - DASHMIN{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.15) !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .form-label {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .shadow-sm {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        }
+        
+        .border {
+            border: 1px solid #e5e7eb !important;
+        }
+        
+        .rounded-3 {
+            border-radius: 12px !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- User Management Content -->
+    <div class="container-fluid pt-4 px-4">
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fa fa-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fa fa-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-users fa-3x text-primary"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Total Users</p>
+                        <h6 class="mb-0">{{ totalUsers }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-user fa-3x text-success"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Regular Users</p>
+                        <h6 class="mb-0">{{ userCount }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-user-tie fa-3x text-info"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Coaches</p>
+                        <h6 class="mb-0">{{ coachCount }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
+                    <i class="fa fa-user-shield fa-3x text-danger"></i>
+                    <div class="ms-3">
+                        <p class="mb-2">Admins</p>
+                        <h6 class="mb-0">{{ adminCount }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="bi bi-funnel me-2 text-primary"></i>Search & Filter</h5>
+                <div>
+                    <a href="{{ path('admin_users_list') }}" class="btn btn-sm btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                    </a>
+                    <a href="{{ path('admin_user_add') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-plus-circle me-1"></i>Add User
+                    </a>
+                </div>
+            </div>
+            <form method="get" action="{{ path('admin_users_list') }}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-search me-1"></i>Search
+                        </label>
+                        <input type="text" 
+                               name="search" 
+                               class="form-control form-control-lg" 
+                               placeholder="Search by name or email..." 
+                               value="{{ search }}"
+                               style="border-radius: 10px; border: 2px solid #e0e7ff; padding: 0.75rem 1rem;">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-person-badge me-1"></i>Filter by Role
+                        </label>
+                        <select name="role" 
+                                class="form-select form-select-lg" 
+                                style="border-radius: 10px; border: 2px solid #e0e7ff; padding: 0.75rem 1rem;">
+                            <option value="">All Roles</option>
+                            <option value="user" {% if roleFilter == 'user' %}selected{% endif %}>Users</option>
+                            <option value="coach" {% if roleFilter == 'coach' %}selected{% endif %}>Coaches</option>
+                            <option value="admin" {% if roleFilter == 'admin' %}selected{% endif %}>Admins</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-check-circle me-1"></i>Status
+                        </label>
+                        <select name="status" 
+                                class="form-select form-select-lg" 
+                                style="border-radius: 10px; border: 2px solid #e0e7ff; padding: 0.75rem 1rem;">
+                            <option value="">All Status</option>
+                            <option value="actif" {% if statusFilter|default('') == 'actif' %}selected{% endif %}>Active</option>
+                            <option value="bloque" {% if statusFilter|default('') == 'bloque' %}selected{% endif %}>Blocked</option>
+                            <option value="inactif" {% if statusFilter|default('') == 'inactif' %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-lg w-100" style="border-radius: 10px; padding: 0.75rem;">
+                            <i class="bi bi-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-light rounded p-4">
+            <h5 class="mb-4"><i class="fa fa-users me-2"></i>User List</h5>
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-dark">
+                            <th scope="col">Avatar</th>
+                            <th scope="col">
+                                <a href="{{ path('admin_users_list', {'search': search, 'role': roleFilter, 'status': statusFilter|default(''), 'sort': 'nom', 'order': (sortBy|default('createdAt') == 'nom' and sortOrder|default('DESC') == 'ASC') ? 'DESC' : 'ASC'}) }}" 
+                                   class="text-decoration-none text-dark" style="cursor: pointer;">
+                                    Name
+                                    {% if sortBy|default('createdAt') == 'nom' %}
+                                        <i class="bi bi-arrow-{{ sortOrder|default('DESC') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th scope="col">
+                                <a href="{{ path('admin_users_list', {'search': search, 'role': roleFilter, 'status': statusFilter|default(''), 'sort': 'email', 'order': (sortBy|default('createdAt') == 'email' and sortOrder|default('DESC') == 'ASC') ? 'DESC' : 'ASC'}) }}" 
+                                   class="text-decoration-none text-dark" style="cursor: pointer;">
+                                    Email
+                                    {% if sortBy|default('createdAt') == 'email' %}
+                                        <i class="bi bi-arrow-{{ sortOrder|default('DESC') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Deactivated</th>
+                            <th scope="col">
+                                <a href="{{ path('admin_users_list', {'search': search, 'role': roleFilter, 'status': statusFilter|default(''), 'sort': 'createdAt', 'order': (sortBy|default('createdAt') == 'createdAt' and sortOrder|default('DESC') == 'ASC') ? 'DESC' : 'ASC'}) }}" 
+                                   class="text-decoration-none text-dark" style="cursor: pointer;">
+                                    Joined
+                                    {% if sortBy|default('createdAt') == 'createdAt' %}
+                                        <i class="bi bi-arrow-{{ sortOrder|default('DESC') == 'ASC' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for userItem in users %}
+                        <tr>
+                            <td>
+                                {% if userItem.avatar %}
+                                    <img src="{{ asset('uploads/avatars/' ~ userItem.avatar) }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #007bff; color: white;">
+                                        {{ userItem.prenom|first|upper }}{{ userItem.nom|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ userItem.prenom }} {{ userItem.nom }}</td>
+                            <td>{{ userItem.email }}</td>
+                            <td>
+                                {% if userItem.role.value == 'admin' %}
+                                    <span class="badge bg-danger">Admin</span>
+                                {% elseif userItem.role.value == 'coach' %}
+                                    <span class="badge bg-info">Coach</span>
+                                {% else %}
+                                    <span class="badge bg-success">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if userItem.statut.value == 'actif' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elseif userItem.statut.value == 'bloque' %}
+                                    <span class="badge bg-danger">Blocked</span>
+                                {% elseif userItem.statut.value == 'inactif' %}
+                                    <span class="badge bg-warning">Inactive</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if userItem.deactivatedAt %}
+                                    <small>{{ userItem.deactivatedAt|date('Y-m-d') }}</small>
+                                    {% if userItem.deactivatedBy %}
+                                        <br><span class="badge bg-secondary">{{ userItem.deactivatedBy }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ userItem.createdAt|date('M d, Y') }}</td>
+                            <td>
+                                <a href="{{ path('admin_user_detail', {id: userItem.id}) }}" class="btn btn-sm btn-primary" title="View Details">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_user_edit', {id: userItem.id}) }}" class="btn btn-sm btn-warning" title="Edit User">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                {% if userItem.id != app.user.id %}
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ userItem.id }}" title="Delete User">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ userItem.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirm Delete</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete user <strong>{{ userItem.prenom }} {{ userItem.nom }}</strong>?</p>
+                                                <p class="text-danger"><i class="fa fa-exclamation-triangle me-2"></i>This action cannot be undone!</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{{ path('admin_user_delete', {id: userItem.id}) }}" style="display: inline;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ userItem.id) }}">
+                                                    <button type="submit" class="btn btn-danger">Delete User</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled title="Cannot delete yourself">
+                                    <i class="fa fa-ban"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ path('admin_users_list', {page: currentPage - 1, search: search, role: roleFilter, status: statusFilter|default('')}) }}">Previous</a>
+                    </li>
+                    {% for i in 1..totalPages %}
+                    <li class="page-item {% if currentPage == i %}active{% endif %}">
+                        <a class="page-link" href="{{ path('admin_users_list', {page: i, search: search, role: roleFilter, status: statusFilter|default('')}) }}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+                    <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ path('admin_users_list', {page: currentPage + 1, search: search, role: roleFilter, status: statusFilter|default('')}) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

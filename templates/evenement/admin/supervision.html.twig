@@ -1,0 +1,440 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin Supervision - Events{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .admin-stats-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            height: 100%;
+        }
+
+        .admin-stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .admin-stats-card .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .admin-stats-card .stats-icon.bg-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .admin-stats-card .stats-icon.bg-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .admin-stats-card .stats-icon.bg-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+
+        .admin-stats-card .stats-icon.bg-info {
+            background: linear-gradient(135deg, #17a2b8, #117a8b);
+        }
+
+        .admin-stats-card .stats-content h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .admin-stats-card .stats-content p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .admin-actions-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        }
+
+        /* Improved Table Styles */
+        .table-responsive {
+            border-radius: 12px;
+            overflow-x: auto; /* Ensure horizontal scroll if needed */
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            white-space: nowrap;
+            padding: 1.2rem 1rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+            white-space: normal; /* Allow text wrapping in description */
+        }
+
+        .action-column {
+            min-width: 180px; /* Ensure enough space for all buttons */
+            text-align: right;
+        }
+
+        /* Action Buttons */
+        .btn-group-actions {
+            display: inline-flex;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .btn-action-small {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .btn-action-small i {
+            font-size: 14px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            min-width: 140px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid pt-4 px-4 pb-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h4 class="mb-0"><i class="bi bi-shield-check me-2"></i>Admin Supervision</h4>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stats-card">
+                    <div class="stats-icon bg-primary">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|length }}</h3>
+                        <p>Total events</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stats-card">
+                    <div class="stats-icon bg-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|filter(e => e.statut == 'ouvert')|length }}</h3>
+                        <p>Active events</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stats-card">
+                    <div class="stats-icon bg-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|filter(e => e.isComplet())|length }}</h3>
+                        <p>Full events</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stats-card">
+                    <div class="stats-icon bg-info">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stats-content">
+                        {% set totalParticipants = 0 %}
+                        {% for evenement in evenements %}
+                            {% set totalParticipants = totalParticipants + evenement.nombreParticipants %}
+                        {% endfor %}
+                        <h3>{{ totalParticipants }}</h3>
+                        <p>Total participants</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card admin-actions-card">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-gear-fill me-2"></i>Admin Actions
+                        </h5>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-primary" disabled>
+                                <i class="bi bi-plus-circle me-1"></i>Create Event
+                            </button>
+                            <button class="btn btn-outline-danger" disabled>
+                                <i class="bi bi-trash me-1"></i>Delete Selection
+                            </button>
+                            <button class="btn btn-outline-warning" disabled>
+                                <i class="bi bi-pause-circle me-1"></i>Suspend events
+                            </button>
+                            <a href="{{ path('evenement_admin_export_all_pdf') }}" class="btn btn-outline-info">
+                                <i class="bi bi-download me-1"></i>Export Data
+                            </a>
+                        </div>
+                        <small class="text-muted d-block mt-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Administrative features - Demonstration interface
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Monitoring Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="mb-0 text-dark fw-bold">
+                            <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Events Monitoring
+                        </h5>
+                        <div class="col-md-5 col-lg-4">
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search text-primary"></i>
+                                </span>
+                                <input type="text" id="admin-search" class="form-control border-start-0" placeholder="Search by title, location, type...">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="search-info" class="mb-3 small text-muted d-none"></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><input type="checkbox" class="form-check-input" disabled></th>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th style="width: 160px;">Participants</th>
+                                    <th>Status</th>
+                                    <th class="action-column">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-events-container">
+                                {% for evenement in evenements %}
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input" disabled></td>
+                                    <td><span class="text-muted fw-semi-bold">#{{ evenement.id }}</span></td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-dark fw-bold mb-0">{{ evenement.titre }}</span>
+                                            <span class="text-muted small text-truncate" style="max-width: 151px;">{{ evenement.description|slice(0, 50) }}...</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-pill-custom badge-soft-primary">
+                                            <i class="bi bi-tag-fill me-1 small"></i>{{ evenement.type|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark small fw-medium">
+                                            <i class="bi bi-calendar-event text-primary me-1"></i>{{ evenement.dateDebut|date('d/m/Y') }}<br>
+                                            <i class="bi bi-clock text-muted me-1"></i>{{ evenement.dateDebut|date('H:i') }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ evenement.lieu }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set raw_percentage = (evenement.nombreParticipants / evenement.capaciteMax * 100) %}
+                                        {% set percentage = raw_percentage > 100 ? 100 : raw_percentage|round %}
+                                        <div class="progress-container">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="fw-bold {{ raw_percentage > 100 ? 'text-danger' : 'text-dark' }}">
+                                                    {{ evenement.nombreParticipants }}/{{ evenement.capaciteMax }}
+                                                </small>
+                                                <small class="text-muted">{{ percentage }}%</small>
+                                            </div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar {% if raw_percentage >= 100 %}bg-danger{% elseif raw_percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                                                     role="progressbar" style="width: {{ percentage }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if evenement.isComplet() or raw_percentage >= 100 %}
+                                            <span class="badge bg-danger">Full</span>
+                                        {% elseif evenement.statut == 'ouvert' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ evenement.statut|capitalize }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="action-column">
+                                        <div class="btn-group-actions">
+                                            <a href="{{ path('evenement_detail', {id: evenement.id}) }}" class="btn btn-action-small btn-outline-primary" title="View Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-action-small btn-outline-warning" data-bs-toggle="modal" data-bs-target="#statusModal{{ evenement.id }}" title="Change Status">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <a href="{{ path('evenement_admin_export_pdf', {id: evenement.id}) }}" class="btn btn-action-small btn-outline-info" title="Export PDF">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                            </a>
+                                            <form method="post" action="{{ path('evenement_admin_delete', {id: evenement.id}) }}" class="d-inline" onsubmit="return confirm('Confirm deletion?')">
+                                                <button type="submit" class="btn btn-action-small btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                        <!-- Modal for changing status -->
+                                        <div class="modal fade" id="statusModal{{ evenement.id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Status</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form method="post" action="{{ path('evenement_admin_update_status', {id: evenement.id}) }}">
+                                                        <div class="modal-body">
+                                                            <p><strong>{{ evenement.titre }}</strong></p>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">New Status</label>
+                                                                <select name="statut" class="form-select" required>
+                                                                    <option value="ouvert" {{ evenement.statut == 'ouvert' ? 'selected' : '' }}>Open</option>
+                                                                    <option value="complet" {{ evenement.statut == 'complet' ? 'selected' : '' }}>Full</option>
+                                                                    <option value="terminé" {{ evenement.statut == 'terminé' ? 'selected' : '' }}>Finished</option>
+                                                                    <option value="annulé" {{ evenement.statut == 'annulé' ? 'selected' : '' }}>Cancelled</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-5 text-muted">No events found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Demo mode:</strong> Actions are for display purposes.
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('admin-search');
+        const container = document.getElementById('admin-events-container');
+        const info = document.getElementById('search-info');
+        
+        let debounceTimer;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            debounceTimer = setTimeout(() => {
+                if (query.length > 0) {
+                    info.classList.remove('d-none');
+                    info.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Searching...';
+                    
+                    fetch(`{{ path('evenement_search_ajax') }}?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            renderAdminResults(data);
+                            info.innerHTML = `<i class="bi bi-info-circle me-2"></i> Found ${data.length} result(s) for "${query}"`;
+                        });
+                } else {
+                    info.classList.add('d-none');
+                    location.reload();
+                }
+            }, 300);
+        });
+
+        function renderAdminResults(events) {
+            if (events.length === 0) {
+                container.innerHTML = '<tr><td colspan="9" class="text-center py-5 text-muted"><i class="bi bi-search fs-2 d-block mb-3"></i>No results found.</td></tr>';
+                return;
+            }
+
+            container.innerHTML = events.map(event => `
+                <tr>
+                    <td><input type="checkbox" class="form-check-input" disabled></td>
+                    <td><span class="text-muted fw-semi-bold">#${event.id}</span></td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bold mb-0">${event.titre}</span>
+                            <span class="text-muted small text-truncate" style="max-width: 151px;">${event.lieu}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-primary">${event.type.toUpperCase()}</span></td>
+                    <td>
+                        <div class="text-dark small fw-medium">
+                            <i class="bi bi-calendar-event text-primary me-1"></i>${event.dateDebut}
+                        </div>
+                    </td>
+                    <td><small class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>${event.lieu}</small></td>
+                    <td>
+                        <div class="progress-container">
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td class="action-column">
+                        <div class="btn-group-actions">
+                            <a href="${event.url}" class="btn btn-action-small btn-outline-primary" title="View Detail"><i class="bi bi-eye"></i></a>
+                            <a href="/evenements/admin/${event.id}/export-pdf" class="btn btn-action-small btn-outline-info" title="Export PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    });
+    </script>
+{% endblock %}

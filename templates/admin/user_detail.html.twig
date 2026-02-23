@@ -1,0 +1,156 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}User Details - DASHMIN{% endblock %}
+
+{% block content %}
+    <!-- User Detail Content -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="mb-3">
+            <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left me-2"></i>Back to Users List
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- User Profile Card -->
+            <div class="col-lg-4">
+                <div class="bg-light rounded p-4">
+                    <div class="text-center mb-4">
+                        {% if user.avatar %}
+                            <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" 
+                                 alt="{{ user.prenom }}" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #009CFF;">
+                        {% else %}
+                            <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                 style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <span class="text-white" style="font-size: 60px; font-weight: bold;">
+                                    {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        <h4 class="mb-1">{{ user.prenom }} {{ user.nom }}</h4>
+                        <p class="text-muted mb-3">{{ user.email }}</p>
+                        {% if user.role == 'admin' %}
+                            <span class="badge bg-danger">Administrator</span>
+                        {% elseif user.role == 'coach' %}
+                            <span class="badge bg-info">Coach</span>
+                        {% else %}
+                            <span class="badge bg-success">User</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Information -->
+            <div class="col-lg-8">
+                <div class="bg-light rounded p-4 mb-4">
+                    <h5 class="mb-4"><i class="fa fa-info-circle me-2"></i>User Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>First Name:</strong></div>
+                        <div class="col-sm-8">{{ user.prenom }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Last Name:</strong></div>
+                        <div class="col-sm-8">{{ user.nom }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Email:</strong></div>
+                        <div class="col-sm-8">{{ user.email }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Phone:</strong></div>
+                        <div class="col-sm-8">{{ user.telephone|default('N/A') }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Date of Birth:</strong></div>
+                        <div class="col-sm-8">{{ user.dateNaissance ? user.dateNaissance|date('F d, Y') : 'N/A' }}</div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Role:</strong></div>
+                        <div class="col-sm-8">
+                            {% if user.role == 'admin' %}
+                                <span class="badge bg-danger">Administrator</span>
+                            {% elseif user.role == 'coach' %}
+                                <span class="badge bg-info">Coach</span>
+                            {% else %}
+                                <span class="badge bg-success">User</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Status:</strong></div>
+                        <div class="col-sm-8">
+                            {{ user.statut.getLabel() }}
+                            {% if user.deactivatedAt %}
+                                <br><small class="text-muted">Deactivated {{ user.deactivatedAt|date('Y-m-d') }}
+                                {% if user.deactivatedBy %}(by {{ user.deactivatedBy }}){% endif %}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Account Created:</strong></div>
+                        <div class="col-sm-8">{{ user.createdAt|date('F d, Y \\a\\t H:i') }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Last Updated:</strong></div>
+                        <div class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('F d, Y \\a\\t H:i') : 'Never' }}</div>
+                    </div>
+                </div>
+
+                <!-- Reactivate button for admin-deactivated users -->
+                {% if user.statut.value == 'inactif' and user.deactivatedBy == 'admin' and user.id != app.user.id %}
+                <div class="bg-light rounded p-4 mb-4">
+                    <form method="post" action="{{ path('admin_user_reactivate', {id: user.id}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reactivate-user-' ~ user.id) }}">
+                        <button type="submit" class="btn btn-success"><i class="fa fa-user-check me-2"></i>Reactivate Account</button>
+                    </form>
+                    <p class="text-muted small mt-2 mb-0">Or edit the user and set status to Active.</p>
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                {% if user.id != app.user.id %}
+                <div class="bg-light rounded p-4">
+                    <h5 class="mb-3"><i class="fa fa-cogs me-2"></i>Actions</h5>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fa fa-trash me-2"></i>Delete User
+                    </button>
+                </div>
+
+                <!-- Delete Modal -->
+                <div class="modal fade" id="deleteModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm Delete</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete user <strong>{{ user.prenom }} {{ user.nom }}</strong>?</p>
+                                <p class="text-danger"><i class="fa fa-exclamation-triangle me-2"></i>This action cannot be undone!</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                                    <button type="submit" class="btn btn-danger">Delete User</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

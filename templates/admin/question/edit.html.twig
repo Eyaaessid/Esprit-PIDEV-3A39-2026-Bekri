@@ -1,0 +1,90 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Edit Evaluation Question - Admin Dashboard{% endblock %}
+
+{% block content %}
+    <div class="container-fluid pt-4 px-4 pb-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <a href="{{ path('admin_question_index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+
+                <div class="bg-light rounded p-4 p-sm-5">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h4 class="mb-0">Edit Question</h4>
+                    </div>
+                    <p class="text-muted mb-4">{{ question.texte }}</p>
+
+                    {# novalidate disables HTML5 browser validation — Assert handles everything server-side #}
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                    {# Global error summary #}
+                    {% if not form.vars.valid and form.vars.submitted %}
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Please correct the following errors:</h6>
+                            <ul class="mb-0">
+                                {% for child in form %}
+                                    {% for error in child.vars.errors %}
+                                        <li>{{ error.message }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {{ form_label(form.texte, 'Question Text', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.texte, {'attr': {'class': 'form-control ' ~ (form.texte.vars.errors|length > 0 ? 'is-invalid' : ''), 'placeholder': 'Enter the question text'}}) }}
+                        {% for error in form.texte.vars.errors %}
+                            <div class="invalid-feedback">{{ error.message }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.category, {'attr': {'class': 'form-select ' ~ (form.category.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                        {% for error in form.category.vars.errors %}
+                            <div class="invalid-feedback">{{ error.message }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            {{ form_label(form.option1, 'Option 1', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.option1, {'attr': {'class': 'form-control ' ~ (form.option1.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                            {% for error in form.option1.vars.errors %}
+                                <div class="invalid-feedback">{{ error.message }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_label(form.option2, 'Option 2', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.option2, {'attr': {'class': 'form-control ' ~ (form.option2.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                            {% for error in form.option2.vars.errors %}
+                                <div class="invalid-feedback">{{ error.message }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_label(form.option3, 'Option 3', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.option3, {'attr': {'class': 'form-control ' ~ (form.option3.vars.errors|length > 0 ? 'is-invalid' : '')}}) }}
+                            {% for error in form.option3.vars.errors %}
+                                <div class="invalid-feedback">{{ error.message }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                        <a href="{{ path('admin_question_index') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

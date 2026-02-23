@@ -1,0 +1,215 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer les événements - Coach{% endblock %}
+
+{% block body_class %}coach-manage-page{% endblock %}
+
+{% block main %}
+<div class="page-title" data-aos="fade">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1>Gérer les événements</h1>
+                    <p class="mb-0">Administration et modification de vos événements</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs">
+        <div class="container">
+            <ol>
+                <li><a href="{{ path('home') }}">Accueil</a></li>
+                <li><a href="{{ path('evenement_liste') }}">Événements</a></li>
+                <li class="current">Gérer événements</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        
+        <!-- Header avec bouton -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h3><i class="bi bi-list-ul me-2"></i>{{ evenements|length }} événement(s)</h3>
+            </div>
+            <div class="col-md-6 d-flex gap-2 justify-content-end align-items-center">
+                <div class="input-group mw-100" style="max-width: 300px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-primary"></i></span>
+                    <input type="text" id="coach-search" class="form-control border-start-0" placeholder="Rechercher...">
+                </div>
+                <a href="{{ path('coach_evenement_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Créer
+                </a>
+            </div>
+        </div>
+
+        <!-- Liste des événements -->
+        <div id="search-info" class="mb-3 small text-muted d-none text-center"></div>
+        <div class="row gy-4" id="coach-events-container">
+            {% for evenement in evenements %}
+            <div class="col-12">
+                <div class="event-manage-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <img src="{{ asset(evenement.image ?: 'assets/img/health/consultation-3.webp') }}" 
+                                 alt="{{ evenement.titre }}" 
+                                 class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-6">
+                            <h4>{{ evenement.titre }}</h4>
+                            <p class="text-muted mb-2">{{ evenement.description|slice(0, 100) }}...</p>
+                            <div class="event-meta-small">
+                                <span><i class="bi bi-calendar3 me-1"></i>{{ evenement.dateDebut|date('d/m/Y H:i') }}</span>
+                                <span><i class="bi bi-geo-alt me-1"></i>{{ evenement.lieu }}</span>
+                                <span><i class="bi bi-people me-1"></i>{{ evenement.nombreParticipants }}/{{ evenement.capaciteMax }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            {% if evenement.isComplet() %}
+                                <span class="badge bg-danger p-2">COMPLET</span>
+                            {% elseif evenement.statut == 'ouvert' %}
+                                <span class="badge bg-success p-2">OUVERT</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">{{ evenement.statut|upper }}</span>
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">{{ evenement.type|upper }}</small>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <div class="btn-group-vertical w-100" role="group">
+                                <a href="{{ path('coach_evenement_detail', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Voir
+                                </a>
+                                <a href="{{ path('coach_evenement_edit', {id: evenement.id}) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </a>
+                                <a href="{{ path('coach_evenement_export_participants', {id: evenement.id}) }}" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                </a>
+                                <form method="post" action="{{ path('coach_evenement_delete', {id: evenement.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                        <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Aucun événement à gérer. <a href="{{ path('coach_evenement_new') }}">Créez votre premier événement</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+
+<style>
+.event-manage-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+
+.event-manage-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-manage-card h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 10px;
+}
+
+.event-meta-small {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #666;
+}
+
+.event-meta-small span {
+    display: flex;
+    align-items: center;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('coach-search');
+    const container = document.getElementById('coach-events-container');
+    const info = document.getElementById('search-info');
+    
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        debounceTimer = setTimeout(() => {
+            if (query.length > 0) {
+                info.classList.remove('d-none');
+                info.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Recherche...';
+                
+                fetch(`{{ path('evenement_search_ajax') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderCoachResults(data);
+                        info.innerHTML = `<i class="bi bi-info-circle me-2"></i> ${data.length} résultat(s) pour "${query}"`;
+                    });
+            } else {
+                info.classList.add('d-none');
+                location.reload();
+            }
+        }, 300);
+    });
+
+    function renderCoachResults(events) {
+        if (events.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center py-5"><h5 class="text-muted">Aucun résultat.</h5></div>';
+            return;
+        }
+
+        container.innerHTML = events.map(event => `
+            <div class="col-12">
+                <div class="event-manage-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <img src="{{ asset('assets/img/health/consultation-3.webp') }}" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-6">
+                            <h4>${event.titre}</h4>
+                            <div class="event-meta-small">
+                                <span><i class="bi bi-calendar3 me-1"></i>${event.dateDebut}</span>
+                                <span><i class="bi bi-geo-alt me-1"></i>${event.lieu}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <span class="badge bg-primary p-2">${event.type.toUpperCase()}</span>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <div class="btn-group-vertical w-100">
+                                <a href="${event.url}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Voir</a>
+                                <a href="/evenements/admin/${event.id}/export-pdf" class="btn btn-sm btn-outline-info"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+});
+</script>
+{% endblock %}

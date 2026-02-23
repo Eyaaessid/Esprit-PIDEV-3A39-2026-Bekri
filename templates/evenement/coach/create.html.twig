@@ -1,0 +1,215 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Coach - Événements{% endblock %}
+
+{% block body_class %}coach-dashboard-page{% endblock %}
+
+{% block main %}
+<div class="page-title" data-aos="fade">
+    <div class="heading">
+        <div class="container">
+            <div class="row d-flex justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1>Dashboard Coach</h1>
+                    <p class="mb-0">Vue d'ensemble et statistiques de vos événements</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="breadcrumbs">
+        <div class="container">
+            <ol>
+                <li><a href="{{ path('home') }}">Accueil</a></li>
+                <li><a href="{{ path('evenement_liste') }}">Événements</a></li>
+                <li class="current">Dashboard Coach</li>
+            </ol>
+        </div>
+    </nav>
+</div>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        
+        <!-- Stats Cards -->
+        <div class="row gy-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|length }}</h3>
+                        <p>Événements totaux</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|filter(e => e.statut == 'ouvert')|length }}</h3>
+                        <p>Événements ouverts</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stats-content">
+                        {% set totalParticipants = 0 %}
+                        {% for evenement in evenements %}
+                            {% set totalParticipants = totalParticipants + evenement.nombreParticipants %}
+                        {% endfor %}
+                        <h3>{{ totalParticipants }}</h3>
+                        <p>Participants totaux</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3>{{ evenements|filter(e => e.isComplet())|length }}</h3>
+                        <p>Événements complets</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4"><i class="bi bi-lightning me-2"></i>Actions rapides</h4>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="{{ path('coach_evenement_new') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Créer un événement
+                            </a>
+                            <a href="{{ path('coach_evenement_index') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-gear me-2"></i>Gérer les événements
+                            </a>
+                            <a href="{{ path('evenement_liste') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-eye me-2"></i>Voir tous les événements
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-4"><i class="bi bi-clock-history me-2"></i>Événements récents</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Participants</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evenement in evenements|slice(0, 10) %}
+                            <tr>
+                                <td><strong>{{ evenement.titre }}</strong></td>
+                                <td>{{ evenement.dateDebut|date('d/m/Y H:i') }}</td>
+                                <td><span class="badge bg-info">{{ evenement.type|upper }}</span></td>
+                                <td>{{ evenement.nombreParticipants }}/{{ evenement.capaciteMax }}</td>
+                                <td>
+                                    {% if evenement.isComplet() %}
+                                        <span class="badge bg-danger">Complet</span>
+                                    {% elseif evenement.statut == 'ouvert' %}
+                                        <span class="badge bg-success">Ouvert</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ evenement.statut|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('evenement_detail', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucun événement disponible</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+.stats-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.3s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--accent-color), var(--contrast-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+}
+
+.stats-content h3 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.stats-content p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+</style>
+{% endblock %}

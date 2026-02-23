@@ -1,0 +1,652 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}My Profile - DASHMIN{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .verification-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .verification-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .bg-gradient-verification {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #video {
+            width: 100%;
+            background: #000;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .verification-steps {
+            list-style: none;
+            padding: 0;
+        }
+        .verification-steps li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #009CFF;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .hidden-el {
+            display: none !important;
+        }
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        #verification-status-detail {
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid pt-4 px-4">
+        <!-- Flash Messages -->
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="row g-4">
+            <!-- Profile Info Card -->
+            <div class="col-lg-4">
+                <div class="bg-light rounded p-4 h-100">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            {% if app.user.avatar %}
+                                <img class="rounded-circle mb-3" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" 
+                                     alt="" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #009CFF;">
+                            {% else %}
+                                <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <span class="text-white" style="font-size: 60px; font-weight: bold;">
+                                        {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            <a href="{{ path('admin_profile_edit') }}" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" style="width: 35px; height: 35px; padding: 5px;">
+                                <i class="fa fa-pen"></i>
+                            </a>
+                        </div>
+                        <h4 class="mb-1">{{ app.user.prenom }} {{ app.user.nom }}</h4>
+                        <p class="text-muted mb-3">{{ app.user.email }}</p>
+                        <span class="status-badge {{ app.user.isVerified ? 'bg-success text-white' : 'bg-warning text-dark' }}">
+                            <i class="fa {{ app.user.isVerified ? 'fa-check-circle' : 'fa-exclamation-triangle' }} me-1"></i>
+                            {{ app.user.isVerified ? 'Identity Verified' : 'Identity Not Verified' }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Role</label>
+                        <p class="mb-0 fw-bold">{{ app.user.role.getLabel() }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Status</label>
+                        <p class="mb-0 fw-bold">{{ app.user.statut.getLabel() }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Account Created</label>
+                        <p class="mb-0 fw-bold">{{ app.user.createdAt|date('F d, Y') }}</p>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <a href="{{ path('admin_profile_edit') }}" class="btn btn-outline-primary w-100">
+                            <i class="fa fa-cog me-2"></i>Edit Profile Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identity Verification Section -->
+            <div class="col-lg-8">
+                <div class="bg-light rounded p-4 h-100">
+                    <h5 class="mb-4">Identity Verification (Face Authentication)</h5>
+                    
+                    {% if app.user.isVerified %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fa fa-check-circle text-success" style="font-size: 80px;"></i>
+                            </div>
+                            <h3>Verified Account</h3>
+                            <p class="text-muted px-lg-5">Your identity has been successfully verified through our secure face recognition system. You have full access to all platform features.</p>
+                            
+                            <div class="row g-3 mt-4 text-start justify-content-center">
+                                <div class="col-md-5">
+                                    <div class="p-3 bg-white rounded border">
+                                        <label class="text-muted small d-block">Verified On</label>
+                                        <span class="fw-bold">{{ app.user.updatedAt|date('F d, Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="p-3 bg-white rounded border">
+                                        <label class="text-muted small d-block">Verification ID</label>
+                                        <span class="fw-bold">#{{ app.user.id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div id="verification-intro">
+                            <p class="mb-4">To ensure platform security and provide you with a personalized experience, we require identity verification. This process uses your camera and advanced face recognition technology.</p>
+                            
+                            <ul class="verification-steps mb-4">
+                                <li>
+                                    <div class="step-number">1</div>
+                                    <div>
+                                        <h6 class="mb-1">Allow Camera Access</h6>
+                                        <p class="text-muted small mb-0">Your browser will ask for permission to use your camera.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="step-number">2</div>
+                                    <div>
+                                        <h6 class="mb-1">Position Your Face</h6>
+                                        <p class="text-muted small mb-0">Ensure you're in a well-lit area and look directly at the camera.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="step-number">3</div>
+                                    <div>
+                                        <h6 class="mb-1">AI Confirmation</h6>
+                                        <p class="text-muted small mb-0">Our AI will analyze and confirm your biological features automatically.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                            
+                            <div class="alert alert-info border-0 bg-white shadow-sm mb-4">
+                                <div class="d-flex">
+                                    <i class="fa fa-shield-alt text-primary fs-4 me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">Privacy Guarantee</h6>
+                                        <p class="text-muted small mb-0">We don't store raw images. Verification is performed locally in your browser and only the result is sent to our servers.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="start-verification-btn" class="btn btn-primary btn-lg w-100">
+                                <i class="fa fa-video me-2"></i>Start Facial Verification
+                            </button>
+                        </div>
+
+                        <!-- Verification Interface (Hidden by default) -->
+                        <div id="verification-interface" class="hidden-el">
+                            <div class="card verification-card">
+                                <div class="bg-dark p-0" style="position: relative;">
+                                    <div id="video-container">
+                                        <video id="video" autoplay muted playsinline></video>
+                                        <div class="camera-overlay"></div>
+                                    </div>
+                                    
+                                    <div class="position-absolute bottom-0 start-0 e-0 w-100 p-3 bg-dark bg-opacity-75 text-white">
+                                        <div id="detection-status" class="text-center small">
+                                            <i class="fa fa-spinner fa-spin me-2"></i>Initializing AI models...
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body bg-white text-center">
+                                    <p id="verification-instructions" class="mb-3">Please wait while the camera initializes...</p>
+                                    <div class="progress mb-3" style="height: 10px;">
+                                        <div id="verification-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="verification-status-detail" class="text-primary mb-0">0% complete</div>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <button id="cancel-verification-btn" class="btn btn-link text-muted">Cancel and go back</button>
+                            </div>
+                        </div>
+
+                        <!-- Success Screen (Hidden) -->
+                        <div id="verification-success" class="hidden-el text-center py-5">
+                            <div class="mb-4">
+                                <i class="fa fa-check-circle text-success" style="font-size: 80px;"></i>
+                            </div>
+                            <h3>Verification Captured!</h3>
+                            <p class="text-muted mb-4">Bio-metrics successfully analyzed and match verified. Please save to update your status.</p>
+                            
+                            <form method="post" action="{{ path('admin_profile_verify') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('verify-user-' ~ app.user.id) }}">
+                                <button type="submit" class="btn btn-success btn-lg px-5">
+                                    <i class="fa fa-save me-2"></i>Finalize Verification
+                                </button>
+                            </button>
+                            <button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('admin/js/main.js') }}"></script>
+
+    {# JavaScript for Face Registration - Same as user profile #}
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let videoStream = null;
+        let faceDescriptor = null;
+        
+        // Security settings
+        const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
+        const MIN_DETECTION_DURATION = 1500; // Minimum milliseconds face must be detected before capture
+        const MIN_FACE_SIZE = 100; // Minimum face size in pixels
+        
+        let faceDetectedStartTime = null;
+        let lastDetectionConfidence = 0;
+        
+        const video = document.getElementById('face-video');
+        const canvas = document.getElementById('face-canvas');
+        const startBtn = document.getElementById('start-face-capture-btn');
+        const captureBtn = document.getElementById('capture-face-btn');
+        const cancelBtn = document.getElementById('cancel-capture-btn');
+        const retryBtn = document.getElementById('retry-face-capture-btn');
+        const disableBtn = document.getElementById('disable-face-auth-btn');
+        const statusText = document.getElementById('face-status-text');
+        const faceDetectionBox = document.getElementById('face-detection-box');
+
+        // Load face-api.js models
+        async function loadModels() {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                console.log('Face-api models loaded successfully');
+                return true;
+            } catch (error) {
+                console.error('Error loading face-api models:', error);
+                return false;
+            }
+        }
+
+        // Start camera
+        async function startCamera() {
+            try {
+                statusText.textContent = 'Starting camera...';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    } 
+                });
+                
+                video.srcObject = stream;
+                videoStream = stream;
+                
+                // Wait for video to be ready
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play().then(() => {
+                            statusText.textContent = 'Camera ready. Position your face in the frame.';
+                            resolve();
+                        });
+                    };
+                });
+                
+                // Start face detection
+                detectFace();
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showError('Unable to access camera. Please check permissions.');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+    // Detect face in video
+    async function detectFace() {
+        if (!video.srcObject || !videoStream) return;
+        
+        try {
+            const detection = await faceapi
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ 
+                    inputSize: 512, // Higher resolution for better accuracy
+                    scoreThreshold: MIN_DETECTION_CONFIDENCE 
+                }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+            
+            if (detection && detection.detection) {
+                const confidence = detection.detection.score;
+                const box = detection.detection.box;
+                const faceSize = Math.max(box.width, box.height);
+                
+                // Check confidence threshold
+                if (confidence < MIN_DETECTION_CONFIDENCE) {
+                    faceDetectionBox.style.display = 'none';
+                    statusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Check minimum face size
+                if (faceSize < MIN_FACE_SIZE) {
+                    faceDetectionBox.style.display = 'block';
+                    const videoRect = video.getBoundingClientRect();
+                    const videoWidth = video.videoWidth || videoRect.width;
+                    const videoHeight = video.videoHeight || videoRect.height;
+                    const scaleX = videoRect.width / videoWidth;
+                    const scaleY = videoRect.height / videoHeight;
+                    
+                    faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                    faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                    faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                    faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                    faceDetectionBox.style.borderColor = '#ffa500'; // Orange for too small
+                    
+                    statusText.textContent = 'Move closer to the camera for better detection.';
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                    faceDetectedStartTime = null;
+                    
+                    if (videoStream && video.srcObject) {
+                        requestAnimationFrame(() => detectFace());
+                    }
+                    return;
+                }
+                
+                // Face detected with good confidence and size
+                const videoRect = video.getBoundingClientRect();
+                const videoWidth = video.videoWidth || videoRect.width;
+                const videoHeight = video.videoHeight || videoRect.height;
+                const scaleX = videoRect.width / videoWidth;
+                const scaleY = videoRect.height / videoHeight;
+                
+                faceDetectionBox.style.display = 'block';
+                faceDetectionBox.style.left = (box.x * scaleX) + 'px';
+                faceDetectionBox.style.top = (box.y * scaleY) + 'px';
+                faceDetectionBox.style.width = (box.width * scaleX) + 'px';
+                faceDetectionBox.style.height = (box.height * scaleY) + 'px';
+                faceDetectionBox.style.borderColor = '#00ff00'; // Green for good detection
+                
+                // Track detection duration
+                const now = Date.now();
+                if (!faceDetectedStartTime) {
+                    faceDetectedStartTime = now;
+                }
+                
+                const detectionDuration = now - faceDetectedStartTime;
+                lastDetectionConfidence = confidence;
+                
+                // Require minimum detection duration before allowing capture
+                if (detectionDuration < MIN_DETECTION_DURATION) {
+                    const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
+                    statusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                } else {
+                    statusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Click "Capture Face" to continue.`;
+                    captureBtn.disabled = false;
+                    captureBtn.removeAttribute('disabled');
+                    captureBtn.style.pointerEvents = 'auto';
+                    captureBtn.style.opacity = '1';
+                    captureBtn.style.cursor = 'pointer';
+                    
+                    // Store descriptor temporarily
+                    faceDescriptor = Array.from(detection.descriptor);
+                }
+            } else {
+                // No face detected
+                faceDetectionBox.style.display = 'none';
+                statusText.textContent = 'No face detected. Please position your face in the frame.';
+                captureBtn.disabled = true;
+                captureBtn.setAttribute('disabled', 'disabled');
+                captureBtn.style.opacity = '0.5';
+                captureBtn.style.cursor = 'not-allowed';
+                faceDetectedStartTime = null;
+            }
+        } catch (error) {
+            console.error('Face detection error:', error);
+            faceDetectedStartTime = null;
+            // Continue detection even if there's an error
+        }
+        
+        // Continue detection loop
+        if (videoStream && video.srcObject) {
+            requestAnimationFrame(() => detectFace());
+        }
+    }
+
+        // Capture face and register
+        async function captureFace() {
+            if (!faceDescriptor) {
+                showError('No face detected. Please try again.');
+                return;
+            }
+            
+            showStep('step-processing');
+            stopCamera();
+            
+            try {
+                const response = await fetch('/api/face-auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        descriptor: faceDescriptor
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStep('step-success');
+                    // Reload page after 2 seconds to update UI
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Registration failed. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Error registering face:', error);
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Disable face authentication
+        async function disableFaceAuth() {
+            if (!confirm('Are you sure you want to disable face authentication?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/face-auth/disable', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Failed to disable face authentication. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Error disabling face auth:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Show specific step
+        function showStep(stepId) {
+            document.querySelectorAll('#face-registration-steps > div').forEach(div => {
+                div.style.display = 'none';
+            });
+            document.getElementById(stepId).style.display = 'block';
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            showStep('step-error');
+        }
+
+        // Event listeners
+        if (startBtn) {
+            startBtn.addEventListener('click', async function() {
+                showStep('step-camera');
+                const modelsLoaded = await loadModels();
+                if (modelsLoaded) {
+                    await startCamera();
+                } else {
+                    showError('Failed to load face detection models. Please refresh and try again.');
+                }
+            });
+        }
+
+        if (captureBtn) {
+            captureBtn.addEventListener('click', captureFace);
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                stopCamera();
+                bootstrap.Modal.getInstance(document.getElementById('faceRegistrationModal')).hide();
+            });
+        }
+        
+        if (retryBtn) {
+            retryBtn.addEventListener('click', function() {
+                showStep('step-instructions');
+            });
+        }
+        
+        if (disableBtn) {
+            disableBtn.addEventListener('click', disableFaceAuth);
+        }
+
+        // Clean up on modal close
+        const modal = document.getElementById('faceRegistrationModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                stopCamera();
+                showStep('step-instructions');
+                if (captureBtn) {
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                }
+                faceDescriptor = null;
+                faceDetectedStartTime = null;
+                lastDetectionConfidence = 0;
+            });
+            
+            // Reset button state when modal is shown
+            modal.addEventListener('show.bs.modal', function() {
+                if (captureBtn) {
+                    captureBtn.disabled = true;
+                    captureBtn.setAttribute('disabled', 'disabled');
+                    captureBtn.style.opacity = '0.5';
+                    captureBtn.style.cursor = 'not-allowed';
+                }
+                faceDescriptor = null;
+                faceDetectedStartTime = null;
+                lastDetectionConfidence = 0;
+            });
+        }
+    });
+
+    // Password visibility toggle for all password fields
+    document.querySelectorAll('.toggle-password').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const input = this.closest('.position-relative').querySelector('input[type="password"], input[type="text"]');
+            const icon = this;
+            
+            if (input && (input.type === 'password' || input.type === 'text')) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>

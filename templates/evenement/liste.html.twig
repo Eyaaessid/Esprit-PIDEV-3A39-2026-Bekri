@@ -1,0 +1,586 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Événements & Bien-être - BEKRI{% endblock %}
+
+{% block body_class %}evenements-page{% endblock %}
+
+{% block main %}
+
+    <!-- Page Title -->
+    <div class="page-title" data-aos="fade">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1>Événements & Participation</h1>
+                        <p class="mb-0">Rejoignez notre communauté de bien-être à travers des ateliers, séances de méditation et défis santé</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{{ path('home') }}">Accueil</a></li>
+                    <li class="current">Événements</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Flash Messages -->
+    {% for label, messages in app.flashes %}
+        <div class="container mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <!-- Events Section -->
+    <section id="events" class="events section">
+        <div class="container">
+
+            <!-- Header avec compteur et bouton -->
+            <div class="row mb-4" data-aos="fade-up">
+                <div class="col-md-6">
+                    <h3 class="section-subtitle">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        {{ evenements|length }} événement(s) disponible(s)
+                    </h3>
+                </div>
+                <div class="col-md-6 text-end d-flex gap-2 justify-content-end align-items-center">
+                    <a href="{{ path('evenement_calendar') }}" class="btn btn-outline-primary shadow-sm">
+                        <i class="bi bi-calendar-range me-2"></i>Calendrier
+                    </a>
+                    <a href="{{ path('evenement_stats') }}" class="btn btn-outline-secondary shadow-sm">
+                        <i class="bi bi-graph-up me-2"></i>Statistiques
+                    </a>
+                    <a href="{{ path('evenement_mes_participations') }}" class="btn btn-primary shadow-sm">
+                        <i class="bi bi-calendar-check me-2"></i>Mes Participations
+                    </a>
+                </div>
+            </div>
+
+            <!-- AJAX Search Bar -->
+            <div class="row mb-4" data-aos="fade-up">
+                <div class="col-lg-6 mx-auto">
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                        <span class="input-group-text bg-white border-end-0 px-4">
+                            <i class="bi bi-search text-primary"></i>
+                        </span>
+                        <input type="text" id="ajax-search" class="form-control border-start-0 ps-0" placeholder="Rechercher un événement (titre, lieu, type...)" autocomplete="off">
+                    </div>
+                    <div id="search-results-info" class="text-center mt-2 small text-muted d-none"></div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="row mb-5 search-hideable" data-aos="fade-up">
+                <div class="col-12">
+                    <div class="events-filter">
+                        <ul class="nav nav-pills justify-content-center" id="eventsFilter" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
+                                    <i class="bi bi-calendar-event"></i> Tous les événements
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="atelier-tab" data-bs-toggle="pill" data-bs-target="#atelier" type="button" role="tab">
+                                    <i class="bi bi-people"></i> Ateliers
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="meditation-tab" data-bs-toggle="pill" data-bs-target="#meditation" type="button" role="tab">
+                                    <i class="bi bi-heart-pulse"></i> Méditation
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="defi-tab" data-bs-toggle="pill" data-bs-target="#defi" type="button" role="tab">
+                                    <i class="bi bi-trophy"></i> Défis Santé
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Grid -->
+            <div class="tab-content" id="eventsTabContent">
+                <!-- All Events -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    <div class="row gy-4" id="events-container">
+                        {% for evenement in evenements %}
+                            {{ _self.render_event_card(evenement, loop.index) }}
+                        {% else %}
+                            {{ _self.render_empty_message() }}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Ateliers -->
+                <div class="tab-pane fade" id="atelier" role="tabpanel">
+                    <div class="row gy-4">
+                        {% for evenement in evenements|filter(e => e.type == 'atelier') %}
+                            {{ _self.render_event_card(evenement, loop.index) }}
+                        {% else %}
+                            {{ _self.render_empty_message('Aucun atelier disponible pour le moment.') }}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Méditation -->
+                <div class="tab-pane fade" id="meditation" role="tabpanel">
+                    <div class="row gy-4">
+                        {% for evenement in evenements|filter(e => e.type == 'meditation') %}
+                            {{ _self.render_event_card(evenement, loop.index) }}
+                        {% else %}
+                            {{ _self.render_empty_message('Aucune séance de méditation disponible pour le moment.') }}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Défis -->
+                <div class="tab-pane fade" id="defi" role="tabpanel">
+                    <div class="row gy-4">
+                        {% for evenement in evenements|filter(e => e.type == 'defi') %}
+                            {{ _self.render_event_card(evenement, loop.index) }}
+                        {% else %}
+                            {{ _self.render_empty_message('Aucun défi santé disponible pour le moment.') }}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {# Macro for rendering event cards to avoid repetition #}
+    {% macro render_event_card(evenement, index) %}
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ index * 100 }}">
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="{{ asset(evenement.image ?: 'assets/img/health/consultation-3.webp') }}" alt="{{ evenement.titre }}" class="img-fluid">
+                    <div class="event-badge {{ evenement.type }}">
+                        {% if evenement.type == 'atelier' %}
+                            <i class="bi bi-people"></i> ATELIER
+                        {% elseif evenement.type == 'meditation' %}
+                            <i class="bi bi-heart-pulse"></i> SESSION
+                        {% elseif evenement.type == 'defi' %}
+                            <i class="bi bi-trophy"></i> DÉFI
+                        {% else %}
+                            <i class="bi bi-calendar-event"></i> {{ evenement.type|upper }}
+                        {% endif %}
+                    </div>
+                    {% if evenement.isComplet() %}
+                        <div class="event-status complet">
+                            <i class="bi bi-x-circle"></i> COMPLET
+                        </div>
+                    {% elseif evenement.statut == 'terminé' %}
+                        <div class="event-status termine">
+                            <i class="bi bi-check-circle"></i> TERMINÉ
+                        {% else %}
+                        <div class="event-status ouvert">
+                            <i class="bi bi-check-circle"></i> OUVERT
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="event-content">
+                    <div class="event-date">
+                        <i class="bi bi-calendar3"></i>
+                        <span>{{ evenement.dateDebut|date('d/m/Y à H:i') }}</span>
+                    </div>
+                    <h3 class="event-title">
+                        <a href="{{ path('evenement_detail', {id: evenement.id}) }}">{{ evenement.titre }}</a>
+                    </h3>
+                    <p class="event-description">{{ evenement.description|slice(0, 120) }}...</p>
+                    <div class="event-meta">
+                        <div class="meta-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>{{ evenement.lieu }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="bi bi-people"></i>
+                            <span>{{ evenement.nombreParticipants }}/{{ evenement.capaciteMax }}</span>
+                        </div>
+                    </div>
+                    <div class="event-footer">
+                        <div class="places-info">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" 
+                                        style="width: {{ (evenement.nombreParticipants / evenement.capaciteMax * 100)|round }}%"
+                                        aria-valuenow="{{ evenement.nombreParticipants }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="{{ evenement.capaciteMax }}">
+                                </div>
+                            </div>
+                            <small>{{ evenement.placesRestantes }} place(s) restante(s)</small>
+                        </div>
+                        <div class="event-actions">
+                            <a href="{{ path('evenement_detail', {id: evenement.id}) }}" class="btn-details">
+                                Voir détails <i class="bi bi-arrow-right"></i>
+                            </a>
+                            {% if not evenement.isComplet() and evenement.statut == 'ouvert' %}
+                                <form method="post" action="{{ path('evenement_participer', {id: evenement.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn-participate">
+                                        <i class="bi bi-calendar-check"></i> Participer
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    {# Macro for empty messages #}
+    {% macro render_empty_message(message) %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>
+                {{ message|default('Aucun événement disponible pour le moment. Revenez bientôt !') }}
+            </div>
+        </div>
+    {% endmacro %}
+
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block head_extra %}
+<style>
+.section-subtitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.events-filter {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.events-filter .nav-pills .nav-link {
+    color: #444;
+    padding: 12px 25px;
+    margin: 0 5px;
+    border-radius: 50px;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    font-weight: 600;
+}
+
+.events-filter .nav-pills .nav-link:hover,
+.events-filter .nav-pills .nav-link.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+
+.event-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.event-image {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.event-card:hover .event-image img {
+    transform: scale(1.1);
+}
+
+.event-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(255,255,255,0.95);
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-status.ouvert {
+    background: rgba(40, 167, 69, 0.95);
+    color: #fff;
+}
+
+.event-status.complet {
+    background: rgba(220, 53, 69, 0.95);
+    color: #fff;
+}
+
+.event-status.termine {
+    background: rgba(108, 117, 125, 0.95);
+    color: #fff;
+}
+
+.event-content {
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-date {
+    color: var(--accent-color);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.event-date i {
+    margin-right: 5px;
+}
+
+.event-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.event-title a {
+    color: var(--heading-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.event-title a:hover {
+    color: var(--accent-color);
+}
+
+.event-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.event-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.meta-item i {
+    color: var(--accent-color);
+}
+
+.event-footer {
+    margin-top: auto;
+}
+
+.places-info {
+    margin-bottom: 15px;
+}
+
+.places-info .progress {
+    height: 8px;
+    border-radius: 10px;
+    margin-bottom: 5px;
+}
+
+.places-info .progress-bar {
+    background: var(--accent-color);
+}
+
+.places-info small {
+    color: #666;
+    font-size: 12px;
+}
+
+.event-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-details {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--accent-color);
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-details:hover {
+    background: var(--contrast-color);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.btn-participate {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.btn-participate:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .event-actions {
+        flex-direction: column;
+    }
+    
+    .btn-details,
+    .btn-participate {
+        flex: none;
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('ajax-search');
+    const container = document.getElementById('events-container');
+    const hideables = document.querySelectorAll('.search-hideable');
+    const info = document.getElementById('search-results-info');
+    
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        debounceTimer = setTimeout(() => {
+            if (query.length > 0) {
+                // Show info, hide tabs
+                hideables.forEach(el => el.classList.add('d-none'));
+                info.classList.remove('d-none');
+                info.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Recherche en cours...';
+                
+                fetch(`{{ path('evenement_search_ajax') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderResults(data);
+                        info.innerHTML = `<i class="bi bi-info-circle me-2"></i> ${data.length} résultat(s) trouvé(s) pour "${query}"`;
+                    });
+            } else {
+                // Restore original view
+                hideables.forEach(el => el.classList.remove('d-none'));
+                info.classList.add('d-none');
+                location.reload(); // Simplest way to restore Twig state
+            }
+        }, 300);
+    });
+
+    function renderResults(events) {
+        if (events.length === 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Aucun événement ne correspond à votre recherche.</h5>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = events.map((event, index) => `
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="${index * 100}">
+                <div class="event-card">
+                    <div class="event-image">
+                        <img src="{{ asset('assets/img/health/consultation-3.webp') }}" alt="${event.titre}" class="img-fluid">
+                        <div class="event-badge ${event.type}">
+                            <i class="bi bi-calendar-event"></i> ${event.type.toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-date">
+                            <i class="bi bi-calendar3"></i>
+                            <span>${event.dateDebut}</span>
+                        </div>
+                        <h3 class="event-title">
+                            <a href="${event.url}">${event.titre}</a>
+                        </h3>
+                        <div class="event-meta">
+                            <div class="meta-item">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>${event.lieu}</span>
+                            </div>
+                        </div>
+                        <div class="event-footer">
+                            <div class="event-actions">
+                                <a href="${event.url}" class="btn-details">
+                                    Voir détails <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+});
+</script>
+{% endblock %}

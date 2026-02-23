@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Event Summary - {{ evenement.titre }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
+        .title { color: #007bff; font-size: 28px; margin: 0; }
+        .info-section { margin-bottom: 30px; }
+        .info-label { font-weight: bold; width: 150px; display: inline-block; color: #555; }
+        .description { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 10px; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">Event Project Summary</h1>
+        <p>Generated on {{ "now"|date("d/m/Y H:i") }}</p>
+    </div>
+
+    <div class="info-section">
+        <h2>General Information</h2>
+        <p><span class="info-label">Title:</span> {{ evenement.titre }}</p>
+        <p><span class="info-label">Type:</span> {{ evenement.type|upper }}</p>
+        <p><span class="info-label">Date:</span> {{ evenement.dateDebut|date('d/m/Y H:i') }}</p>
+        <p><span class="info-label">Location:</span> {{ evenement.lieu }}</p>
+        <p><span class="info-label">Status:</span> {{ evenement.statut|capitalize }}</p>
+        <p><span class="info-label">Capacity:</span> {{ evenement.nombreParticipants }} / {{ evenement.capaciteMax }}</p>
+    </div>
+
+    <div class="info-section">
+        <h2>Description</h2>
+        <div class="description">
+            {{ evenement.description|nl2br }}
+        </div>
+    </div>
+
+    <div class="footer">
+        BEKRI Wellbeing Platform - All Rights Reserved &copy; {{ "now"|date("Y") }}
+    </div>
+</body>
+</html>

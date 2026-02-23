@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Participants - {{ evenement.titre }}</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #009cff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #009cff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .event-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .event-info table {
+            width: 100%;
+        }
+        .event-info td {
+            padding: 5px;
+        }
+        .event-info td:first-child {
+            font-weight: bold;
+            width: 150px;
+        }
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .participants-table th {
+            background: #009cff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .participants-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .participants-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        .stats {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .stat-box {
+            display: inline-block;
+            background: #f8f9fa;
+            padding: 15px 30px;
+            margin: 0 10px;
+            border-radius: 5px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #009cff;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Liste des Participants</h1>
+        <p>{{ evenement.titre }}</p>
+        <p>Généré le {{ "now"|date('d/m/Y à H:i') }}</p>
+    </div>
+
+    <div class="event-info">
+        <table>
+            <tr>
+                <td>Événement:</td>
+                <td>{{ evenement.titre }}</td>
+            </tr>
+            <tr>
+                <td>Type:</td>
+                <td>{{ evenement.type|capitalize }}</td>
+            </tr>
+            <tr>
+                <td>Date de début:</td>
+                <td>{{ evenement.dateDebut|date('d/m/Y à H:i') }}</td>
+            </tr>
+            <tr>
+                <td>Date de fin:</td>
+                <td>{{ evenement.dateFin|date('d/m/Y à H:i') }}</td>
+            </tr>
+            <tr>
+                <td>Lieu:</td>
+                <td>{{ evenement.lieu }}</td>
+            </tr>
+            <tr>
+                <td>Capacité:</td>
+                <td>{{ evenement.nombreParticipants }} / {{ evenement.capaciteMax }}</td>
+            </tr>
+            <tr>
+                <td>Coach:</td>
+                <td>{{ coach.nomComplet }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-number">{{ participations|length }}</div>
+            <div class="stat-label">Participants Confirmés</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ evenement.placesRestantes }}</div>
+            <div class="stat-label">Places Restantes</div>
+        </div>
+    </div>
+
+    <table class="participants-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Date d'inscription</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for participation in participations %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ participation.utilisateur.nom }}</td>
+                <td>{{ participation.utilisateur.prenom }}</td>
+                <td>{{ participation.utilisateur.email }}</td>
+                <td>{{ participation.utilisateur.telephone ?? 'N/A' }}</td>
+                <td>{{ participation.dateInscription|date('d/m/Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">
+                    Aucun participant inscrit pour le moment.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Document généré par la plateforme BEKRI - Wellbeing Platform</p>
+        <p>© {{ "now"|date('Y') }} BEKRI. Tous droits réservés.</p>
+    </div>
+</body>
+</html>

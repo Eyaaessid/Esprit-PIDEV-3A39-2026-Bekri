@@ -1,0 +1,197 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Authentification à deux facteurs{% endblock %}
+
+{% block body %}
+{# ── Shared CSS ───────────────────────────────────────────────────────────── #}
+<style>
+.twofa-icon-ring {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(32,178,170,.13), rgba(62,205,199,.13));
+    border: 3px solid rgba(32,178,170,.27);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #20b2aa; margin: 0 auto;
+    animation: twofa-pulse 2s ease-in-out infinite;
+}
+@keyframes twofa-pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(32,178,170,.3); }
+    50%      { box-shadow: 0 0 0 12px rgba(32,178,170,0); }
+}
+.twofa-digits-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.twofa-digit {
+    width: 48px; height: 58px; text-align: center;
+    font-size: 1.6rem; font-weight: 700;
+    border: 2px solid #dee2e6; border-radius: 12px;
+    background: #fff; color: #2c3e50; outline: none;
+    transition: border-color .2s, box-shadow .2s, transform .1s;
+}
+.twofa-digit:focus {
+    border-color: #20b2aa;
+    box-shadow: 0 0 0 3px rgba(32,178,170,.18);
+    transform: scale(1.05);
+}
+.twofa-digit.filled  { border-color: #20b2aa; background: #f0fffe; }
+.twofa-digit.shake   { animation: twofa-shake .35s ease; }
+.twofa-digit-sep     { color: #999; font-size: 1.2rem; user-select: none; }
+
+.twofa-submit-btn {
+    background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%);
+    border: none; color: #fff;
+    box-shadow: 0 4px 15px rgba(32,178,170,.35);
+    transition: all .3s;
+}
+.twofa-submit-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(32,178,170,.45);
+    color: #fff;
+}
+.twofa-submit-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+@keyframes twofa-shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-6px); }
+    40%     { transform: translateX(6px); }
+    60%     { transform: translateX(-4px); }
+    80%     { transform: translateX(4px); }
+}
+</style>
+
+{# ── Page wrapper ─────────────────────────────────────────────────────────── #}
+<div class="min-vh-100 d-flex align-items-center justify-content-center"
+     style="background: linear-gradient(135deg, #e0f2f7 0%, #f0f8fa 100%); padding-top: 80px;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden"
+                     style="border-top: 4px solid #20b2aa;">
+                    <div class="card-body p-4 p-md-5">
+
+                        {# Logo #}
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('images/logo.png') }}" alt="Bekri Logo"
+                                 style="max-width: 110px; height: auto;"
+                                 onerror="this.style.display='none'">
+                        </div>
+
+                        {# Shield icon + heading #}
+                        <div class="text-center mb-4">
+                            <div class="twofa-icon-ring mb-3">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <h5 class="fw-bold mb-1" style="color: #2c3e50;">
+                                Authentification à deux facteurs
+                            </h5>
+                            <p class="text-muted small mb-0">
+                                Entrez le code à 6 chiffres de votre application TOTP
+                            </p>
+                        </div>
+
+                        {# Error #}
+                        {% if authenticationError %}
+                            <div class="alert alert-danger d-flex align-items-center py-2 mb-3">
+                                <i class="bi bi-exclamation-circle-fill me-2 flex-shrink-0"></i>
+                                <small>{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</small>
+                            </div>
+                        {% endif %}
+
+                        {# Form #}
+                        <form id="twofa-page-form"
+                              action="{{ checkPathUrl ? checkPathUrl : path(checkPathRoute) }}"
+                              method="post" autocomplete="off">
+
+                            {# 6-digit boxes #}
+                            <div class="twofa-digits-row mb-4" id="twofa-page-digits">
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0">
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1">
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2">
+                                <span class="twofa-digit-sep">—</span>
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3">
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4">
+                                <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5">
+                            </div>
+
+                            {# Hidden real auth code input #}
+                            <input type="hidden" id="_auth_code" name="{{ authCodeParameterName }}" value="">
+
+                            {% if isCsrfProtectionEnabled %}
+                                <input type="hidden" name="{{ csrfParameterName }}"
+                                       value="{{ csrf_token(csrfTokenId) }}">
+                            {% endif %}
+
+                            <button type="submit" id="twofa-page-submit"
+                                    class="btn twofa-submit-btn w-100 py-2 fw-semibold rounded-3 mb-3" disabled>
+                                <i class="bi bi-check-circle me-2"></i>Vérifier le code
+                            </button>
+
+                            <div class="text-center">
+                                <a href="{{ logoutPath }}" class="text-decoration-none small text-muted">
+                                    <i class="bi bi-arrow-left me-1"></i>Annuler et se déconnecter
+                                </a>
+                            </div>
+                        </form>
+
+                        {# Timer hint #}
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>Code valable 30 secondes
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+
+                <p class="text-center text-muted small mt-3">
+                    <i class="bi bi-lock me-1"></i>
+                    Connexion sécurisée · Bekri Wellbeing Platform
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const digits = document.querySelectorAll('#twofa-page-digits .twofa-digit');
+    const hidden = document.getElementById('_auth_code');
+    const btn    = document.getElementById('twofa-page-submit');
+    const form   = document.getElementById('twofa-page-form');
+
+    function sync() {
+        const val = Array.from(digits).map(d => d.value).join('');
+        hidden.value  = val;
+        btn.disabled  = val.length < 6;
+        digits.forEach(d => d.classList.toggle('filled', d.value !== ''));
+    }
+
+    digits.forEach((d, i) => {
+        d.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !d.value && i > 0) digits[i - 1].focus();
+        });
+        d.addEventListener('input', () => {
+            d.value = d.value.replace(/[^0-9]/g, '').slice(-1);
+            sync();
+            if (d.value && i < digits.length - 1) digits[i + 1].focus();
+            if (d.value && i === digits.length - 1) {
+                const all = Array.from(digits).map(x => x.value).join('');
+                if (all.length === 6) setTimeout(() => form.requestSubmit(), 250);
+            }
+        });
+        d.addEventListener('paste', e => {
+            e.preventDefault();
+            const nums = (e.clipboardData || window.clipboardData)
+                .getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+            [...nums].forEach((n, j) => { if (digits[j]) digits[j].value = n; });
+            sync();
+            digits[Math.min(nums.length, digits.length - 1)].focus();
+            if (nums.length === 6) setTimeout(() => form.requestSubmit(), 250);
+        });
+    });
+
+    if (digits[0]) digits[0].focus();
+    sync();
+});
+</script>
+{% endblock %}

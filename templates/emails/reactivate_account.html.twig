@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        .header { background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background-color: white; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%); color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .reason { background: #f0f8fa; padding: 12px; border-radius: 8px; margin: 16px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Réactivation de votre compte</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{ user.prenom }},</p>
+            <p>Votre compte Bekri Wellbeing est actuellement inactif.</p>
+            {% if deactivationReason is defined and deactivationReason %}
+            <div class="reason">
+                <strong>Raison :</strong> {{ deactivationReason }}
+            </div>
+            {% endif %}
+            <p>Cliquez sur le bouton ci-dessous pour réactiver votre compte :</p>
+            <center>
+                <a href="{{ reactivationUrl }}" class="button">Réactiver mon compte</a>
+            </center>
+            <p>Ou copiez ce lien dans votre navigateur :</p>
+            <p style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all;">{{ reactivationUrl }}</p>
+            <p><strong>Ce lien expire dans 24 heures.</strong></p>
+            <p>Si vous n'avez pas demandé cette réactivation, vous pouvez ignorer cet email.</p>
+            <p>Cordialement,<br>L'équipe Bekri Wellbeing</p>
+        </div>
+        <div class="footer">
+            <p>{{ "now"|date("Y") }} Bekri Wellbeing. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>
