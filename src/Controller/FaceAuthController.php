@@ -236,7 +236,7 @@ class FaceAuthController extends AbstractController
                 ], Response::HTTP_UNAUTHORIZED);
             }
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Face login error', [
                 'error' => $e->getMessage(),
                 'email' => $data['email'] ?? 'unknown'
@@ -244,7 +244,7 @@ class FaceAuthController extends AbstractController
             
             return $this->json([
                 'success' => false,
-                'message' => 'An error occurred during authentication'
+                'message' => 'An internal error occurred: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

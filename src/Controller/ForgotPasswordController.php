@@ -237,7 +237,7 @@ class ForgotPasswordController extends AbstractController
                 $user->setPassword($hashedPassword);
                 $user->setResetToken(null);
                 $user->setResetTokenExpiresAt(null);
-                $user->setUpdatedAt(new \DateTime());
+                $user->setUpdatedAt(new \DateTimeImmutable());
                 
                 $entityManager->flush();
 

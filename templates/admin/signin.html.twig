@@ -922,91 +922,27 @@
             }
         });
         /* ══════════════════════════════════════════════════════════════════════
-           LOGIN FORM — AJAX submission with 2FA-modal detection
+           LOGIN FORM — normal submit so browser follows 302 redirect (old working flow)
+           ── Only block submit for client-side guards (honeypot, timestamp, captcha).
            ══════════════════════════════════════════════════════════════════════ */
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // ── clientside guards (honeypot, timestamp, captcha) ──────────────
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             var honeypot = document.querySelector('input[name="website"]');
-            if (honeypot && honeypot.value !== '') return;
-
+            if (honeypot && honeypot.value !== '') {
+                e.preventDefault();
+                return;
+            }
             var ts = parseInt(document.querySelector('input[name="form_timestamp"]').value, 10);
             if (ts && (Math.floor(Date.now() / 1000) - ts) < 3) {
+                e.preventDefault();
                 alert('Veuillez patienter quelques secondes avant de vous connecter.');
                 return;
             }
             if (loginAttempts >= 2 && !captchaVerified) {
+                e.preventDefault();
                 showCaptchaModal();
                 return;
             }
-
-            // ── show loading state ────────────────────────────────────────────
-            var btn = document.getElementById('loginBtn');
-            btn.classList.add('loading');
-            btn.querySelector('span').textContent = 'Connexion...';
-
-            // ── POST credentials via fetch() ──────────────────────────────────
-            // We send X-Requested-With:fetch so LoginFormAuthenticator detects
-            // this is an AJAX call and returns JSON {error, redirect} on auth
-            // failure instead of the standard 302 + session redirect.
-            // This eliminates the double-GET session-consumption bug:
-            //   OLD: fetch follows 302→/login (GET) → SecurityController reads
-            //        and CONSUMES the one-time session error → browser GET to
-            //        /login finds no error → nothing displayed.
-            //   NEW: fetch gets 401 JSON with the error text directly.  JS
-            //        injects the error into the DOM — zero session involvement.
-            // On success Symfony still redirects (302→dashboard/2fa);
-            // fetch follows it and we detect the destination via response.url.
-            var formData = new FormData(this);
-            var response;
-            try {
-                response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    redirect: 'follow',
-                    credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'fetch' },
-                });
-            } catch (err) {
-                // Network failure — fall back to normal submit
-                btn.classList.remove('loading');
-                btn.querySelector('span').textContent = 'Se connecter';
-                this.submit();
-                return;
-            }
-
-            // ── Auth failure: server returns 401 JSON ─────────────────────────
-            if (response.status === 401) {
-                btn.classList.remove('loading');
-                btn.querySelector('span').textContent = 'Se connecter';
-                loginAttempts++;
-                try {
-                    var data = await response.json();
-                    showLoginError(data.error || 'Identifiants incorrects.');
-                } catch(jsonErr) {
-                    showLoginError('Identifiants incorrects.');
-                }
-                return;
-            }
-
-            var finalUrl  = response.url || window.location.href;
-            var finalPath = '';
-            try { finalPath = new URL(finalUrl).pathname; } catch(parseErr) {}
-
-            // ── 2FA required? ─────────────────────────────────────────────────
-            if (finalPath === '/2fa' || finalPath.startsWith('/2fa')) {
-                // Reset login button
-                btn.classList.remove('loading');
-                btn.querySelector('span').textContent = 'Se connecter';
-
-                // Show the 2FA modal on this page (no navigation!)
-                openTwofaLoginModal();
-                return;
-            }
-
-            // ── Normal success: navigate to wherever server sent us ───────────
-            window.location.href = finalUrl;
+            // Let form submit normally → server returns 302 → browser redirects
         });
 
         /**

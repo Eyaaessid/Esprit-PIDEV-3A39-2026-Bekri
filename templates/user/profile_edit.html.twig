@@ -32,194 +32,118 @@
                         </div>
                     {% endfor %}
 
-                    {{ form_start(form) }}
-                    
-                    <!-- Profile Picture Section -->
-                    <div class="mb-4 text-center">
+                    <form method="post" action="{{ path('user_profile_edit') }}" enctype="multipart/form-data" id="profileForm">
+                        {{ form_widget(form._token) }}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="mb-4 text-center">
+                            <div class="mb-3">
+                                <div id="imagePreview">
+                                    {% if app.user.avatar %}
+                                        <img id="profileImage" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" 
+                                             alt="{{ app.user.prenom }}" 
+                                             class="rounded-circle"
+                                             style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #667eea;">
+                                    {% else %}
+                                        <div id="profileImage" class="rounded-circle mx-auto d-flex align-items-center justify-content-center" 
+                                             style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                            <i class="bi bi-person-fill text-white" style="font-size: 60px;"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    {{ form_row(form.avatarFile) }}
+                                    <small class="text-muted d-block mt-1">Maximum file size: 2MB. Accepted formats: JPG, PNG, GIF, WebP</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Personal Information -->
+                        <h6 class="mb-3"><i class="bi bi-person-badge me-2"></i>Personal Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.prenom) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.nom) }}
+                            </div>
+                        </div>
+
                         <div class="mb-3">
-                            <div id="imagePreview">
-                                {% if app.user.avatar %}
-                                    <img id="profileImage" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" 
-                                         alt="{{ app.user.prenom }}" 
-                                         class="rounded-circle"
-                                         style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #667eea;">
-                                {% else %}
-                                    <div id="profileImage" class="rounded-circle mx-auto d-flex align-items-center justify-content-center" 
-                                         style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                        <i class="bi bi-person-fill text-white" style="font-size: 60px;"></i>
-                                    </div>
-                                {% endif %}
+                            {{ form_row(form.email) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.telephone) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.dateNaissance) }}
                             </div>
                         </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-8">
-                                <div class="mb-2">
-                                    {{ form_label(form.avatarFile) }}
-                                </div>
-                                {{ form_widget(form.avatarFile, {'attr': {'class': 'form-control', 'accept': 'image/*'}}) }}
-                                {{ form_errors(form.avatarFile) }}
-                                <small class="text-muted d-block mt-1">Maximum file size: 2MB. Accepted formats: JPG, PNG, GIF, WebP</small>
-                                <div id="fileName" class="mt-2 text-primary" style="display: none;">
-                                    <i class="bi bi-check-circle-fill me-1"></i>
-                                    <span id="fileNameText"></span>
-                                </div>
-                            </div>
+
+                        <hr class="my-4">
+
+                        <!-- Password Change Section -->
+                        <h6 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Change Password</h6>
+                        <p class="text-muted small mb-3">Leave these fields empty if you don't want to change your password.</p>
+                        
+                        {{ form_row(form.plainPassword.first) }}
+                        {{ form_row(form.plainPassword.second) }}
+
+                        <hr class="my-4">
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Save Changes
+                            </button>
                         </div>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <!-- Personal Information -->
-                    <h6 class="mb-3"><i class="bi bi-person-badge me-2"></i>Personal Information</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.prenom) }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.nom) }}
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form_row(form.email) }}
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.telephone) }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.dateNaissance) }}
-                        </div>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <!-- Password Change Section -->
-                    <h6 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Change Password</h6>
-                    <p class="text-muted small mb-3">Leave these fields empty if you don't want to change your password.</p>
-                    
-                    <div class="mb-3 position-relative">
-                        {{ form_label(form.plainPassword.first) }}
-                        {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
-                        <i class="bi bi-eye position-absolute toggle-password-icon" 
-                           style="right: 15px; top: 38px; cursor: pointer; color: #6c757d;"
-                           data-target="password-first"></i>
-                        {{ form_errors(form.plainPassword.first) }}
-                        <small class="text-muted d-block mt-1">
-                            Minimum 6 characters with at least one uppercase, one lowercase, and one number
-                        </small>
-                    </div>
-
-                    <div class="mb-3 position-relative">
-                        {{ form_label(form.plainPassword.second) }}
-                        {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
-                        <i class="bi bi-eye position-absolute toggle-password-icon" 
-                           style="right: 15px; top: 38px; cursor: pointer; color: #6c757d;"
-                           data-target="password-second"></i>
-                        {{ form_errors(form.plainPassword.second) }}
-                    </div>
-
-                    <hr class="my-4">
-
-                    <!-- Submit Buttons -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-2"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle me-2"></i>Save Changes
-                        </button>
-                    </div>
-
-                    {{ form_end(form) }}
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.toggle-password-icon:hover {
-    color: #667eea !important;
-}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Image Preview Functionality
-    const fileInput = document.querySelector('input[type="file"][accept="image/*"]');
-    const imagePreview = document.getElementById('imagePreview');
-    const fileName = document.getElementById('fileName');
-    const fileNameText = document.getElementById('fileNameText');
+    const profileForm = document.getElementById('profileForm');
+    const fileInput = document.querySelector('input[type="file"]');
     
-    console.log('File input found:', fileInput); // Debug
+    console.log('✅ Form found:', profileForm);
+    console.log('✅ File input found:', fileInput);
+    console.log('📋 Form action:', profileForm?.action);
+    console.log('📋 Form method:', profileForm?.method);
+    console.log('📋 Form enctype:', profileForm?.enctype);
     
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            console.log('File selected:', e.target.files[0]); // Debug
-            const file = e.target.files[0];
-            
-            if (file) {
-                // Display file name
-                fileNameText.textContent = file.name;
-                fileName.style.display = 'block';
-                
-                // Check if file is an image
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        console.log('Image loaded'); // Debug
-                        // Remove existing content
-                        imagePreview.innerHTML = '';
-                        
-                        // Create new image element
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.id = 'profileImage';
-                        img.className = 'rounded-circle';
-                        img.style.cssText = 'width: 120px; height: 120px; object-fit: cover; border: 4px solid #667eea;';
-                        img.alt = 'Profile Preview';
-                        
-                        imagePreview.appendChild(img);
-                    };
-                    
-                    reader.readAsDataURL(file);
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            console.log('🚀 FORM SUBMITTING...');
+            const formData = new FormData(this);
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log('📎', key, ':', value.name, '-', value.size, 'bytes');
                 } else {
-                    alert('Please select a valid image file (JPG, PNG, GIF, or WebP)');
-                    fileInput.value = '';
-                    fileName.style.display = 'none';
+                    console.log('📝', key, ':', value);
                 }
-            } else {
-                fileName.style.display = 'none';
             }
         });
     }
-
-    // Password Toggle Functionality
-    const passwordToggles = document.querySelectorAll('.toggle-password-icon');
     
-    passwordToggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const targetId = this.getAttribute('data-target');
-            const passwordField = document.getElementById('user_profile_plainPassword_' + targetId.split('-')[1]);
-            
-            if (passwordField) {
-                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordField.setAttribute('type', type);
-                
-                // Toggle icon
-                if (type === 'password') {
-                    this.classList.remove('bi-eye-slash');
-                    this.classList.add('bi-eye');
-                } else {
-                    this.classList.remove('bi-eye');
-                    this.classList.add('bi-eye-slash');
-                }
-            }
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            console.log('📸 File selected:', file?.name, file?.size, 'bytes');
         });
-    });
+    }
 });
 </script>
 {% endblock %}

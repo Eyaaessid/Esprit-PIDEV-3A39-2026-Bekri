@@ -96,7 +96,7 @@ class CoachController extends AbstractController
                 }
             }
 
-            $user->setUpdatedAt(new \DateTime());
+            $user->setUpdatedAt(new \DateTimeImmutable());
             
             try {
                 $entityManager->flush();

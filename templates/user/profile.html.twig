@@ -46,8 +46,41 @@
 
                     <hr class="my-4">
 
+                    <!-- 2FA Section -->
+                    <div class="two-factor-section">
+                        <h6 class="mb-3 text-start">
+                            <i class="bi bi-shield-lock me-2"></i>Two-Factor Authentication
+                        </h6>
+                        
+                        <div id="totp-status">
+                            {% if user.isTotpAuthenticationEnabled() %}
+                                <div class="alert alert-success d-flex align-items-start text-start">
+                                    <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Enabled</strong>
+                                        <br>
+                                        <small>Your account is protected with 2FA</small>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#disable2FAModal">
+                                    <i class="bi bi-x-circle me-2"></i>Disable 2FA
+                                </button>
+                            {% else %}
+                                <div class="alert alert-info text-start">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>Add an extra layer of security to your account.</small>
+                                </div>
+                                <a href="{{ path('app_2fa_enable') }}" class="btn btn-primary w-100">
+                                    <i class="bi bi-shield-plus me-2"></i>Enable 2FA
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
                     <!-- Face Authentication Section -->
-                    <div class="face-auth-section mb-4">
+                    <div class="face-auth-section">
                         <h6 class="mb-3 text-start">
                             <i class="bi bi-shield-check me-2"></i>Face Authentication
                         </h6>
@@ -77,64 +110,11 @@
                         </div>
                     </div>
 
-                    <!-- Two-Factor Authentication Section -->
-                    <div class="two-factor-section">
-                        <h6 class="mb-3 text-start">
-                            <i class="bi bi-shield-lock me-2"></i>Two-Factor Authentication
-                        </h6>
-                        
-                        <div id="2fa-status">
-                            {% if user.isTwoFactorEnabled() %}
-                                <div class="alert alert-success d-flex align-items-start text-start">
-                                    <i class="bi bi-check-circle-fill me-2 mt-1"></i>
-                                    <div>
-                                        <strong>Enabled</strong>
-                                        <br>
-                                        <small>Enabled: {{ user.twoFactorEnabledAt ? user.twoFactorEnabledAt|date('M d, Y') : 'Unknown' }}</small>
-                                    </div>
-                                </div>
-                                <form method="post" action="{{ path('app_2fa_disable') }}" class="mb-2" id="disable-2fa-form">
-                                    <div class="mb-2 position-relative">
-                                        <input 
-                                            type="password" 
-                                            class="form-control form-control-sm" 
-                                            name="password" 
-                                            placeholder="Enter password to disable"
-                                            required
-                                        >
-                                        <i class="bi bi-eye toggle-password position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d;"></i>
-                                    </div>
-                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_disable') }}">
-                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to disable two-factor authentication?')">
-                                        <i class="bi bi-x-circle me-2"></i>Disable 2FA
-                                    </button>
-                                </form>
-                                <form method="post" action="{{ path('app_2fa_regenerate_backup_codes') }}" id="regenerate-backup-codes-form">
-                                    <div class="mb-2">
-                                        <input 
-                                            type="password" 
-                                            class="form-control form-control-sm" 
-                                            name="password" 
-                                            placeholder="Enter password to regenerate"
-                                            required
-                                        >
-                                    </div>
-                                    <input type="hidden" name="_token" value="{{ csrf_token('2fa_regenerate') }}">
-                                    <button type="submit" class="btn btn-outline-warning w-100">
-                                        <i class="bi bi-arrow-clockwise me-2"></i>Regenerate Backup Codes
-                                    </button>
-                                </form>
-                            {% else %}
-                                <div class="alert alert-info text-start">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <small>Add an extra layer of security to your account with two-factor authentication.</small>
-                                </div>
-                                <a href="{{ path('app_2fa_enable') }}" class="btn btn-primary w-100">
-                                    <i class="bi bi-shield-lock me-2"></i>Enable 2FA
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
+                    <hr class="my-4">
+
+                    <a href="{{ path('avatar_generator') }}" class="btn btn-gradient-purple w-100 mb-2">
+                        <i class="bi bi-stars me-2"></i>Generate AI Avatar
+                    </a>
                 </div>
             </div>
         </div>
@@ -192,6 +172,56 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Wellbeing Assessment (read-only) -->
+            {% if user.profilPsychologique is not null %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Évaluation du bien-être</h5>
+                    <span class="badge bg-secondary ms-2">Informations en lecture seule</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Score global :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="fw-semibold text-primary">{{ user.profilPsychologique.scoreGlobal }}</span> / 100
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Profil :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ user.profilPsychologique.profilType }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Date d'évaluation :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ user.profilPsychologique.dateEvaluation ? user.profilPsychologique.dateEvaluation|date('d/m/Y') : '—' }}
+                        </div>
+                    </div>
+                    {% if user.profilPsychologique.aiFeedback is not null and user.profilPsychologique.aiFeedback is not empty %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong class="d-block mb-2"><i class="bi bi-stars me-2"></i>Analyse émotionnelle (IA)</strong>
+                            <p class="mb-0 text-muted small lh-lg">{{ user.profilPsychologique.aiFeedback|nl2br }}</p>
+                            <p class="mt-3 mb-0 small fst-italic text-secondary border-start border-2 border-secondary ps-2">
+                                Cette analyse ne remplace pas un avis médical.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Account Information -->
             <div class="card shadow-sm border-0">
@@ -291,7 +321,7 @@
                                 <span id="face-status-text">Initializing camera...</span>
                             </div>
                             
-                            <button type="button" class="btn btn-success" id="capture-face-btn" disabled style="pointer-events: auto; opacity: 0.5;">
+                            <button type="button" class="btn btn-success" id="capture-face-btn" disabled>
                                 <i class="bi bi-check-circle me-2"></i>Capture Face
                             </button>
                             <button type="button" class="btn btn-secondary" id="cancel-capture-btn">
@@ -338,23 +368,15 @@
     </div>
 </div>
 
-{# JavaScript for Face Registration #}
+{# JavaScript for Face Registration — face-api.js 0.22.2 + justadudewhohacks models only #}
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let videoStream = null;
     let faceDescriptor = null;
-    
-    // Security settings
-    const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
-    const MIN_DETECTION_DURATION = 1500; // Minimum milliseconds face must be detected before capture
-    const MIN_FACE_SIZE = 100; // Minimum face size in pixels
-    
-    let faceDetectedStartTime = null;
-    let lastDetectionConfidence = 0;
-    
+
+    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
     const video = document.getElementById('face-video');
-    const canvas = document.getElementById('face-canvas');
     const startBtn = document.getElementById('start-face-capture-btn');
     const captureBtn = document.getElementById('capture-face-btn');
     const cancelBtn = document.getElementById('cancel-capture-btn');
@@ -363,223 +385,110 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusText = document.getElementById('face-status-text');
     const faceDetectionBox = document.getElementById('face-detection-box');
 
-    // Load face-api.js models
     async function loadModels() {
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
-        try {
-            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-            console.log('Face-api models loaded successfully');
-            return true;
-        } catch (error) {
-            console.error('Error loading face-api models:', error);
-            return false;
-        }
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
     }
 
-    // Start camera
     async function startCamera() {
         try {
+            statusText.textContent = 'Loading face detection models...';
+            await loadModels();
+        } catch (modelErr) {
+            console.error('Error loading face-api models:', modelErr);
+            showError('Failed to load face detection models. Please refresh and try again.');
+            return;
+        }
+        try {
             statusText.textContent = 'Starting camera...';
-            
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
-                } 
-            });
-            
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
             videoStream = stream;
-            
-            // Wait for video to be ready
-            await new Promise((resolve) => {
-                video.onloadedmetadata = () => {
-                    video.play().then(() => {
-                        statusText.textContent = 'Camera ready. Position your face in the frame.';
-                        resolve();
-                    });
+            await new Promise(function(resolve, reject) {
+                video.onloadedmetadata = function() {
+                    video.play().then(function() {
+                        setTimeout(resolve, 500);
+                    }).catch(reject);
                 };
+                video.onerror = function() { reject(new Error('Video failed to load')); };
             });
-            
-            // Start face detection
+            statusText.textContent = 'Camera ready. Position your face in the frame.';
             detectFace();
-            
         } catch (error) {
-            console.error('Error accessing camera:', error);
+            console.error('Error starting camera:', error);
             showError('Unable to access camera. Please check permissions.');
         }
     }
 
-    // Stop camera
     function stopCamera() {
         if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
+            videoStream.getTracks().forEach(function(track) { track.stop(); });
             videoStream = null;
         }
     }
 
-    // Detect face in video
     async function detectFace() {
-        if (!video.srcObject || !videoStream) return;
-        
+        if (video.readyState < 2) {
+            if (videoStream) setTimeout(detectFace, 150);
+            return;
+        }
         try {
             const detection = await faceapi
-                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ 
-                    inputSize: 512, // Higher resolution for better accuracy
-                    scoreThreshold: MIN_DETECTION_CONFIDENCE 
-                }))
+                .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                 .withFaceLandmarks()
                 .withFaceDescriptor();
-            
-            if (detection && detection.detection) {
-                const confidence = detection.detection.score;
+            if (detection) {
+                faceDescriptor = Array.from(detection.descriptor);
                 const box = detection.detection.box;
-                const faceSize = Math.max(box.width, box.height);
-                
-                // Check confidence threshold
-                if (confidence < MIN_DETECTION_CONFIDENCE) {
-                    faceDetectionBox.style.display = 'none';
-                    statusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
-                    captureBtn.disabled = true;
-                    captureBtn.setAttribute('disabled', 'disabled');
-                    captureBtn.style.opacity = '0.5';
-                    captureBtn.style.cursor = 'not-allowed';
-                    faceDetectedStartTime = null;
-                    
-                    if (videoStream && video.srcObject) {
-                        requestAnimationFrame(() => detectFace());
-                    }
-                    return;
-                }
-                
-                // Check minimum face size
-                if (faceSize < MIN_FACE_SIZE) {
-                    faceDetectionBox.style.display = 'block';
-                    const videoRect = video.getBoundingClientRect();
-                    const videoWidth = video.videoWidth || videoRect.width;
-                    const videoHeight = video.videoHeight || videoRect.height;
-                    const scaleX = videoRect.width / videoWidth;
-                    const scaleY = videoRect.height / videoHeight;
-                    
-                    faceDetectionBox.style.left = (box.x * scaleX) + 'px';
-                    faceDetectionBox.style.top = (box.y * scaleY) + 'px';
-                    faceDetectionBox.style.width = (box.width * scaleX) + 'px';
-                    faceDetectionBox.style.height = (box.height * scaleY) + 'px';
-                    faceDetectionBox.style.borderColor = '#ffa500'; // Orange for too small
-                    
-                    statusText.textContent = 'Move closer to the camera for better detection.';
-                    captureBtn.disabled = true;
-                    captureBtn.setAttribute('disabled', 'disabled');
-                    captureBtn.style.opacity = '0.5';
-                    captureBtn.style.cursor = 'not-allowed';
-                    faceDetectedStartTime = null;
-                    
-                    if (videoStream && video.srcObject) {
-                        requestAnimationFrame(() => detectFace());
-                    }
-                    return;
-                }
-                
-                // Face detected with good confidence and size
-                const videoRect = video.getBoundingClientRect();
-                const videoWidth = video.videoWidth || videoRect.width;
-                const videoHeight = video.videoHeight || videoRect.height;
-                const scaleX = videoRect.width / videoWidth;
-                const scaleY = videoRect.height / videoHeight;
-                
                 faceDetectionBox.style.display = 'block';
-                faceDetectionBox.style.left = (box.x * scaleX) + 'px';
-                faceDetectionBox.style.top = (box.y * scaleY) + 'px';
-                faceDetectionBox.style.width = (box.width * scaleX) + 'px';
-                faceDetectionBox.style.height = (box.height * scaleY) + 'px';
-                faceDetectionBox.style.borderColor = '#00ff00'; // Green for good detection
-                
-                // Track detection duration
-                const now = Date.now();
-                if (!faceDetectedStartTime) {
-                    faceDetectedStartTime = now;
-                }
-                
-                const detectionDuration = now - faceDetectedStartTime;
-                lastDetectionConfidence = confidence;
-                
-                // Require minimum detection duration before allowing capture
-                if (detectionDuration < MIN_DETECTION_DURATION) {
-                    const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
-                    statusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
-                    captureBtn.disabled = true;
-                    captureBtn.setAttribute('disabled', 'disabled');
-                    captureBtn.style.opacity = '0.5';
-                    captureBtn.style.cursor = 'not-allowed';
-                } else {
-                    statusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Click "Capture Face" to continue.`;
-                    captureBtn.disabled = false;
-                    captureBtn.removeAttribute('disabled');
-                    captureBtn.style.pointerEvents = 'auto';
-                    captureBtn.style.opacity = '1';
-                    captureBtn.style.cursor = 'pointer';
-                    
-                    // Store descriptor temporarily
-                    faceDescriptor = Array.from(detection.descriptor);
-                }
+                faceDetectionBox.style.left = box.x + 'px';
+                faceDetectionBox.style.top = box.y + 'px';
+                faceDetectionBox.style.width = box.width + 'px';
+                faceDetectionBox.style.height = box.height + 'px';
+                statusText.textContent = 'Face detected! Click Capture Face.';
+                captureBtn.disabled = false;
+                captureBtn.classList.remove('btn-secondary');
+                captureBtn.classList.add('btn-success');
             } else {
-                // No face detected
                 faceDetectionBox.style.display = 'none';
-                statusText.textContent = 'No face detected. Please position your face in the frame.';
+                statusText.textContent = 'Looking for face...';
                 captureBtn.disabled = true;
-                captureBtn.setAttribute('disabled', 'disabled');
-                captureBtn.style.opacity = '0.5';
-                captureBtn.style.cursor = 'not-allowed';
-                faceDetectedStartTime = null;
             }
-        } catch (error) {
-            console.error('Face detection error:', error);
-            faceDetectedStartTime = null;
-            // Continue detection even if there's an error
+        } catch (e) {
+            console.error('Detection error:', e);
         }
-        
-        // Continue detection loop
-        if (videoStream && video.srcObject) {
-            requestAnimationFrame(() => detectFace());
+        if (videoStream) {
+            setTimeout(detectFace, 300);
         }
     }
 
-    // Capture face and register
     async function captureFace() {
         if (!faceDescriptor) {
             showError('No face detected. Please try again.');
             return;
         }
-        
         showStep('step-processing');
         stopCamera();
-        
         try {
-            const response = await fetch('/api/face-auth/register', {
+            const response = await fetch('{{ path('api_face_auth_register') }}', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({
-                    descriptor: faceDescriptor
-                })
+                body: JSON.stringify({ descriptor: faceDescriptor })
             });
-            
             const data = await response.json();
-            
             if (data.success) {
                 showStep('step-success');
-                // Reload page after 2 seconds to update UI
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
+                setTimeout(function() { location.reload(); }, 1000);
             } else {
                 showError(data.message || 'Registration failed. Please try again.');
             }
-            
         } catch (error) {
             console.error('Error registering face:', error);
             showError('Network error. Please check your connection and try again.');
@@ -593,24 +502,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const response = await fetch('/api/face-auth/disable', {
+            const response = await fetch('{{ path('api_face_auth_disable') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    '_token': '{{ csrf_token('face_auth_disable') }}'
+                })
             });
             
-            const data = await response.json();
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (jsonError) {
+                console.error('Server returned non-JSON:', text);
+                throw new Error('Server returned HTML instead of JSON. Check logs. (First 100 chars: ' + text.substring(0, 100).replace(/</g, "&lt;") + ')');
+            }
             
             if (data.success) {
                 location.reload();
             } else {
-                alert('Failed to disable face authentication. Please try again.');
+                alert('Failed to disable face authentication: ' + (data.message || 'Unknown error'));
             }
             
         } catch (error) {
             console.error('Error disabling face auth:', error);
-            alert('Network error. Please try again.');
+            alert('Network error (' + error.message + '). Please check your connection and try again.');
         }
     }
 
@@ -628,16 +549,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showStep('step-error');
     }
 
-    // Event listeners
     if (startBtn) {
         startBtn.addEventListener('click', async function() {
             showStep('step-camera');
-            const modelsLoaded = await loadModels();
-            if (modelsLoaded) {
-                await startCamera();
-            } else {
-                showError('Failed to load face detection models. Please refresh and try again.');
-            }
+            await startCamera();
         });
     }
 
@@ -668,50 +583,10 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.addEventListener('hidden.bs.modal', function() {
             stopCamera();
             showStep('step-instructions');
-            if (captureBtn) {
-                captureBtn.disabled = true;
-                captureBtn.setAttribute('disabled', 'disabled');
-                captureBtn.style.opacity = '0.5';
-                captureBtn.style.cursor = 'not-allowed';
-            }
+            if (captureBtn) captureBtn.disabled = true;
             faceDescriptor = null;
-            faceDetectedStartTime = null;
-            lastDetectionConfidence = 0;
-        });
-        
-        // Reset button state when modal is shown
-        modal.addEventListener('show.bs.modal', function() {
-            if (captureBtn) {
-                captureBtn.disabled = true;
-                captureBtn.setAttribute('disabled', 'disabled');
-                captureBtn.style.opacity = '0.5';
-                captureBtn.style.cursor = 'not-allowed';
-            }
-            faceDescriptor = null;
-            faceDetectedStartTime = null;
-            lastDetectionConfidence = 0;
         });
     }
-
-    // Password visibility toggle for all password fields
-    document.querySelectorAll('.toggle-password').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const input = this.closest('.position-relative').querySelector('input[type="password"], input[type="text"]');
-            const icon = this;
-            
-            if (input && (input.type === 'password' || input.type === 'text')) {
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                }
-            }
-        });
-    });
 });
 </script>
 {% endblock %}

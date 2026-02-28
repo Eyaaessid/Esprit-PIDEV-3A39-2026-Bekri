@@ -21,7 +21,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            user_checker: App\Security\UserChecker  # ← ADD THIS LINE
+            user_checker: App\Security\UserChecker
             custom_authenticator: App\Security\LoginFormAuthenticator
 
             logout:
@@ -43,6 +43,7 @@ security:
         - { path: ^/reinitialiser-mot-de-passe, roles: PUBLIC_ACCESS }
         - { path: ^/reactivate-account, roles: PUBLIC_ACCESS }
         - { path: ^/request-reactivation, roles: PUBLIC_ACCESS }
+        - { path: ^/api/face-auth, roles: PUBLIC_ACCESS }
         - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/coach, roles: ROLE_COACH }

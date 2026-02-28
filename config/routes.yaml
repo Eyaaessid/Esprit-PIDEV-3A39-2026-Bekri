@@ -21,6 +21,11 @@ user_profile_edit:
     controller: App\Controller\UserController::profileEdit
     methods: [GET, POST]
 
+user_profile_deactivate:
+    path: /user/profile/deactivate
+    controller: App\Controller\UserController::deactivateAccount
+    methods: [POST]
+
 # Manual Coach Routes
 coach_dashboard:
     path: /coach

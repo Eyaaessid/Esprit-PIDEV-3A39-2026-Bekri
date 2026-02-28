@@ -112,8 +112,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     // ==================== PASSWORD RESET FIELDS ====================
     
@@ -249,6 +249,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     #[ORM\OneToMany(targetEntity: ResultatTest::class, mappedBy: 'utilisateur')]
     private Collection $resultatsTests;
 
+    #[ORM\OneToOne(targetEntity: ProfilPsychologique::class, mappedBy: 'utilisateur', cascade: ['persist', 'remove'])]
+    private ?ProfilPsychologique $profilPsychologique = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -281,11 +284,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
      */
     public function getRoles(): array
     {
-        // Convert enum to Symfony role format (uppercase)
-        // 'admin' -> 'ROLE_ADMIN'
-        // 'user' -> 'ROLE_USER'
-        // 'coach' -> 'ROLE_COACH'
-        return ['ROLE_' . strtoupper($this->role->value)];
+        // Use the enum's getRoles() method which returns the full hierarchy (e.g., ['ROLE_USER', 'ROLE_ADMIN'])
+        return $this->role->getRoles();
     }
 
     /**
@@ -450,12 +450,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -834,6 +834,20 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
             }
         }
 
+        return $this;
+    }
+
+    public function getProfilPsychologique(): ?ProfilPsychologique
+    {
+        return $this->profilPsychologique;
+    }
+
+    public function setProfilPsychologique(?ProfilPsychologique $profilPsychologique): static
+    {
+        if ($profilPsychologique !== null && $profilPsychologique->getUtilisateur() !== $this) {
+            $profilPsychologique->setUtilisateur($this);
+        }
+        $this->profilPsychologique = $profilPsychologique;
         return $this;
     }
 
