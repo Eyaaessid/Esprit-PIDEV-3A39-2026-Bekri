@@ -1,0 +1,11 @@
+api_platform:
+    title: 'Bekri Wellbeing API'
+    version: '1.0.0'
+    defaults:
+        stateless: false
+        pagination_client_enabled: true
+        pagination_items_per_page: 10
+        pagination_maximum_items_per_page: 100
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']

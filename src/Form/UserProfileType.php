@@ -18,6 +18,8 @@ use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\When;
+use App\Validator\Constraints\RealEmail;
 
 class UserProfileType extends AbstractType
 {
@@ -55,7 +57,15 @@ class UserProfileType extends AbstractType
                 'attr' => ['class' => 'form-control', 'placeholder' => 'your.email@example.com'],
                 'constraints' => [
                     new NotBlank(['message' => 'Please enter your email']),
-                    new Email(['message' => 'Please enter a valid email address']),
+                    new Email([
+                        'message' => 'Please enter a valid email address',
+                        'mode' => 'strict',
+                    ]),
+                    new RealEmail([
+                        'message' => 'This email domain cannot receive emails.',
+                        'disposableMessage' => 'Disposable email addresses are not allowed.',
+                        'typoMessage' => 'Did you mean {{ suggestion }} instead of {{ value }}?',
+                    ]),
                 ],
             ])
             ->add('telephone', TelType::class, [
@@ -63,16 +73,21 @@ class UserProfileType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'placeholder' => '+216 XX XXX XXX'],
                 'constraints' => [
-                    new Length([
-                        'min' => 8,
-                        'max' => 20,
-                        'minMessage' => 'Phone number must be at least {{ limit }} digits',
-                        'maxMessage' => 'Phone number cannot exceed {{ limit }} characters'
-                    ]),
-                    new Regex([
-                        'pattern' => '/^[+]?[0-9\s\-()]+$/',
-                        'message' => 'Please enter a valid phone number using only digits, spaces, +, - or ()'
-                    ]),
+                    new When(
+                        expression: 'value != ""',
+                        constraints: [
+                            new Length([
+                                'min' => 8,
+                                'max' => 20,
+                                'minMessage' => 'Phone number must be at least {{ limit }} digits',
+                                'maxMessage' => 'Phone number cannot exceed {{ limit }} characters'
+                            ]),
+                            new Regex([
+                                'pattern' => '/^[+]?[0-9\s\-()]+$/',
+                                'message' => 'Please enter a valid phone number using only digits, spaces, +, - or ()'
+                            ]),
+                        ]
+                    ),
                 ],
             ])
             ->add('dateNaissance', DateType::class, [
@@ -119,15 +134,20 @@ class UserProfileType extends AbstractType
                 ],
                 'invalid_message' => 'The password fields must match.',
                 'constraints' => [
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Password must be at least {{ limit }} characters long',
-                        'max' => 4096,
-                    ]),
-                    new Regex([
-                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-                        'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
-                    ]),
+                    new When(
+                        expression: 'value != ""',
+                        constraints: [
+                            new Length([
+                                'min' => 6,
+                                'minMessage' => 'Password must be at least {{ limit }} characters long',
+                                'max' => 4096,
+                            ]),
+                            new Regex([
+                                'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                                'message' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
+                            ]),
+                        ]
+                    ),
                 ],
             ])
         ;

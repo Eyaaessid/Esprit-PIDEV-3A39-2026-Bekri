@@ -367,6 +367,20 @@
                 height: 40px;
             }
         }
+        
+        .btn-gradient-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-gradient-purple:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
     </style>
 
     {% block head_extra %}{% endblock %}
@@ -409,15 +423,6 @@
                     <li><a href="{{ path('objectif_index') }}" class="{{ app.request.attributes.get('_route') == 'mes objectifs' ? 'active' : '' }}">mes objectifs</a></li>
                     <li><a href="{{ path('evenements_home') }}" class="{{ app.request.attributes.get('_route') == 'les evenements' ? 'active' : '' }}">les evenements</a></li>
                     <li><a href="{{ path('posts_list') }}">Posts</a></li>
-                    {% if app.user %}
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <li><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
-                        {% elseif is_granted('ROLE_COACH') %}
-                            <li><a href="{{ path('coach_dashboard') }}">Dashboard</a></li>
-                        {% else %}
-                            <li><a href="{{ path('user_dashboard') }}">Dashboard</a></li>
-                        {% endif %}
-                    {% endif %}
 
                     <li class="dropdown">
                         <a href="#"><span>Resources</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -605,6 +610,12 @@
 
     {% block scripts_extra %}{% endblock %}
 
+    {# No importmap('app') on main site - keeps posts/list/detail fast; like & forms use vanilla JS #}
     {% block javascripts %}{% endblock %}
+    {# ── 2FA Modal Interceptor (only for authenticated users) #}
+    {% if app.user %}
+    <script src="{{ asset('assets/js/twofa-interceptor.js') }}" defer></script>
+    {% endif %}
+
 </body>
 </html>

@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Évaluation initiale du bien-être - Bekri Wellbeing{% endblock %}
+
+{% block body_class %}assessment-page{% endblock %}
+
+{% block main %}
+<div class="container py-5" style="margin-top: 80px; margin-bottom: 80px; max-width: 720px;">
+    <div class="text-center mb-4">
+        <h1 class="h3 mb-2">Évaluation initiale du bien-être</h1>
+        <p class="text-muted">Répondez à toutes les questions pour accéder à votre espace.</p>
+    </div>
+
+    {# Progress indicator #}
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Question {{ question_offset + 1 }} à {{ question_offset + (questions|length) }} sur {{ total_questions }}</span>
+            <span class="text-muted small">Page {{ current_page }}/{{ total_pages }}</span>
+        </div>
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (current_page / total_pages * 100)|round }}%;" aria-valuenow="{{ current_page }}" aria-valuemin="1" aria-valuemax="{{ total_pages }}"></div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form method="post" action="{{ path('app_initial_assessment', { page: current_page }) }}" id="assessment-form">
+                <input type="hidden" name="page" value="{{ current_page }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('assessment') }}">
+
+                {% for q in questions %}
+                    {% set globalIdx = question_offset + loop.index0 %}
+                    {% set saved = saved_answers[globalIdx] ?? null %}
+                    <div class="mb-4 pb-4 {% if not loop.last %}border-bottom{% endif %}">
+                        <p class="fw-semibold mb-3">{{ globalIdx + 1 }}. {{ q.text }}</p>
+                        <div class="likert-scale-wrapper" role="group" aria-label="Réponse question {{ globalIdx + 1 }}">
+                            <span class="likert-extremity likert-left">Jamais</span>
+                            <div class="likert-scale d-flex align-items-center justify-content-between gap-1">
+                                {% for value, label in likert_labels %}
+                                    <label class="likert-circle" data-value="{{ value }}" title="{{ label }}" style="--circle-size: {{ [24, 20, 14, 20, 24][value] }}px; --circle-color: {{ ['#22c55e', '#4ade80', '#94a3b8', '#a78bfa', '#7c3aed'][value] }};">
+                                        <input type="radio" name="q{{ globalIdx }}" value="{{ value }}" class="d-none" {% if saved is not null and saved == value %}checked{% endif %} required>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <span class="likert-extremity likert-right">Très souvent</span>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-between mt-4 pt-3">
+                    {% if current_page > 1 %}
+                        <a href="{{ path('app_initial_assessment', { page: current_page - 1 }) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Précédent
+                        </a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary px-4" id="submit-btn">
+                        {% if current_page >= total_pages %}
+                            <i class="bi bi-check-lg me-1"></i> Terminer l'évaluation
+                        {% else %}
+                            Suivant <i class="bi bi-arrow-right ms-1"></i>
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <p class="text-center text-muted small mt-3">
+        Vos réponses sont confidentielles et servent à personnaliser votre accompagnement.
+    </p>
+</div>
+
+<style>
+.likert-scale-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+.likert-extremity {
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.likert-left { color: #22c55e; }
+.likert-right { color: #7c3aed; }
+.likert-scale {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+}
+.likert-circle {
+    width: var(--circle-size, 20px);
+    height: var(--circle-size, 20px);
+    min-width: var(--circle-size, 20px);
+    min-height: var(--circle-size, 20px);
+    border: 2px solid var(--circle-color, #94a3b8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.likert-circle:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.likert-circle.selected,
+.likert-circle:has(input:checked) {
+    background-color: var(--circle-color);
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--circle-color);
+}
+@media (max-width: 576px) {
+    .likert-scale-wrapper { flex-direction: column; align-items: stretch; }
+    .likert-scale { order: 1; }
+    .likert-extremity { text-align: center; }
+}
+</style>
+
+<script>
+document.getElementById('assessment-form').addEventListener('submit', function(e) {
+    var pageRadios = this.querySelectorAll('input[type="radio"][name^="q"]');
+    var names = {};
+    pageRadios.forEach(function(r) {
+        var n = r.getAttribute('name');
+        if (!names[n]) names[n] = [];
+        names[n].push(r);
+    });
+    var allChecked = true;
+    for (var n in names) {
+        var checked = names[n].some(function(r) { return r.checked; });
+        if (!checked) { allChecked = false; break; }
+    }
+    if (!allChecked) {
+        e.preventDefault();
+        alert('Veuillez répondre à toutes les questions de cette page.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

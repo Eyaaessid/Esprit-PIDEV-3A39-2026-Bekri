@@ -13,13 +13,16 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
+use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[UniqueEntity(
     fields: ['email'],
     message: 'Cet email est déjà utilisé par un autre compte.'
 )]
-class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -109,8 +112,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     // ==================== PASSWORD RESET FIELDS ====================
     
@@ -139,6 +142,70 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     /** Last successful login timestamp. */
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastLoginAt = null;
+
+    // ==================== EMAIL VERIFICATION ====================
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isVerified = false;
+
+    // ==================== FACIAL RECOGNITION FIELDS ====================
+
+    /**
+     * Encrypted face descriptor for facial recognition login.
+     * Stores the face-api.js descriptor as JSON.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $faceDescriptor = null;
+
+    /**
+     * Whether the user has enabled facial recognition authentication.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $faceAuthEnabled = false;
+
+    /**
+     * When the user registered their face for authentication.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $faceRegisteredAt = null;
+
+    /**
+     * Number of failed face authentication attempts (for rate limiting).
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $faceAuthFailedAttempts = 0;
+
+    /**
+     * Timestamp of last failed face auth attempt (for rate limiting).
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastFaceAuthAttemptAt = null;
+
+    // ==================== TWO-FACTOR AUTHENTICATION FIELDS ====================
+
+    /**
+     * TOTP secret for two-factor authentication.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $totpSecret = null;
+
+    /**
+     * Whether two-factor authentication is enabled for this user.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isTwoFactorEnabled = false;
+
+    /**
+     * Hashed backup codes for 2FA recovery (stored as JSON array of hashed codes).
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $backupCodes = null;
+
+    /**
+     * When 2FA was enabled.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $twoFactorEnabledAt = null;
 
     /**
      * @var Collection<int, Post>
@@ -182,6 +249,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ResultatTest::class, mappedBy: 'utilisateur')]
     private Collection $resultatsTests;
 
+    #[ORM\OneToOne(targetEntity: ProfilPsychologique::class, mappedBy: 'utilisateur', cascade: ['persist', 'remove'])]
+    private ?ProfilPsychologique $profilPsychologique = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -214,11 +284,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        // Convert enum to Symfony role format (uppercase)
-        // 'admin' -> 'ROLE_ADMIN'
-        // 'user' -> 'ROLE_USER'
-        // 'coach' -> 'ROLE_COACH'
-        return ['ROLE_' . strtoupper($this->role->value)];
+        // Use the enum's getRoles() method which returns the full hierarchy (e.g., ['ROLE_USER', 'ROLE_ADMIN'])
+        return $this->role->getRoles();
     }
 
     /**
@@ -383,12 +450,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -472,6 +539,109 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
     {
         $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
+    // ==================== EMAIL VERIFICATION METHODS ====================
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    // ==================== FACIAL RECOGNITION METHODS ====================
+
+    public function getFaceDescriptor(): ?string
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?string $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    public function isFaceAuthEnabled(): bool
+    {
+        return $this->faceAuthEnabled;
+    }
+
+    public function setFaceAuthEnabled(bool $faceAuthEnabled): static
+    {
+        $this->faceAuthEnabled = $faceAuthEnabled;
+        return $this;
+    }
+
+    public function getFaceRegisteredAt(): ?\DateTimeInterface
+    {
+        return $this->faceRegisteredAt;
+    }
+
+    public function setFaceRegisteredAt(?\DateTimeInterface $faceRegisteredAt): static
+    {
+        $this->faceRegisteredAt = $faceRegisteredAt;
+        return $this;
+    }
+
+    public function getFaceAuthFailedAttempts(): int
+    {
+        return $this->faceAuthFailedAttempts;
+    }
+
+    public function setFaceAuthFailedAttempts(int $faceAuthFailedAttempts): static
+    {
+        $this->faceAuthFailedAttempts = $faceAuthFailedAttempts;
+        return $this;
+    }
+
+    public function getLastFaceAuthAttemptAt(): ?\DateTimeInterface
+    {
+        return $this->lastFaceAuthAttemptAt;
+    }
+
+    public function setLastFaceAuthAttemptAt(?\DateTimeInterface $lastFaceAuthAttemptAt): static
+    {
+        $this->lastFaceAuthAttemptAt = $lastFaceAuthAttemptAt;
+        return $this;
+    }
+
+    /**
+     * Reset face authentication data (used when disabling face auth).
+     */
+    public function resetFaceAuth(): static
+    {
+        $this->faceDescriptor = null;
+        $this->faceAuthEnabled = false;
+        $this->faceRegisteredAt = null;
+        $this->faceAuthFailedAttempts = 0;
+        $this->lastFaceAuthAttemptAt = null;
+        return $this;
+    }
+
+    /**
+     * Increment failed face auth attempts for rate limiting.
+     */
+    public function incrementFaceAuthFailedAttempts(): static
+    {
+        $this->faceAuthFailedAttempts++;
+        $this->lastFaceAuthAttemptAt = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * Reset failed face auth attempts after successful login.
+     */
+    public function resetFaceAuthFailedAttempts(): static
+    {
+        $this->faceAuthFailedAttempts = 0;
+        $this->lastFaceAuthAttemptAt = null;
         return $this;
     }
 
@@ -664,6 +834,126 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    public function getProfilPsychologique(): ?ProfilPsychologique
+    {
+        return $this->profilPsychologique;
+    }
+
+    public function setProfilPsychologique(?ProfilPsychologique $profilPsychologique): static
+    {
+        if ($profilPsychologique !== null && $profilPsychologique->getUtilisateur() !== $this) {
+            $profilPsychologique->setUtilisateur($this);
+        }
+        $this->profilPsychologique = $profilPsychologique;
+        return $this;
+    }
+
+    // ==================== TWO-FACTOR AUTHENTICATION METHODS ====================
+
+    public function isTotpAuthenticationEnabled(): bool
+    {
+        return $this->isTwoFactorEnabled;
+    }
+
+    public function getTotpAuthenticationUsername(): string
+    {
+        return $this->email;
+    }
+
+    public function getTotpAuthenticationConfiguration(): ?TotpConfiguration
+    {
+        if (!$this->totpSecret) {
+            return null;
+        }
+        
+        return new TotpConfiguration(
+            $this->totpSecret,
+            TotpConfiguration::ALGORITHM_SHA1,
+            30,
+            6
+        );
+    }
+
+    // Required by TotpConfigurationInterface (delegated to TotpConfiguration)
+    public function getSecret(): string
+    {
+        return $this->totpSecret ?? '';
+    }
+
+    public function getAlgorithm(): string
+    {
+        return TotpConfiguration::ALGORITHM_SHA1;
+    }
+
+    public function getPeriod(): int
+    {
+        return 30;
+    }
+
+    public function getDigits(): int
+    {
+        return 6;
+    }
+
+    public function getTotpSecret(): ?string
+    {
+        return $this->totpSecret;
+    }
+
+    public function setTotpSecret(?string $totpSecret): static
+    {
+        $this->totpSecret = $totpSecret;
+        return $this;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->isTwoFactorEnabled;
+    }
+
+    public function setIsTwoFactorEnabled(bool $isTwoFactorEnabled): static
+    {
+        $this->isTwoFactorEnabled = $isTwoFactorEnabled;
+        if ($isTwoFactorEnabled && $this->twoFactorEnabledAt === null) {
+            $this->twoFactorEnabledAt = new \DateTime();
+        }
+        return $this;
+    }
+
+    public function getBackupCodes(): ?string
+    {
+        return $this->backupCodes;
+    }
+
+    public function setBackupCodes(?string $backupCodes): static
+    {
+        $this->backupCodes = $backupCodes;
+        return $this;
+    }
+
+    public function getTwoFactorEnabledAt(): ?\DateTimeInterface
+    {
+        return $this->twoFactorEnabledAt;
+    }
+
+    public function setTwoFactorEnabledAt(?\DateTimeInterface $twoFactorEnabledAt): static
+    {
+        $this->twoFactorEnabledAt = $twoFactorEnabledAt;
+        return $this;
+    }
+
+    /**
+     * Reset 2FA data (used when disabling 2FA).
+     */
+    public function resetTwoFactorAuth(): static
+    {
+        $this->totpSecret = null;
+        $this->isTwoFactorEnabled = false;
+        $this->backupCodes = null;
+        $this->twoFactorEnabledAt = null;
         return $this;
     }
 }

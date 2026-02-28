@@ -122,6 +122,11 @@ class ForgotPasswordController extends AbstractController
                         '❌ Erreur d\'envoi d\'email (SMTP). Veuillez contacter l\'administrateur. ' .
                         'Détails: ' . $e->getMessage()
                     );
+
+                    // Dev fallback: expose reset link when SMTP is blocked
+                    if ($this->getParameter('kernel.debug')) {
+                        $this->addFlash('warning', 'DEV: SMTP bloqué. Utilisez ce lien de réinitialisation : <a href="' . htmlspecialchars($resetUrl) . '" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($resetUrl) . '</a>');
+                    }
                     
                 } catch (\Exception $e) {
                     // Any other error
@@ -232,7 +237,7 @@ class ForgotPasswordController extends AbstractController
                 $user->setPassword($hashedPassword);
                 $user->setResetToken(null);
                 $user->setResetTokenExpiresAt(null);
-                $user->setUpdatedAt(new \DateTime());
+                $user->setUpdatedAt(new \DateTimeImmutable());
                 
                 $entityManager->flush();
 

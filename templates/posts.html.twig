@@ -46,9 +46,24 @@
               <button class="filter-btn" data-filter="mental">Mental Health</button>
               <button class="filter-btn" data-filter="fitness">Fitness</button>
             </div>
-            <button class="btn-create-post" data-bs-toggle="modal" data-bs-target="#createPostModal">
-              <i class="bi bi-plus-circle"></i> Create Post
-            </button>
+            <div class="d-flex gap-2">
+              {% if app.user %}
+                <a class="btn-create-post position-relative" href="{{ path('posts_notifications') }}">
+                  <i class="bi bi-bell"></i> Notifications
+                  {% if (unreadNotificationsCount|default(0)) > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {{ unreadNotificationsCount }}
+                    </span>
+                  {% endif %}
+                </a>
+                <a class="btn-create-post" href="{{ path('posts_saved') }}">
+                  <i class="bi bi-bookmark-heart"></i> Saved
+                </a>
+              {% endif %}
+              <button class="btn-create-post" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="bi bi-plus-circle"></i> Create Post
+              </button>
+            </div>
           </div>
         </div>
 
@@ -66,6 +81,34 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endfor %}
+
+        <!-- Recommended for you (no API - based on your likes & popular posts) -->
+        {% if recommendedPosts is defined and recommendedPosts|length > 0 %}
+          <div class="recommended-section mb-5" data-aos="fade-up">
+            <h5 class="mb-3"><i class="bi bi-stars me-2"></i>Recommended for you</h5>
+            <div class="row g-3">
+              {% for recPost in recommendedPosts %}
+                <div class="col-6 col-md-4 col-lg-2" data-category="{{ recPost.categorie|default('')|lower }}">
+                  <a href="{{ path('post_details', {'id': recPost.id}) }}" class="recommended-card text-decoration-none text-dark">
+                    {% if recPost.mediaUrl %}
+                      <div class="recommended-card-img">
+                        <img src="{{ recPost.mediaUrl }}" alt="{{ recPost.titre }}">
+                      </div>
+                    {% else %}
+                      <div class="recommended-card-placeholder">
+                        <i class="bi bi-file-text"></i>
+                      </div>
+                    {% endif %}
+                    <div class="recommended-card-body">
+                      <span class="recommended-card-title">{{ recPost.titre|slice(0, 40) }}{% if recPost.titre|length > 40 %}...{% endif %}</span>
+                      <small class="text-muted">{{ recPost.likes|length }} likes · {{ recPost.commentaires|length }} comments</small>
+                    </div>
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
 
         <!-- Posts Grid -->
         <div class="row gy-4" id="postsContainer">
@@ -154,16 +197,33 @@
                   <!-- Post Footer -->
                   <div class="post-footer">
                     <div class="post-stats">
-                      <button class="stat-btn like-btn" data-post-id="{{ post.id }}">
-                        <i class="bi bi-heart"></i>
+                      {% set isLiked = false %}
+                      {% if app.user %}
+                        {% for like in post.likes %}
+                          {% if like.utilisateur and like.utilisateur.id == app.user.id %}
+                            {% set isLiked = true %}
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                      <button class="stat-btn like-btn {% if isLiked %}liked{% endif %}"
+                              data-post-id="{{ post.id }}"
+                              data-like-token="{{ csrf_token('like' ~ post.id) }}">
+                        <i class="bi {% if isLiked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
                         <span>{{ post.likes|length }}</span>
+                      </button>
+                      {% set isSaved = app.user and post.id in (savedPostIds|default([])) %}
+                      <button class="stat-btn save-btn {% if isSaved %}saved{% endif %}"
+                              data-post-id="{{ post.id }}"
+                              data-save-token="{{ csrf_token('save' ~ post.id) }}"
+                              title="{% if isSaved %}Remove from saved{% else %}Save post{% endif %}">
+                        <i class="bi {% if isSaved %}bi-bookmark-check-fill{% else %}bi-bookmark{% endif %}"></i>
                       </button>
                       <button class="stat-btn">
                         <i class="bi bi-chat"></i>
                         <span>{{ post.commentaires|length }}</span>
                       </button>
                     </div>
-                    <a href="{{ path('post_details', {'id': post.id}) }}" class="btn-read-more">
+                    <a href="{{ path('post_details', {'id': post.id}) }}#comments" class="btn-read-more">
                       Read More <i class="bi bi-arrow-right"></i>
                     </a>
                   </div>
@@ -185,14 +245,14 @@
                       <h5 class="modal-title">Edit Post</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="{{ path('post_edit', {'id': post.id}) }}" method="post" enctype="multipart/form-data">
+                    <form action="{{ path('post_edit', {'id': post.id}) }}" method="post" enctype="multipart/form-data" novalidate>
                       <div class="modal-body">
                         <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ post.id) }}">
                         
                         <div class="mb-3">
                           <label for="editTitre{{ post.id }}" class="form-label">Title *</label>
                           <input type="text" class="form-control" id="editTitre{{ post.id }}" 
-                                 name="titre" value="{{ post.titre }}" required>
+                                 name="titre" value="{{ post.titre }}">
                         </div>
 
                         <div class="mb-3">
@@ -209,7 +269,7 @@
                         <div class="mb-3">
                           <label for="editContenu{{ post.id }}" class="form-label">Content *</label>
                           <textarea class="form-control" id="editContenu{{ post.id }}" name="contenu" 
-                                    rows="6" required>{{ post.contenu }}</textarea>
+                                    rows="6">{{ post.contenu }}</textarea>
                         </div>
 
                         <div class="mb-3">
@@ -240,20 +300,28 @@
         </div>
 
         <!-- Pagination -->
-        {% if posts|length > 0 %}
+        {% if posts.pageCount is defined and posts.pageCount > 1 %}
           <div class="pagination-wrapper mt-5" data-aos="fade-up">
             <nav aria-label="Page navigation">
               <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                  <a class="page-link" href="#" tabindex="-1">
+                {% set currentPage = posts.currentPageNumber %}
+                {% set totalPages = posts.pageCount %}
+                {% set queryParams = app.request.query.all %}
+
+                <li class="page-item {% if currentPage <= 1 %}disabled{% endif %}">
+                  <a class="page-link" href="{{ currentPage > 1 ? path('posts_list', queryParams|merge({'page': currentPage - 1})) : '#' }}" tabindex="-1" aria-disabled="{{ currentPage <= 1 ? 'true' : 'false' }}">
                     <i class="bi bi-chevron-left"></i>
                   </a>
                 </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
+
+                {% for page in 1..totalPages %}
+                  <li class="page-item {% if page == currentPage %}active{% endif %}">
+                    <a class="page-link" href="{{ path('posts_list', queryParams|merge({'page': page})) }}">{{ page }}</a>
+                  </li>
+                {% endfor %}
+
+                <li class="page-item {% if currentPage >= totalPages %}disabled{% endif %}">
+                  <a class="page-link" href="{{ currentPage < totalPages ? path('posts_list', queryParams|merge({'page': currentPage + 1})) : '#' }}" aria-disabled="{{ currentPage >= totalPages ? 'true' : 'false' }}">
                     <i class="bi bi-chevron-right"></i>
                   </a>
                 </li>
@@ -274,14 +342,14 @@
             <h5 class="modal-title" id="createPostModalLabel">Create New Post</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form action="{{ path('post_create') }}" method="post" enctype="multipart/form-data">
+          <form action="{{ path('post_create') }}" method="post" enctype="multipart/form-data" novalidate>
             <div class="modal-body">
               <input type="hidden" name="_token" value="{{ csrf_token('create_post') }}">
               
               <div class="mb-3">
                 <label for="titre" class="form-label">Title *</label>
                 <input type="text" class="form-control" id="titre" name="titre" 
-                       placeholder="Give your post a catchy title..." required>
+                       placeholder="Give your post a catchy title...">
               </div>
 
               <div class="mb-3">
@@ -298,7 +366,7 @@
               <div class="mb-3">
                 <label for="contenu" class="form-label">Content *</label>
                 <textarea class="form-control" id="contenu" name="contenu" rows="6" 
-                          placeholder="Share your thoughts, experiences, or advice..." required></textarea>
+                          placeholder="Share your thoughts, experiences, or advice..."></textarea>
                 <div class="form-text">
                   <i class="bi bi-info-circle"></i> Be respectful and constructive in your posts
                 </div>
@@ -336,8 +404,18 @@
 <style>
 /* Posts Page Styles */
 .posts-page {
-  background: #f8f9fa;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
+
+/* Recommended for you */
+.recommended-section h5 { color: var(--text-dark, #2d3748); font-weight: 700; }
+.recommended-card { display: block; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; }
+.recommended-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.recommended-card-img { aspect-ratio: 1; overflow: hidden; background: #eee; }
+.recommended-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.recommended-card-placeholder { aspect-ratio: 1; background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #94a3b8; }
+.recommended-card-body { padding: 0.5rem 0.6rem; }
+.recommended-card-title { font-size: 0.9rem; font-weight: 600; line-height: 1.3; }
 
 /* Filter Buttons */
 .filter-buttons {
@@ -371,23 +449,24 @@
 
 /* Create Post Button */
 .btn-create-post {
-  padding: 12px 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 11px 24px;
+  background: var(--accent-color, #149ddd);
   color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 14px rgba(20, 157, 221, 0.24);
 }
 
 .btn-create-post:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 18px rgba(20, 157, 221, 0.32);
+  color: #fff;
 }
 
 .btn-create-post i {
@@ -397,9 +476,10 @@
 /* Post Card */
 .post-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   transition: all 0.3s ease;
   height: 100%;
   display: flex;
@@ -407,8 +487,9 @@
 }
 
 .post-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.10);
+  border-color: #dbe3ea;
 }
 
 /* Post Header */
@@ -571,12 +652,14 @@
 }
 
 .stat-btn {
-  background: transparent;
-  border: none;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #7f8c8d;
+  color: #475569;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
@@ -584,7 +667,9 @@
 }
 
 .stat-btn:hover {
-  color: #e74c3c;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #f1f5f9;
 }
 
 .stat-btn i {
@@ -599,13 +684,17 @@
   animation: heartbeat 0.3s ease;
 }
 
+.save-btn.saved {
+  color: #27ae60;
+}
+
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.3); }
 }
 
 .btn-read-more {
-  color: var(--accent-color, #3498db);
+  color: var(--accent-color, #149ddd);
   font-weight: 600;
   text-decoration: none;
   display: flex;
@@ -858,11 +947,119 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  function markFieldError(field, hasError) {
+    field.classList.toggle('is-invalid', hasError);
+  }
+
+  function validatePostForm(form) {
+    const titleField = form.querySelector('[name="titre"]');
+    const contentField = form.querySelector('[name="contenu"]');
+    if (!titleField || !contentField) {
+      return true;
+    }
+
+    const titleOk = titleField.value.trim().length > 0;
+    const contentOk = contentField.value.trim().length > 0;
+    markFieldError(titleField, !titleOk);
+    markFieldError(contentField, !contentOk);
+    return titleOk && contentOk;
+  }
+
+  document.querySelectorAll('form[novalidate]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      if (!validatePostForm(form)) {
+        e.preventDefault();
+        alert('Title and content are required.');
+      }
+    });
+  });
+
   document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      this.classList.toggle('liked');
-      const count = parseInt(this.querySelector('span').textContent);
-      this.querySelector('span').textContent = this.classList.contains('liked') ? count + 1 : count - 1;
+    btn.addEventListener('click', async function() {
+      if (this.dataset.loading === '1') {
+        return;
+      }
+
+      const postId = this.dataset.postId;
+      const likeToken = this.dataset.likeToken;
+      this.dataset.loading = '1';
+
+      try {
+        const response = await fetch('/posts/' + postId + '/like', {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': likeToken
+          },
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          if (response.status === 401) {
+            window.location.href = '{{ path('app_login') }}';
+            return;
+          }
+
+          alert(data.error || 'Unable to update like right now.');
+          return;
+        }
+
+        this.classList.toggle('liked', !!data.liked);
+        this.querySelector('span').textContent = data.count;
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-heart-fill', !!data.liked);
+        icon.classList.toggle('bi-heart', !data.liked);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+      } finally {
+        this.dataset.loading = '0';
+      }
+    });
+  });
+
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (this.dataset.loading === '1') {
+        return;
+      }
+
+      const postId = this.dataset.postId;
+      const saveToken = this.dataset.saveToken;
+      this.dataset.loading = '1';
+
+      try {
+        const response = await fetch('/posts/' + postId + '/save', {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': saveToken
+          },
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          if (response.status === 401) {
+            window.location.href = '{{ path('app_login') }}';
+            return;
+          }
+          alert(data.error || 'Unable to update saved posts right now.');
+          return;
+        }
+
+        this.classList.toggle('saved', !!data.saved);
+        this.title = data.saved ? 'Remove from saved' : 'Save post';
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-bookmark-check-fill', !!data.saved);
+        icon.classList.toggle('bi-bookmark', !data.saved);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+      } finally {
+        this.dataset.loading = '0';
+      }
     });
   });
 });

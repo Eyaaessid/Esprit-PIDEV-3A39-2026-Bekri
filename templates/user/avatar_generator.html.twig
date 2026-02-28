@@ -1,0 +1,313 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}AI Avatar Generator - Bekri Wellbeing{% endblock %}
+
+{% block body_class %}avatar-generator-page{% endblock %}
+
+{% block main %}
+<div class="container mx-auto px-4 py-8 max-w-4xl" style="margin-top: 100px; margin-bottom: 80px;">
+    <div class="text-center mb-5">
+        <h1 class="display-4">
+            <i class="bi bi-stars text-primary me-3"></i>AI Avatar Generator
+        </h1>
+        <p class="lead text-muted">Create unique AI-generated profile pictures</p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-5">
+            <!-- Step 1: Upload Photo or Enter Description -->
+            <div class="mb-4">
+                <h5 class="mb-3">Step 1: Choose Your Method</h5>
+                
+                <div class="row g-4">
+                    <!-- Upload Photo -->
+                    <div class="col-md-6">
+                        <div class="border-2 border-dashed rounded-lg p-4 text-center h-100">
+                            <h6 class="fw-semibold mb-2">📸 Upload Your Photo</h6>
+                            <p class="text-sm text-muted mb-3">AI will describe you automatically</p>
+                            <input type="file" id="photoUpload" accept="image/*" class="d-none">
+                            <button onclick="document.getElementById('photoUpload').click()" 
+                                    class="btn btn-primary">
+                                Choose Photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Or Enter Description -->
+                    <div class="col-md-6">
+                        <div class="border rounded-lg p-4 h-100">
+                            <h6 class="fw-semibold mb-2">✍️ Describe Yourself</h6>
+                            <p class="text-sm text-muted mb-3">Enter your own description</p>
+                            <textarea id="description" 
+                                      rows="3" 
+                                      class="form-control"
+                                      placeholder="e.g., young woman with long brown hair, blue eyes, glasses, smiling"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loadingDescribe" class="d-none mt-4 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Analyzing your photo...</p>
+                </div>
+            </div>
+
+            <!-- Step 2: Choose Style -->
+            <div class="mb-4">
+                <h5 class="mb-3">Step 2: Choose Avatar Style</h5>
+                <div class="row g-3">
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('anime')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="anime">
+                            <div class="fs-3">🎨</div>
+                            <div class="small">Anime</div>
+                        </button>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('cartoon')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="cartoon">
+                            <div class="fs-3">🎬</div>
+                            <div class="small">Cartoon</div>
+                        </button>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('manga')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="manga">
+                            <div class="fs-3">📖</div>
+                            <div class="small">Manga</div>
+                        </button>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('pixel')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="pixel">
+                            <div class="fs-3">🎮</div>
+                            <div class="small">Pixel Art</div>
+                        </button>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('fantasy')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="fantasy">
+                            <div class="fs-3">🧙</div>
+                            <div class="small">Fantasy</div>
+                        </button>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <button onclick="selectStyle('realistic')" class="style-btn btn btn-outline-secondary w-100 p-3" data-style="realistic">
+                            <div class="fs-3">📷</div>
+                            <div class="small">Realistic</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Generate -->
+            <div class="mb-4">
+                <button id="generateBtn" 
+                        onclick="generateAvatar()" 
+                        class="btn btn-lg w-100 text-white" 
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    ✨ Generate AI Avatar
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingGenerate" class="d-none text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+                <p class="text-muted">Creating your avatar... This may take up to 2 minutes.</p>
+                <p id="retryMessage" class="small text-muted"></p>
+            </div>
+
+            <!-- Result -->
+            <div id="result" class="d-none text-center">
+                <h5 class="mb-4">Your AI Avatar</h5>
+                <img id="generatedAvatar" src="" alt="Generated Avatar" class="img-fluid rounded shadow-lg mb-4" style="max-width: 400px;">
+                <div class="d-flex gap-3 justify-content-center">
+                    <button onclick="saveAsProfile()" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle me-2"></i>Save as Profile Picture
+                    </button>
+                    <button onclick="location.reload()" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Generate Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('admin_profile') }}" class="btn btn-outline-secondary">
+        {% elseif is_granted('ROLE_COACH') %}
+            <a href="{{ path('coach_profile') }}" class="btn btn-outline-secondary">
+        {% else %}
+            <a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
+        {% endif %}
+            <i class="bi bi-arrow-left me-2"></i>Back to Profile
+        </a>
+    </div>
+</div>
+
+<script>
+let selectedStyle = 'anime';
+let currentAvatarUrl = '';
+
+// ========== PHOTO UPLOAD & DESCRIBE ==========
+document.getElementById('photoUpload').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show preview if you want, or just log
+    console.log('📸 Photo selected:', file.name);
+
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('_token', '{{ csrf_token('avatar_describe') }}');
+
+    const loadingDescribe = document.getElementById('loadingDescribe');
+    loadingDescribe.classList.remove('d-none');
+    
+    // Clear previous description to show it's working
+    document.getElementById('description').placeholder = "Analyzing your photo...";
+    document.getElementById('description').value = "";
+
+    try {
+        const response = await fetch('{{ path('avatar_describe') }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.model_loading) {
+            const retrySeconds = data.retry_after || 15;
+            setTimeout(() => {
+                document.getElementById('photoUpload').dispatchEvent(new Event('change'));
+            }, retrySeconds * 1000);
+            return;
+        }
+
+        if (data.success && !data.fallback) {
+            document.getElementById('description').value = data.description;
+            document.getElementById('description').placeholder = "AI extracted description";
+            console.log('✅ Photo analyzed (' + (data.source||'?') + '):', data.description);
+        } else if (data.fallback) {
+            // Vision APIs failed — show warning but let user edit the fallback text
+            document.getElementById('description').value = '';
+            document.getElementById('description').placeholder = "Vision API unavailable — please describe yourself manually";
+            showDescribeError('⚠️ Could not analyze photo automatically (vision model unavailable). Please type your description manually.');
+        } else if (data.error) {
+            document.getElementById('description').placeholder = "Please describe yourself manually";
+            showDescribeError('⚠️ Photo analysis failed: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error analyzing photo:', error);
+        showDescribeError('⚠️ Network error analyzing photo. Please describe yourself manually.');
+    } finally {
+        loadingDescribe.classList.add('d-none');
+    }
+});
+
+// ========== ERROR HELPER ==========
+function showDescribeError(msg) {
+    let el = document.getElementById('describeError');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'describeError';
+        el.className = 'alert alert-warning mt-3';
+        document.getElementById('loadingDescribe').after(el);
+    }
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    setTimeout(() => el.classList.add('d-none'), 8000);
+}
+
+// ========== STYLE SELECTION ==========
+function selectStyle(style) {
+    selectedStyle = style;
+    document.querySelectorAll('.style-btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-secondary');
+    });
+    const selectedBtn = document.querySelector(`[data-style="${style}"]`);
+    selectedBtn.classList.remove('btn-outline-secondary');
+    selectedBtn.classList.add('btn-primary');
+}
+
+// ========== GENERATE AVATAR ==========
+async function generateAvatar() {
+    const description = document.getElementById('description').value.trim();
+    const photoFile = document.getElementById('photoUpload').files[0];
+
+    if (!description && !photoFile) {
+        alert('⚠️ Please enter a description or upload a photo first');
+        return;
+    }
+
+    document.getElementById('loadingGenerate').classList.remove('d-none');
+    document.getElementById('result').classList.add('d-none');
+
+    const formData = new FormData();
+    formData.append('description', description);
+    formData.append('style', selectedStyle);
+    formData.append('_token', '{{ csrf_token('avatar_generate') }}');
+    if (photoFile) {
+        formData.append('photo', photoFile);
+    }
+
+    try {
+        const response = await fetch('{{ path('avatar_generate') }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.model_loading) {
+            const retrySeconds = data.retry_after || 20;
+            document.getElementById('retryMessage').textContent = 
+                `Model warming up... Retrying in ${retrySeconds} seconds`;
+            setTimeout(generateAvatar, retrySeconds * 1000);
+            return;
+        }
+
+        if (data.success) {
+            currentAvatarUrl = data.avatar_url;
+            document.getElementById('generatedAvatar').src = data.avatar_url;
+            document.getElementById('result').classList.remove('d-none');
+        } else {
+            alert('❌ Error: ' + (data.error || 'Failed to generate avatar'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error generating avatar');
+    } finally {
+        document.getElementById('loadingGenerate').classList.add('d-none');
+    }
+}
+
+// ========== SAVE AS PROFILE ==========
+async function saveAsProfile() {
+    if (!currentAvatarUrl) return;
+
+    const formData = new FormData();
+    formData.append('avatar_url', currentAvatarUrl);
+    formData.append('_token', '{{ csrf_token('avatar_save') }}');
+
+    try {
+        const response = await fetch('{{ path('avatar_save') }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✅ Avatar saved as your profile picture!');
+            window.location.href = '{{ path("user_profile") }}';
+        } else {
+            alert('❌ Error: ' + (data.error || 'Failed to save avatar'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error saving avatar');
+    }
+}
+
+// Auto-select anime style on load
+selectStyle('anime');
+</script>
+{% endblock %}
