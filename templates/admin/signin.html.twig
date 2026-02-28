@@ -10,12 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<<<<<<< Updated upstream
-    
-=======
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
->>>>>>> Stashed changes
     <style>
         :root {
             --teal:       #20b2aa;
@@ -155,7 +151,7 @@
             margin-top: 2px;
         }
 
-        /* ── RIGHT PANEL ─────────────────────────────────────────────── */
+        /* ── RIGHT PANEL ───────��─────────────────────────────────────── */
         .right-panel {
             width: 520px;
             background: white;
@@ -166,9 +162,7 @@
             overflow-y: auto;
         }
 
-        .form-header {
-            margin-bottom: 36px;
-        }
+        .form-header { margin-bottom: 36px; }
 
         .form-header h1 {
             font-size: 30px;
@@ -178,10 +172,7 @@
             margin-bottom: 8px;
         }
 
-        .form-header p {
-            font-size: 15px;
-            color: var(--gray);
-        }
+        .form-header p { font-size: 15px; color: var(--gray); }
 
         .form-group { margin-bottom: 22px; }
 
@@ -301,13 +292,8 @@
             box-shadow: 0 8px 25px rgba(32,178,170,0.4);
         }
 
-<<<<<<< Updated upstream
-        .btn-login:active {
-            transform: translateY(0);
-        }
+        .btn-primary:active { transform: translateY(0); }
 
-        .signup-link {
-=======
         .btn-face {
             width: 100%;
             padding: 15px;
@@ -354,7 +340,6 @@
         }
 
         .form-footer {
->>>>>>> Stashed changes
             text-align: center;
             margin-top: 24px;
             font-size: 14px;
@@ -394,17 +379,8 @@
             line-height: 1.5;
         }
 
-        .alert-danger {
-            background: #fff5f5;
-            color: #dc2626;
-            border-left: 4px solid #ef4444;
-        }
-
-        .alert-success {
-            background: #f0fdf4;
-            color: #166534;
-            border-left: 4px solid #22c55e;
-        }
+        .alert-danger  { background: #fff5f5; color: #dc2626; border-left: 4px solid #ef4444; }
+        .alert-success { background: #f0fdf4; color: #166534; border-left: 4px solid #22c55e; }
 
         .spinner {
             display: none;
@@ -420,7 +396,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* CAPTCHA modal */
         .captcha-honeypot {
             position: absolute !important;
             left: -9999px !important;
@@ -428,6 +403,7 @@
             opacity: 0 !important; pointer-events: none !important;
         }
 
+        /* ── CAPTCHA MODAL ───────────────────────────────────────────── */
         .modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.5);
@@ -461,7 +437,7 @@
             color: white;
         }
 
-        .modal-header i { font-size: 32px; display: block; margin-bottom: 10px; }
+        .modal-header i  { font-size: 32px; display: block; margin-bottom: 10px; }
         .modal-header h5 { margin: 0; font-size: 18px; font-weight: 700; }
 
         .modal-body { padding: 28px; }
@@ -513,18 +489,8 @@
             cursor: pointer;
             font-family: 'Inter', sans-serif;
         }
-<<<<<<< Updated upstream
-        .captcha-modal-footer .btn-modal-secondary {
-            background: #f1f5f9;
-            color: #475569;
-        }
-        .captcha-modal-footer .btn-modal-secondary:hover { background: #e2e8f0; }
-        .captcha-modal-footer .btn-modal-primary {
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            color: white;
-        }
-        .captcha-modal-footer .btn-modal-primary:hover { opacity: 0.95; transform: translateY(-1px); }
-=======
+
+        .btn-modal-cancel:hover { background: #e2e8f0; }
 
         .btn-modal-confirm {
             padding: 11px 22px;
@@ -538,7 +504,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* 2FA */
+        /* ── 2FA MODAL ───────────────────────────────────────────────── */
         #twofa-login-overlay {
             display: none;
             position: fixed; inset: 0;
@@ -562,11 +528,7 @@
             animation: modalIn 0.3s ease-out;
         }
 
-        .twofa-bar {
-            height: 4px;
-            background: linear-gradient(90deg, var(--teal), var(--purple));
-        }
-
+        .twofa-bar { height: 4px; background: linear-gradient(90deg, var(--teal), var(--purple)); }
         .twofa-body { padding: 36px 32px 28px; }
 
         .twofa-icon-ring {
@@ -610,7 +572,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .twofa-digit:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(32,178,170,0.15); transform: scale(1.05); }
+        .twofa-digit:focus  { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(32,178,170,0.15); transform: scale(1.05); }
         .twofa-digit.filled { border-color: var(--teal); background: #f0fffe; }
         .twofa-digit.error  { border-color: #ef4444 !important; background: #fff5f5 !important; }
         .twofa-digit-sep    { color: #94a3b8; font-size: 1.2rem; }
@@ -654,7 +616,7 @@
             margin-right: 6px;
         }
 
-        /* Face modal */
+        /* ── FACE MODAL ──────────────────────────────────────────────── */
         .face-modal {
             display: none;
             position: fixed; inset: 0;
@@ -724,13 +686,9 @@
 
         .btn-close-face:hover { background: #e2e8f0; }
 
-        /* Responsive */
+        /* ── RESPONSIVE ──────────────────────────────────────────────── */
         @media (max-width: 1024px) { .left-panel { display: none; } }
-
-        @media (max-width: 600px) {
-            .right-panel { width: 100%; padding: 36px 24px; }
-        }
->>>>>>> Stashed changes
+        @media (max-width: 600px)  { .right-panel { width: 100%; padding: 36px 24px; } }
     </style>
 </head>
 <body>
@@ -742,10 +700,8 @@
                 <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'">
                 <span class="left-logo-text">Bekri</span>
             </div>
-
             <h1 class="left-title">Prenez soin de<br><span>votre bien-être</span><br>chaque jour</h1>
             <p class="left-subtitle">Une plateforme dédiée à la prévention mentale et physique, conçue pour vous accompagner au quotidien.</p>
-
             <div class="left-features">
                 <div class="left-feature">
                     <div class="left-feature-icon"><i class="bi bi-clipboard2-pulse-fill"></i></div>
@@ -782,11 +738,7 @@
         {% if error %}
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle"></i>
-<<<<<<< Updated upstream
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-=======
                 <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
->>>>>>> Stashed changes
             </div>
         {% endif %}
 
@@ -813,24 +765,12 @@
                 <label class="form-label">Mot de passe</label>
                 <div class="input-wrapper">
                     <i class="fas fa-lock input-icon"></i>
-<<<<<<< Updated upstream
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="password" 
-                        name="_password"
-                        placeholder="••••••••"
-                        required
-                        autocomplete="current-password"
-                    >
-=======
                     <input type="password" class="form-input" id="password"
                            name="_password" placeholder="••••••••"
                            required autocomplete="current-password">
                     <button type="button" class="toggle-password" id="togglePwd">
                         <i class="fas fa-eye"></i>
                     </button>
->>>>>>> Stashed changes
                 </div>
             </div>
 
@@ -852,9 +792,6 @@
                 <div class="spinner"></div>
             </button>
 
-<<<<<<< Updated upstream
-            <div class="signup-link">
-=======
             <div class="divider"><span>OU</span></div>
 
             <button type="button" class="btn-face" id="faceLoginBtn">
@@ -863,7 +800,6 @@
             </button>
 
             <div class="form-footer">
->>>>>>> Stashed changes
                 Pas encore de compte ? <a href="{{ path('app_register') }}">Créer un compte</a>
             </div>
             <div class="form-footer-secondary">
@@ -872,13 +808,6 @@
         </form>
     </div>
 
-<<<<<<< Updated upstream
-    <!-- CAPTCHA Modal (shown when login_attempts >= 2) -->
-    <div id="captcha-modal" class="captcha-modal" style="display: none;">
-        <div class="captcha-modal-overlay" onclick="closeCaptchaModal()"></div>
-        <div class="captcha-modal-content">
-            <div class="captcha-modal-header">
-=======
     <!-- 2FA Modal -->
     <div id="twofa-login-overlay">
         <div id="twofa-login-box">
@@ -925,7 +854,6 @@
     <div id="captcha-modal" style="display:none;" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
->>>>>>> Stashed changes
                 <i class="fas fa-shield-alt"></i>
                 <h5>Vérification de sécurité</h5>
             </div>
@@ -940,10 +868,6 @@
         </div>
     </div>
 
-<<<<<<< Updated upstream
-    <script>
-        var loginAttempts = {{ app.session.get('login_attempts', 0) }};
-=======
     <!-- Face Login Modal -->
     <div id="face-login-modal" class="face-modal" onclick="if(event.target===this)document.getElementById('close-face-modal-btn').click()">
         <div class="face-modal-content" onclick="event.stopPropagation()">
@@ -991,7 +915,6 @@
 
         // ── CAPTCHA ───────────────────────────────────────────────────
         var loginAttempts   = {{ app.session.get('login_attempts', 0) }};
->>>>>>> Stashed changes
         var captchaVerified = false;
         var captchaQuestion = {{ captcha_question|default('')|json_encode|raw }};
 
@@ -1017,43 +940,16 @@
             input.value = ans;
             captchaVerified = true;
             closeCaptchaModal();
-<<<<<<< Updated upstream
-            document.getElementById('loginForm').submit();
-=======
             document.getElementById('loginForm').requestSubmit
                 ? document.getElementById('loginForm').requestSubmit()
                 : document.getElementById('loginForm').submit();
->>>>>>> Stashed changes
         }
 
         document.getElementById('captcha-modal-input').addEventListener('keypress', e => {
             if (e.key === 'Enter') submitCaptchaAndLogin();
         });
-<<<<<<< Updated upstream
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            var honeypot = document.querySelector('input[name="website"]');
-            if (honeypot && honeypot.value !== '') {
-                e.preventDefault();
-                return false;
-            }
-            var ts = parseInt(document.querySelector('input[name="form_timestamp"]').value, 10);
-            if (ts && (Math.floor(Date.now() / 1000) - ts) < 3) {
-                e.preventDefault();
-                alert('Veuillez patienter quelques secondes avant de vous connecter.');
-                return false;
-            }
-            if (loginAttempts >= 2 && !captchaVerified) {
-                e.preventDefault();
-                showCaptchaModal();
-                return false;
-            }
-            var btn = document.getElementById('loginBtn');
-            btn.classList.add('loading');
-            btn.querySelector('span').textContent = 'Connexion...';
-        });
-=======
 
-        // ── Login form (AJAX + 2FA detection) ────────────────────────
+        // ── Login form ────────────────────────────────────────────────
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -1151,8 +1047,7 @@
         }
 
         // ── Face Login ────────────────────────────────────────────────
-        let faceLoginStream = null, isAuthenticating = false, detectionRunning = false;
-        let faceLoginDetectedStartTime = null;
+        let faceLoginStream = null, isAuthenticating = false, faceLoginDetectedStartTime = null;
         const MIN_CONFIDENCE = 0.5, MIN_DURATION = 2000, MIN_FACE_SIZE = 100;
 
         document.getElementById('faceLoginBtn').addEventListener('click', () => {
@@ -1163,7 +1058,7 @@
 
         document.getElementById('close-face-modal-btn').addEventListener('click', () => {
             stopFaceLoginCamera();
-            isAuthenticating = false; detectionRunning = false; faceLoginDetectedStartTime = null;
+            isAuthenticating = false; faceLoginDetectedStartTime = null;
             document.getElementById('face-login-modal').classList.remove('active');
             document.getElementById('face-login-email-step').style.display = 'block';
             document.getElementById('face-login-camera-step').style.display = 'none';
@@ -1174,7 +1069,7 @@
         document.getElementById('start-face-login-btn').addEventListener('click', async () => {
             const email = document.getElementById('face-login-email').value.trim();
             if (!email || !email.includes('@')) { alert('Please enter a valid email address'); return; }
-            isAuthenticating = false; detectionRunning = false; faceLoginDetectedStartTime = null;
+            isAuthenticating = false; faceLoginDetectedStartTime = null;
             document.getElementById('face-login-email-step').style.display = 'none';
             document.getElementById('face-login-camera-step').style.display = 'block';
             const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
@@ -1207,7 +1102,7 @@
             faceLoginStream = null;
             const v = document.getElementById('face-login-video');
             if (v.srcObject) v.srcObject = null;
-            isAuthenticating = false; detectionRunning = false;
+            isAuthenticating = false;
         }
 
         async function detectAndAuthenticateFace(email) {
@@ -1257,7 +1152,6 @@
             } catch(e) { isAuthenticating = false; faceLoginDetectedStartTime = null; }
             if (faceLoginStream) requestAnimationFrame(() => detectAndAuthenticateFace(email));
         }
->>>>>>> Stashed changes
     </script>
 </body>
 </html>

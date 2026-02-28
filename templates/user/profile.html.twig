@@ -69,7 +69,7 @@
         .topbar-avatar-sm { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--teal), var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; }
         .topbar-avatar-sm img { width:100%; height:100%; object-fit:cover; }
 
-        /* ── CONTENT ───────────────────────────────��─────────────── */
+        /* ── CONTENT ─────────────────────────────────────────────── */
         .content { padding:32px; flex:1; }
 
         /* ── PROFILE LAYOUT ──────────────────────────────────────── */
@@ -115,7 +115,7 @@
 
         .profile-avatar img { width:100%; height:100%; object-fit:cover; }
 
-        .profile-name { font-size:18px; font-weight:800; color:var(--dark); text-align:center; margin-bottom:4px; }
+        .profile-name  { font-size:18px; font-weight:800; color:var(--dark); text-align:center; margin-bottom:4px; }
         .profile-email { font-size:13px; color:var(--gray); text-align:center; margin-bottom:12px; }
 
         .profile-badge {
@@ -140,7 +140,7 @@
         }
 
         .btn-teal { background:linear-gradient(135deg, var(--teal), var(--teal-dark)); color:white; box-shadow:0 3px 10px rgba(32,178,170,0.25); }
-        .btn-teal:hover { transform:translateY(-1px); box-shadow:0 5px 15px rgba(32,178,170,0.35); }
+        .btn-teal:hover { transform:translateY(-1px); box-shadow:0 5px 15px rgba(32,178,170,0.35); color:white; }
         .btn-ghost { background:var(--light); color:var(--gray); border:2px solid #e2e8f0; }
         .btn-ghost:hover { background:#e2e8f0; color:var(--dark); }
         .btn-danger-outline { background:white; color:#dc2626; border:2px solid #fecaca; }
@@ -148,106 +148,40 @@
         .btn-danger { background:#dc2626; color:white; }
         .btn-danger:hover { background:#b91c1c; }
         .btn-purple { background:linear-gradient(135deg, var(--purple), #764ba2); color:white; box-shadow:0 3px 10px rgba(102,126,234,0.25); }
-        .btn-purple:hover { transform:translateY(-1px); }
+        .btn-purple:hover { transform:translateY(-1px); color:white; box-shadow:0 5px 15px rgba(102,126,234,0.35); }
         .btn-warning-outline { background:white; color:#d97706; border:2px solid #fde68a; }
         .btn-warning-outline:hover { background:#fef3c7; }
         .btn-sm { padding:7px 14px; font-size:13px; }
 
         /* ── SECURITY SECTIONS ───────────────────────────────────── */
         .security-section { margin-bottom:16px; }
-
-        .security-title {
-            font-size:13px; font-weight:700; color:var(--dark);
-            display:flex; align-items:center; gap:6px;
-            margin-bottom:10px;
-        }
-
+        .security-title { font-size:13px; font-weight:700; color:var(--dark); display:flex; align-items:center; gap:6px; margin-bottom:10px; }
         .security-title i { color:var(--teal); }
-
-        .security-status {
-            padding:10px 14px; border-radius:10px;
-            font-size:13px; display:flex; align-items:center; gap:8px;
-            margin-bottom:10px;
-        }
-
+        .security-status { padding:10px 14px; border-radius:10px; font-size:13px; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
         .status-on  { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
         .status-off { background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; }
-
         .password-input-wrap { position:relative; margin-bottom:8px; }
-
-        .password-input-wrap input {
-            width:100%; padding:9px 40px 9px 12px;
-            border:2px solid #e2e8f0; border-radius:10px;
-            font-size:13px; font-family:'Inter',sans-serif;
-            outline:none; transition:all 0.25s; background:var(--light);
-        }
-
+        .password-input-wrap input { width:100%; padding:9px 40px 9px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:all 0.25s; background:var(--light); }
         .password-input-wrap input:focus { border-color:var(--teal); background:white; box-shadow:0 0 0 3px rgba(32,178,170,0.1); }
-
-        .toggle-pwd-icon {
-            position:absolute; right:10px; top:50%; transform:translateY(-50%);
-            color:#94a3b8; cursor:pointer; font-size:15px;
-        }
-
+        .toggle-pwd-icon { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#94a3b8; cursor:pointer; font-size:15px; }
         .toggle-pwd-icon:hover { color:var(--teal); }
 
         /* ── INFO CARDS (RIGHT) ──────────────────────────────────── */
-        .info-card {
-            background:white; border-radius:var(--radius);
-            box-shadow:var(--shadow-sm); border:1px solid #f1f5f9;
-            margin-bottom:20px; overflow:hidden;
-        }
-
-        .info-card-header {
-            padding:18px 24px 0;
-            display:flex; align-items:center; gap:8px;
-            font-size:15px; font-weight:700; color:var(--dark);
-            border-bottom:1px solid #f1f5f9; padding-bottom:14px;
-        }
-
+        .info-card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; margin-bottom:20px; overflow:hidden; }
+        .info-card-header { padding:18px 24px; display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:var(--dark); border-bottom:1px solid #f1f5f9; }
         .info-card-header i { color:var(--teal); font-size:18px; }
-
         .info-card-body { padding:0 24px; }
-
-        .info-row {
-            display:flex; align-items:center; gap:12px;
-            padding:14px 0; border-bottom:1px solid #f8fafc;
-        }
-
+        .info-row { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc; }
         .info-row:last-child { border-bottom:none; }
-
-        .info-icon {
-            width:36px; height:36px; border-radius:10px;
-            display:flex; align-items:center; justify-content:center;
-            font-size:16px; flex-shrink:0;
-        }
-
+        .info-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
         .info-label { font-size:12px; color:var(--gray); margin-bottom:2px; }
         .info-value { font-size:14px; font-weight:600; color:var(--dark); }
 
-        /* ── ALERTS ──────────────────────────────────────────────── */
-        .alert { padding:12px 16px; border-radius:12px; font-size:13px; display:flex; align-items:center; gap:8px; margin-bottom:16px; }
-        .alert-success { background:#f0fdf4; color:#166534; border-left:3px solid #22c55e; }
-        .alert-info    { background:#f0f9ff; color:#0369a1; border-left:3px solid #38bdf8; }
-        .alert-danger  { background:#fff5f5; color:#dc2626; border-left:3px solid #ef4444; }
-
         /* ── MODAL ───────────────────────────────────────────────── */
-        .modal-overlay {
-            display:none; position:fixed; inset:0;
-            background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
-            z-index:9999; align-items:center; justify-content:center; padding:20px;
-        }
-
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.open { display:flex; }
-
-        .modal-box {
-            background:white; border-radius:20px; max-width:480px; width:100%;
-            overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,0.25);
-            animation:modalIn 0.3s ease-out;
-        }
-
+        .modal-box { background:white; border-radius:20px; max-width:480px; width:100%; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,0.25); animation:modalIn 0.3s ease-out; }
         @keyframes modalIn { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
-
         .modal-header { padding:24px 28px 16px; border-bottom:1px solid #f1f5f9; }
         .modal-header h5 { font-size:17px; font-weight:700; color:var(--dark); }
         .modal-body   { padding:20px 28px; font-size:14px; color:var(--gray); line-height:1.6; }
@@ -300,18 +234,19 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-section-label">Principal</div>
-            <a href="{{ path('user_dashboard') }}"  class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
-            <a href="{{ path('suivi_today') }}"     class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
-            <a href="{{ path('insight_weekly') }}"  class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
-            <a href="{{ path('chat_index') }}"      class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
+            <a href="{{ path('user_dashboard') }}"   class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+            <a href="{{ path('suivi_today') }}"       class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
+            <a href="{{ path('insight_weekly') }}"    class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
+            <a href="{{ path('chat_index') }}"        class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
             <div class="nav-section-label">Bien-être</div>
-            <a href="{{ path('objectif_index') }}"  class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
-            <a href="#"                             class="nav-item"><i class="bi bi-brain"></i> Test de santé mentale</a>
+            <a href="{{ path('user_analyse') }}"      class="nav-item"><i class="bi bi-heart-pulse-fill"></i> Mon analyse bien-être</a>
+            <a href="{{ path('objectif_index') }}"    class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
+            <a href="#"                               class="nav-item"><i class="bi bi-brain"></i> Test de santé mentale</a>
             <div class="nav-section-label">Communauté</div>
-            <a href="{{ path('posts_list') }}"      class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
-            <a href="{{ path('evenements_home') }}" class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+            <a href="{{ path('posts_list') }}"        class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+            <a href="{{ path('evenements_home') }}"   class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>
             <div class="nav-section-label">Mon compte</div>
-            <a href="{{ path('user_profile') }}"    class="nav-item active"><i class="bi bi-person-fill"></i> Mon profil</a>
+            <a href="{{ path('user_profile') }}"      class="nav-item active"><i class="bi bi-person-fill"></i> Mon profil</a>
             <a href="{{ path('user_profile_edit') }}" class="nav-item"><i class="bi bi-gear-fill"></i> Paramètres</a>
         </nav>
         <div class="sidebar-footer">
@@ -358,32 +293,6 @@
                                     {% endif %}
                                 </div>
                             </div>
-<<<<<<< Updated upstream
-                        {% endif %}
-                    </div>
-                    <h4 class="mb-1">{{ user.nom }} {{ user.prenom }}</h4>
-                    <p class="text-muted mb-3">{{ user.email }}</p>
-                    
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <span class="badge bg-danger">Administrator</span>
-                    {% elseif is_granted('ROLE_COACH') %}
-                        <span class="badge bg-primary">Coach</span>
-                    {% else %}
-                        <span class="badge bg-success">User</span>
-                    {% endif %}
-                    
-                    <hr class="my-4">
-                    
-                    <a href="{{ path('user_profile_edit') }}" class="btn btn-primary w-100 mb-2">
-                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                    </a>
-                    <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
-                        <i class="bi bi-x-circle me-2"></i>Désactiver mon compte
-                    </button>
-                </div>
-            </div>
-        </div>
-=======
 
                             <div class="profile-name">{{ user.nom }} {{ user.prenom }}</div>
                             <div class="profile-email">{{ user.email }}</div>
@@ -399,9 +308,15 @@
                             <a href="{{ path('user_profile_edit') }}" class="btn btn-teal">
                                 <i class="bi bi-pencil-fill"></i> Modifier le profil
                             </a>
+
                             <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('deactivateModal').classList.add('open')">
                                 <i class="bi bi-x-circle"></i> Désactiver mon compte
                             </button>
+
+                            {# ── AI Avatar Generator ── #}
+                            <a href="{{ path('avatar_generator') }}" class="btn btn-purple">
+                                <i class="bi bi-stars"></i> Générer mon avatar IA
+                            </a>
 
                             <div class="profile-divider"></div>
 
@@ -429,7 +344,6 @@
                                     </button>
                                 {% endif %}
                             </div>
->>>>>>> Stashed changes
 
                             <div class="profile-divider"></div>
 
@@ -487,7 +401,7 @@
                         </div>
                         <div class="info-card-body">
                             <div class="info-row">
-                                <div class="info-icon icon-teal" style="background:var(--teal-light);color:var(--teal-dark);"><i class="bi bi-person-fill"></i></div>
+                                <div class="info-icon" style="background:var(--teal-light);color:var(--teal-dark);"><i class="bi bi-person-fill"></i></div>
                                 <div><div class="info-label">Prénom</div><div class="info-value">{{ user.prenom }}</div></div>
                             </div>
                             <div class="info-row">
@@ -548,10 +462,6 @@
             </div>
         </div>
     </div>
-<<<<<<< Updated upstream
-</div>
-{% endblock %}
-=======
 
     <!-- Face Registration Modal -->
     <div class="modal-overlay" id="faceModal">
@@ -626,9 +536,7 @@
         if (overlay)    { overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); }); }
 
         // Password toggles
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        function setupPwdToggle(iconId, inputSelector) {
+        function setupPwdToggle(iconId) {
             const icon = document.getElementById(iconId);
             if (!icon) return;
             icon.addEventListener('click', function() {
@@ -757,4 +665,3 @@
     </script>
 </body>
 </html>
->>>>>>> Stashed changes

@@ -3,18 +3,13 @@
 namespace App\Security;
 
 use App\Entity\Utilisateur;
-<<<<<<< Updated upstream
 use App\Enum\UtilisateurStatut;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-=======
-use App\Enum\UtilisateurStatut; 
 use Doctrine\ORM\EntityManagerInterface;
->>>>>>> Stashed changes
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -41,11 +36,11 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         private LoginSuccessHandler $successHandler,
         private UserProviderInterface $userProvider,
         private EntityManagerInterface $entityManager,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
+        private ?LoggerInterface $logger = null
     ) {
     }
 
-    // ── FIX: only intercept POST requests to the login route ──────────
     public function supports(Request $request): bool
     {
         return $request->attributes->get('_route') === self::LOGIN_ROUTE
@@ -133,15 +128,13 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                 try {
                     $this->mailer->send($emailMessage);
                 } catch (\Throwable $e) {
-<<<<<<< Updated upstream
-                    // Log but don't expose; user still sees "check your email" for consistency
-=======
-                    $this->logger->error('Failed to send reactivation email', [
-                        'email'            => $user->getEmail(),
-                        'error'            => $e->getMessage(),
-                        'reactivationUrl'  => $reactivationUrl,
-                    ]);
->>>>>>> Stashed changes
+                    if ($this->logger) {
+                        $this->logger->error('Failed to send reactivation email', [
+                            'email'           => $user->getEmail(),
+                            'error'           => $e->getMessage(),
+                            'reactivationUrl' => $reactivationUrl,
+                        ]);
+                    }
                 }
 
                 $message = $deactivatedBy === 'system'
@@ -157,15 +150,12 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                 );
             }
 
-<<<<<<< Updated upstream
-=======
             if (!$user->isVerified()) {
                 throw new CustomUserMessageAuthenticationException(
                     'Please verify your email before logging in'
                 );
             }
 
->>>>>>> Stashed changes
             return $user;
         };
 

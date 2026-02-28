@@ -58,7 +58,7 @@ class PostController extends AbstractController
             array_slice($mainIds, 0, 12)
         );
 
-        return $this->render('posts.html.twig', [
+        return $this->render('post/posts.html.twig', [
             'posts' => $posts,
             'recommendedPosts' => $recommended,
             'savedPostIds' => $savedPostIds,
@@ -86,7 +86,7 @@ class PostController extends AbstractController
             10
         );
 
-        return $this->render('post_notifications.html.twig', [
+        return $this->render('post/post_notifications.html.twig', [
             'notifications' => $pagination,
             'unreadNotificationsCount' => $postNotificationRepository->countUnreadForRecipient($authUser),
         ]);
@@ -208,7 +208,7 @@ class PostController extends AbstractController
             $savedPostIds
         );
 
-        return $this->render('saved_posts.html.twig', [
+        return $this->render('post/saved_posts.html.twig', [
             'posts' => $savedPosts,
             'recommendedPosts' => $recommended,
             'savedPostIds' => $savedPostIds,
@@ -250,7 +250,7 @@ class PostController extends AbstractController
 
         $relatedPosts = $recommendationService->getRelatedToPost($post, 5);
 
-        return $this->render('post_details.html.twig', [
+        return $this->render('post/post_details.html.twig', [
             'post' => $post,
             'userHasLiked' => $userHasLiked,
             'userHasSaved' => $userHasSaved,

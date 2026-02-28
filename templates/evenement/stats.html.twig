@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques des Événements — Bekri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --light:      #f8fafc;
+            --white:      #ffffff;
+            --sidebar-w:  260px;
+            --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+            --shadow:     0 8px 30px rgba(0,0,0,0.10);
+            --radius:     16px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
+
+        /* ── SIDEBAR ─────────────────────────────────────────────── */
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--teal),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; }
+        .sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+        .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
+        .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
+        .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
+        .nav-item i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
+
+        /* ── MAIN ────────────────────────────────────────────────── */
+        .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; }
+
+        /* ── TOPBAR ──────────────────────────────────────────────── */
+        .topbar { background:white; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-title { font-size:18px; font-weight:700; color:var(--dark); }
+        .topbar-sub { font-size:13px; color:var(--gray); margin-top:2px; }
+        .topbar-right { display:flex; align-items:center; gap:10px; }
+        .topbar-btn { height:38px; padding:0 16px; border-radius:10px; background:var(--light); border:1px solid #e2e8f0; cursor:pointer; display:flex; align-items:center; gap:7px; color:var(--gray); font-size:13px; font-weight:500; text-decoration:none; transition:all 0.2s; white-space:nowrap; }
+        .topbar-btn:hover { background:var(--teal-light); color:var(--teal-dark); border-color:var(--teal); }
+        .topbar-avatar-sm { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; flex-shrink:0; }
+        .topbar-avatar-sm img { width:100%; height:100%; object-fit:cover; }
+        .menu-toggle { display:none; background:none; border:none; font-size:22px; color:var(--dark); cursor:pointer; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
+
+        /* ── CONTENT ─────────────────────────────────────────────── */
+        .content { flex:1; padding:32px 40px; }
+
+        /* ── BREADCRUMB ──────────────────────────────────────────── */
+        .breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--gray); margin-bottom:24px; flex-wrap:wrap; }
+        .breadcrumb a { color:var(--teal-dark); text-decoration:none; font-weight:500; }
+        .breadcrumb a:hover { text-decoration:underline; }
+        .breadcrumb i { font-size:11px; color:#cbd5e1; }
+
+        /* ── PAGE HEADER ─────────────────────────────────────────── */
+        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:16px; }
+        .page-header h2 { font-size:22px; font-weight:800; color:var(--dark); }
+        .page-header p { font-size:14px; color:var(--gray); margin-top:4px; }
+
+        /* ── STAT CARDS ──────────────────────────────────────────── */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
+        .stat-card { background:white; border-radius:var(--radius); padding:22px; box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; }
+        .stat-icon { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .stat-icon.teal   { background:var(--teal-light); color:var(--teal-dark); }
+        .stat-icon.purple { background:#f3f0ff; color:#7c3aed; }
+        .stat-icon.green  { background:#f0fdf4; color:#16a34a; }
+        .stat-icon.orange { background:#fff7ed; color:#ea580c; }
+        .stat-value { font-size:24px; font-weight:800; color:var(--dark); line-height:1; }
+        .stat-label { font-size:12px; color:var(--gray); margin-top:4px; }
+
+        /* ── CHARTS GRID ─────────────────────────────────────────── */
+        .charts-top { display:grid; grid-template-columns:1fr 360px; gap:24px; margin-bottom:24px; }
+        .charts-bottom { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+
+        /* ── CARD ────────────────────────────────────────────────── */
+        .card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; padding:28px; }
+        .card-title { font-size:16px; font-weight:700; color:var(--dark); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+        .card-title i { color:var(--teal); }
+
+        /* ── TOP 5 LIST ──────────────────────────────────────────── */
+        .top5-list { display:flex; flex-direction:column; gap:12px; }
+        .top5-item { display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--light); border-radius:10px; transition:background 0.2s; }
+        .top5-item:hover { background:var(--teal-light); }
+        .top5-rank { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--teal-dark)); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .top5-rank.gold   { background:linear-gradient(135deg,#f59e0b,#d97706); }
+        .top5-rank.silver { background:linear-gradient(135deg,#94a3b8,#64748b); }
+        .top5-rank.bronze { background:linear-gradient(135deg,#b45309,#92400e); }
+        .top5-name { flex:1; font-size:13px; font-weight:600; color:var(--dark); }
+        .top5-badge { background:var(--teal-light); color:var(--teal-dark); font-size:12px; font-weight:700; padding:3px 10px; border-radius:50px; }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────── */
+        @media (max-width:1100px) { .charts-top { grid-template-columns:1fr; } }
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .sidebar-overlay.open { display:block; }
+            .main { margin-left:0; }
+            .menu-toggle { display:block; }
+            .topbar { padding:0 16px; }
+            .topbar-btn span { display:none; }
+            .content { padding:20px 16px; }
+            .charts-bottom { grid-template-columns:1fr; }
+            .card { padding:20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'" style="height:36px;">
+        <span class="sidebar-logo-text">Bekri</span>
+    </div>
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">
+            {% if app.user and app.user.avatar %}
+                <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+            {% elseif app.user %}
+                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+            {% else %}
+                <i class="bi bi-person-fill" style="font-size:20px;"></i>
+            {% endif %}
+        </div>
+        <div>
+            <div class="sidebar-user-name">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Invité' }}</div>
+            <div class="sidebar-user-role">
+                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_COACH') %}Coach
+                {% else %}Membre Bekri{% endif %}
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="{{ path('user_dashboard') }}"  class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+        <a href="{{ path('suivi_today') }}"       class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
+        <a href="{{ path('insight_weekly') }}"    class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
+        <a href="{{ path('chat_index') }}"        class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
+        <div class="nav-section-label">Bien-être</div>
+        <a href="{{ path('user_analyse') }}"      class="nav-item"><i class="bi bi-heart-pulse-fill"></i> Mon analyse</a>
+        <a href="{{ path('objectif_index') }}"    class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
+        <div class="nav-section-label">Communauté</div>
+        <a href="{{ path('posts_list') }}"        class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+        <a href="{{ path('evenements_list') }}"   class="nav-item active"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+        <div class="nav-section-label">Mon compte</div>
+        <a href="{{ path('user_profile') }}"      class="nav-item"><i class="bi bi-person-fill"></i> Mon profil</a>
+        <a href="{{ path('user_profile_edit') }}" class="nav-item"><i class="bi bi-gear-fill"></i> Paramètres</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;"><i class="bi bi-box-arrow-left"></i> Se déconnecter</a>
+    </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+            <div>
+                <div class="topbar-title">Statistiques</div>
+                <div class="topbar-sub">Analyse des événements</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('evenements_list') }}" class="topbar-btn">
+                <i class="bi bi-list-ul"></i><span>Vue liste</span>
+            </a>
+            <a href="{{ path('evenements_calendrier') }}" class="topbar-btn">
+                <i class="bi bi-calendar3"></i><span>Calendrier</span>
+            </a>
+            <a href="{{ path('user_profile') }}" class="topbar-avatar-sm">
+                {% if app.user and app.user.avatar %}
+                    <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                {% elseif app.user %}
+                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                {% else %}
+                    <i class="bi bi-person-fill"></i>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="content">
+
+            <!-- BREADCRUMB -->
+            <div class="breadcrumb">
+                <a href="{{ path('evenements_list') }}"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+                <i class="bi bi-chevron-right"></i>
+                <span>Statistiques</span>
+            </div>
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div>
+                    <h2><i class="bi bi-graph-up-arrow" style="color:var(--teal);margin-right:10px;"></i>Statistiques des Événements</h2>
+                    <p>Découvrez les tendances et les événements les plus populaires</p>
+                </div>
+            </div>
+
+            <!-- STAT CARDS -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon teal"><i class="bi bi-calendar-event-fill"></i></div>
+                    <div>
+                        <div class="stat-value">{{ mostPopularData|length }}</div>
+                        <div class="stat-label">Événements analysés</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="stat-value">{{ mostPopularData|reduce((carry, item) => carry + item.participantCount, 0) }}</div>
+                        <div class="stat-label">Total inscriptions</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="bi bi-trophy-fill"></i></div>
+                    <div>
+                        <div class="stat-value">{{ mostPopularData|first ? mostPopularData|first.participantCount : 0 }}</div>
+                        <div class="stat-label">Record d'inscriptions</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="bi bi-tag-fill"></i></div>
+                    <div>
+                        <div class="stat-value">{{ categoryData|length }}</div>
+                        <div class="stat-label">Types d'événements</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHARTS TOP ROW -->
+            <div class="charts-top">
+                <!-- Popularity Bar Chart -->
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-bar-chart-fill"></i> Événements les Plus Demandés</div>
+                    <div style="height:360px;">
+                        <canvas id="popularityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top 5 -->
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-list-stars"></i> Top 5 Engagement</div>
+                    <div class="top5-list">
+                        {% for item in mostPopularData|slice(0, 5) %}
+                        <div class="top5-item">
+                            <div class="top5-rank {{ loop.index == 1 ? 'gold' : loop.index == 2 ? 'silver' : loop.index == 3 ? 'bronze' : '' }}">
+                                {{ loop.index }}
+                            </div>
+                            <div class="top5-name">{{ item.evenement.titre|length > 28 ? item.evenement.titre|slice(0,28) ~ '…' : item.evenement.titre }}</div>
+                            <div class="top5-badge">{{ item.participantCount }} inscrits</div>
+                        </div>
+                        {% else %}
+                            <p style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Aucune donnée disponible</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHARTS BOTTOM ROW -->
+            <div class="charts-bottom">
+                <!-- Category Doughnut -->
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-pie-chart-fill"></i> Distribution par Type</div>
+                    <div style="height:280px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Line -->
+                <div class="card">
+                    <div class="card-title"><i class="bi bi-graph-up"></i> Tendances Mensuelles (6 Mois)</div>
+                    <div style="height:280px;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sidebar
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+    overlay?.addEventListener('click',   () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
+    const teal   = 'rgba(32,178,170,0.8)';
+    const tealB  = 'rgba(13,148,136,1)';
+    const colors = ['rgba(32,178,170,0.8)','rgba(102,126,234,0.8)','rgba(251,191,36,0.8)','rgba(248,113,113,0.8)','rgba(52,211,153,0.8)'];
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // 1. Popularity
+        new Chart(document.getElementById('popularityChart'), {
+            type: 'bar',
+            data: {
+                labels: [{% for item in mostPopularData %}"{{ item.evenement.titre|length > 15 ? item.evenement.titre|slice(0,15) ~ '…' : item.evenement.titre }}"{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: [{% for item in mostPopularData %}{{ item.participantCount }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: teal,
+                    borderColor: tealB,
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } }
+        });
+
+        // 2. Category
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in categoryData %}"{{ item.type }}"{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in categoryData %}{{ item.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ padding:16, font:{ size:13 } } } } }
+        });
+
+        // 3. Monthly
+        const monthNames = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: {
+                labels: [{% for item in monthlyData %}monthNames[{{ item.month }} - 1]{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Événements créés',
+                    data: [{% for item in monthlyData %}{{ item.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    fill: true,
+                    backgroundColor: 'rgba(32,178,170,0.12)',
+                    borderColor: tealB,
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: tealB,
+                    pointRadius: 5
+                }]
+            },
+            options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } }
+        });
+    });
+</script>
+</body>
+</html>

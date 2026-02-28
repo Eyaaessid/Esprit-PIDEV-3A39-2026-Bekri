@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un événement — Bekri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --teal:#20b2aa; --teal-dark:#0d9488; --teal-light:#e0f7f6;
+            --purple:#667eea; --dark:#1a2332; --gray:#64748b;
+            --light:#f8fafc; --white:#ffffff;
+            --sidebar-w:260px; --shadow-sm:0 2px 12px rgba(0,0,0,0.06);
+            --shadow:0 8px 30px rgba(0,0,0,0.10); --radius:16px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);display:flex;min-height:100vh;}
+
+        /* SIDEBAR */
+        .sidebar{width:var(--sidebar-w);background:var(--dark);min-height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;transition:transform .3s;}
+        .sidebar-logo{padding:28px 24px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07);}
+        .sidebar-logo-text{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--teal),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{padding:20px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07);}
+        .sidebar-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;flex-shrink:0;overflow:hidden;}
+        .sidebar-avatar img{width:100%;height:100%;object-fit:cover;}
+        .sidebar-user-name{font-size:14px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .sidebar-user-role{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+        .sidebar-nav{flex:1;padding:16px 0;overflow-y:auto;}
+        .nav-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);padding:12px 24px 6px;}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+        .nav-item:hover{color:white;background:rgba(255,255,255,.05);}
+        .nav-item.active{color:var(--teal);background:rgba(32,178,170,.1);border-left-color:var(--teal);}
+        .nav-item i{width:20px;text-align:center;font-size:16px;}
+        .sidebar-footer{padding:16px 0;border-top:1px solid rgba(255,255,255,.07);}
+        .coach-badge-sidebar{margin:12px 24px;background:linear-gradient(135deg,rgba(32,178,170,.15),rgba(102,126,234,.15));border:1px solid rgba(32,178,170,.3);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+        .coach-badge-sidebar i{color:var(--teal);font-size:18px;}
+        .coach-badge-sidebar span{font-size:12px;font-weight:600;color:rgba(255,255,255,.8);}
+
+        /* MAIN */
+        .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+
+        /* TOPBAR */
+        .topbar{background:white;padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:50;}
+        .topbar-left{display:flex;align-items:center;gap:16px;}
+        .topbar-greeting h2{font-size:18px;font-weight:700;color:var(--dark);}
+        .topbar-greeting p{font-size:13px;color:var(--gray);}
+        .topbar-right{display:flex;align-items:center;gap:10px;}
+        .topbar-btn{width:40px;height:40px;border-radius:10px;background:var(--light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:16px;transition:all .2s;text-decoration:none;}
+        .topbar-btn:hover{background:var(--teal-light);color:var(--teal-dark);}
+        .topbar-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;overflow:hidden;text-decoration:none;}
+        .topbar-avatar img{width:100%;height:100%;object-fit:cover;}
+        .menu-toggle{display:none;background:none;border:none;font-size:22px;color:var(--dark);cursor:pointer;}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
+
+        /* CONTENT */
+        .content{padding:32px;flex:1;}
+
+        /* BREADCRUMB */
+        .breadcrumb-bar{display:flex;align-items:center;gap:8px;margin-bottom:24px;font-size:13px;color:var(--gray);}
+        .breadcrumb-bar a{color:var(--teal);text-decoration:none;font-weight:500;}
+        .breadcrumb-bar a:hover{text-decoration:underline;}
+        .breadcrumb-bar i{font-size:10px;color:#cbd5e1;}
+
+        /* PAGE HEADER */
+        .page-header{background:linear-gradient(135deg,var(--dark) 0%,#1e3a5f 50%,var(--teal-dark) 100%);border-radius:var(--radius);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+        .page-header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(255,255,255,.04);border-radius:50%;}
+        .page-header-left{display:flex;align-items:center;gap:16px;}
+        .page-header-icon{width:52px;height:52px;background:rgba(32,178,170,.25);border:1px solid rgba(32,178,170,.4);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#7fffd4;}
+        .page-header-text h1{font-size:22px;font-weight:800;color:white;margin-bottom:4px;}
+        .page-header-text p{font-size:13px;color:rgba(255,255,255,.65);margin:0;}
+        .btn-back{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(255,255,255,.15);color:white;border-radius:50px;font-weight:600;font-size:13px;text-decoration:none;border:1px solid rgba(255,255,255,.25);transition:all .3s;}
+        .btn-back:hover{background:rgba(255,255,255,.25);color:white;transform:translateY(-2px);}
+
+        /* FORM CARD */
+        .form-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid #f1f5f9;overflow:hidden;}
+        .form-card-header{padding:22px 28px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;}
+        .form-card-header i{color:var(--teal);font-size:18px;}
+        .form-card-header h2{font-size:15px;font-weight:700;color:var(--dark);margin:0;}
+        .form-card-body{padding:28px;}
+
+        /* FORM */
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+        .form-group{display:flex;flex-direction:column;gap:6px;}
+        .form-group.full{grid-column:1/-1;}
+        .form-label{font-size:13px;font-weight:600;color:var(--dark);display:flex;align-items:center;gap:6px;}
+        .form-label i{color:var(--teal);font-size:12px;}
+        .required{color:#ef4444;margin-left:2px;}
+        .form-control{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:var(--dark);background:white;transition:all .2s;outline:none;}
+        .form-control:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(32,178,170,.12);}
+        .form-control::placeholder{color:#94a3b8;}
+        textarea.form-control{resize:vertical;min-height:110px;}
+        select.form-control{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+        .form-hint{font-size:11px;color:var(--gray);margin-top:2px;}
+
+        /* FLASH */
+        .flash{padding:14px 18px;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
+        .flash-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;}
+        .flash-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+
+        /* ACTIONS */
+        .form-actions{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-top:1px solid #f1f5f9;background:#fafbfc;gap:12px;flex-wrap:wrap;}
+        .btn-submit{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(32,178,170,.3);font-family:'Inter',sans-serif;}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(32,178,170,.4);}
+        .btn-cancel{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;background:white;color:var(--gray);border:1.5px solid #e2e8f0;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s;}
+        .btn-cancel:hover{border-color:var(--gray);color:var(--dark);}
+
+        @media(max-width:768px){
+            .sidebar{transform:translateX(-100%);} .sidebar.open{transform:translateX(0);}
+            .sidebar-overlay.open{display:block;} .main{margin-left:0;}
+            .menu-toggle{display:block;} .content{padding:20px 16px;} .topbar{padding:0 16px;}
+            .form-grid{grid-template-columns:1fr;}
+            .page-header{flex-direction:column;align-items:flex-start;gap:16px;}
+            .form-actions{flex-direction:column;}
+            .btn-submit,.btn-cancel{width:100%;justify-content:center;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <span class="sidebar-logo-text">Bekri</span>
+    </div>
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">
+            {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+        </div>
+        <div>
+            <div class="sidebar-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+            <div class="sidebar-user-role">Coach Bekri</div>
+        </div>
+    </div>
+    <div class="coach-badge-sidebar">
+        <i class="bi bi-shield-fill-check"></i>
+        <span>Accès Coach activé</span>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="{{ path('coach_dashboard') }}" class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+
+        <div class="nav-section-label">Gestion Événements</div>
+        <a href="{{ path('evenements_coach_create') }}" class="nav-item active"><i class="bi bi-plus-circle-fill"></i> Créer un événement</a>
+        <a href="{{ path('evenements_coach_list') }}" class="nav-item"><i class="bi bi-calendar-week-fill"></i> Mes événements</a>
+
+        <div class="nav-section-label">Mon compte</div>
+        <a href="{{ path('coach_profile') }}" class="nav-item"><i class="bi bi-person-fill"></i> Mon profil</a>
+        <a href="{{ path('coach_profile_edit') }}" class="nav-item"><i class="bi bi-gear-fill"></i> Paramètres</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;">
+            <i class="bi bi-box-arrow-left"></i> Se déconnecter
+        </a>
+    </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+            <div class="topbar-greeting">
+                <h2>Créer un événement</h2>
+                <p>Remplissez le formulaire pour publier votre événement</p>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('coach_profile') }}" class="topbar-avatar">
+                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+            </a>
+        </div>
+    </header>
+
+    <main class="content">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-bar">
+            <a href="{{ path('coach_dashboard') }}"><i class="bi bi-house-fill"></i> Tableau de bord</a>
+            <i class="bi bi-chevron-right"></i>
+            <a href="{{ path('evenements_coach_list') }}">Mes événements</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>Créer</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left">
+                <div class="page-header-icon"><i class="bi bi-plus-circle-fill"></i></div>
+                <div class="page-header-text">
+                    <h1>Créer un nouvel événement</h1>
+                    <p>Planifiez un atelier, une session bien-être ou un défi santé</p>
+                </div>
+            </div>
+            <a href="{{ path('evenements_coach_list') }}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+
+        <!-- Flash messages -->
+        {% for message in app.flashes('success') %}
+            <div class="flash flash-success"><i class="bi bi-check-circle-fill"></i> {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash flash-error"><i class="bi bi-exclamation-circle-fill"></i> {{ message }}</div>
+        {% endfor %}
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="bi bi-pencil-square"></i>
+                <h2>Informations de l'événement</h2>
+            </div>
+
+            <form method="POST" action="{{ path('evenements_coach_create') }}">
+            <div class="form-card-body">
+                <div class="form-grid">
+
+                    <div class="form-group full">
+                        <label class="form-label"><i class="bi bi-type"></i> Titre <span class="required">*</span></label>
+                        <input type="text" name="titre" class="form-control" placeholder="Ex: Atelier méditation pleine conscience" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label class="form-label"><i class="bi bi-text-paragraph"></i> Description <span class="required">*</span></label>
+                        <textarea name="description" class="form-control" rows="5" placeholder="Décrivez votre événement, les objectifs, le programme..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-tag-fill"></i> Type <span class="required">*</span></label>
+                        <select name="type" class="form-control" required>
+                            <option value="">— Sélectionner —</option>
+                            <option value="EVENT">Événement</option>
+                            <option value="SESSION">Session</option>
+                            <option value="WORKSHOP">Atelier</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-toggle-on"></i> Statut <span class="required">*</span></label>
+                        <select name="statut" class="form-control" required>
+                            <option value="OPEN">Ouvert</option>
+                            <option value="PLANNED">Planifié</option>
+                            <option value="FULL">Complet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-calendar3"></i> Date de début <span class="required">*</span></label>
+                        <input type="datetime-local" name="dateDebut" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-calendar3"></i> Date de fin</label>
+                        <input type="datetime-local" name="dateFin" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-people-fill"></i> Capacité maximale <span class="required">*</span></label>
+                        <input type="number" name="capaciteMax" class="form-control" placeholder="Ex: 20" min="1" required>
+                        <span class="form-hint">Nombre maximum de participants</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="bi bi-link-45deg"></i> Lien de session</label>
+                        <input type="url" name="lienSession" class="form-control" placeholder="https://zoom.us/...">
+                        <span class="form-hint">Optionnel — pour les sessions en ligne</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('evenements_coach_list') }}" class="btn-cancel">
+                    <i class="bi bi-x-circle"></i> Annuler
+                </a>
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-plus-circle-fill"></i> Créer l'événement
+                </button>
+            </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+    overlay?.addEventListener('click',   () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+</script>
+</body>
+</html>

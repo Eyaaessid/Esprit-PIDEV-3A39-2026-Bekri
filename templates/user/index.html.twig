@@ -59,10 +59,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.07);
         }
 
-        .sidebar-logo img {
-            height: 36px;
-            width: auto;
-        }
+        .sidebar-logo img { height: 36px; width: auto; }
 
         .sidebar-logo-text {
             font-size: 20px;
@@ -94,10 +91,7 @@
             overflow: hidden;
         }
 
-        .sidebar-avatar img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
+        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         .sidebar-user-name {
             font-size: 14px;
@@ -114,11 +108,7 @@
             margin-top: 2px;
         }
 
-        .sidebar-nav {
-            flex: 1;
-            padding: 16px 0;
-            overflow-y: auto;
-        }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
 
         .nav-section-label {
             font-size: 10px;
@@ -143,10 +133,7 @@
             position: relative;
         }
 
-        .nav-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.05);
-        }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
 
         .nav-item.active {
             color: var(--teal);
@@ -154,11 +141,7 @@
             border-left-color: var(--teal);
         }
 
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; }
 
         .nav-badge {
             margin-left: auto;
@@ -198,28 +181,10 @@
             z-index: 50;
         }
 
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .topbar-greeting h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .topbar-greeting p {
-            font-size: 13px;
-            color: var(--gray);
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .topbar-left { display: flex; align-items: center; gap: 16px; }
+        .topbar-greeting h2 { font-size: 18px; font-weight: 700; color: var(--dark); }
+        .topbar-greeting p  { font-size: 13px; color: var(--gray); }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
 
         .topbar-btn {
             width: 40px; height: 40px;
@@ -236,10 +201,7 @@
             text-decoration: none;
         }
 
-        .topbar-btn:hover {
-            background: var(--teal-light);
-            color: var(--teal-dark);
-        }
+        .topbar-btn:hover { background: var(--teal-light); color: var(--teal-dark); }
 
         .topbar-avatar {
             width: 40px; height: 40px;
@@ -256,16 +218,10 @@
             text-decoration: none;
         }
 
-        .topbar-avatar img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
+        .topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         /* ── CONTENT ─────────────────────────────────────────────────── */
-        .content {
-            padding: 32px;
-            flex: 1;
-        }
+        .content { padding: 32px; flex: 1; }
 
         /* ── WELCOME BANNER ──────────────────────────────────────────── */
         .welcome-banner {
@@ -298,17 +254,8 @@
             border-radius: 50%;
         }
 
-        .welcome-text h1 {
-            font-size: 26px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 6px;
-        }
-
-        .welcome-text p {
-            color: rgba(255,255,255,0.8);
-            font-size: 14px;
-        }
+        .welcome-text h1 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 6px; }
+        .welcome-text p  { color: rgba(255,255,255,0.8); font-size: 14px; }
 
         .welcome-actions {
             display: flex;
@@ -329,15 +276,8 @@
             transition: all 0.3s;
         }
 
-        .btn-banner-primary {
-            background: white;
-            color: var(--teal-dark);
-        }
-
-        .btn-banner-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
+        .btn-banner-primary { background: white; color: var(--teal-dark); }
+        .btn-banner-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
 
         .btn-banner-secondary {
             background: rgba(255,255,255,0.18);
@@ -346,9 +286,101 @@
             backdrop-filter: blur(8px);
         }
 
-        .btn-banner-secondary:hover {
-            background: rgba(255,255,255,0.28);
+        .btn-banner-secondary:hover { background: rgba(255,255,255,0.28); transform: translateY(-2px); }
+
+        /* ── AI ANALYSE TEASER ───────────────────────────────────────── */
+        .analyse-teaser {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e8ecff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .analyse-teaser-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .analyse-teaser-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .analyse-teaser-icon i { color: white; font-size: 20px; }
+
+        .analyse-teaser-text h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .analyse-teaser-text p {
+            font-size: 13px;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        .analyse-teaser-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge-score {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--dark);
+        }
+
+        .badge-score strong { color: var(--purple); }
+
+        .badge-profil {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-analyse {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+        }
+
+        .btn-analyse:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+            color: white;
         }
 
         /* ── STATS ROW ───────────────────────────────────────────────── */
@@ -371,10 +403,7 @@
             border: 1px solid #f1f5f9;
         }
 
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 
         .stat-icon {
             width: 50px; height: 50px;
@@ -394,19 +423,8 @@
         .icon-green  { background: #d1fae5; color: #059669; }
 
         .stat-info { flex: 1; }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--dark);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--gray);
-            margin-top: 4px;
-        }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--dark); line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; }
 
         /* ── GRID ────────────────────────────────────────────────────── */
         .dashboard-grid {
@@ -441,16 +459,8 @@
         }
 
         .card-title i { color: var(--teal); }
-
-        .card-link {
-            font-size: 13px;
-            color: var(--teal);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
+        .card-link { font-size: 13px; color: var(--teal); text-decoration: none; font-weight: 500; }
         .card-link:hover { text-decoration: underline; }
-
         .card-body { padding: 20px 24px; }
 
         /* ── FEATURES GRID ───────────────────────────────────────────── */
@@ -500,11 +510,7 @@
             transition: opacity 0.3s;
         }
 
-        .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow);
-        }
-
+        .feature-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
         .feature-card:hover::before { opacity: 1; }
 
         .fc-teal::before   { background: linear-gradient(90deg, var(--teal), #3ecdc7); }
@@ -532,18 +538,8 @@
         }
 
         .feature-card:hover .feature-icon { transform: scale(1.1); }
-
-        .feature-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .feature-desc {
-            font-size: 11px;
-            color: var(--gray);
-            line-height: 1.5;
-        }
+        .feature-name { font-size: 13px; font-weight: 700; color: var(--dark); }
+        .feature-desc { font-size: 11px; color: var(--gray); line-height: 1.5; }
 
         /* ── MOOD CHECKIN CARD ───────────────────────────────────────── */
         .checkin-card {
@@ -555,18 +551,8 @@
             margin-bottom: 28px;
         }
 
-        .checkin-card h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--teal-dark);
-            margin-bottom: 6px;
-        }
-
-        .checkin-card p {
-            font-size: 13px;
-            color: var(--gray);
-            margin-bottom: 16px;
-        }
+        .checkin-card h3 { font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-bottom: 6px; }
+        .checkin-card p  { font-size: 13px; color: var(--gray); margin-bottom: 16px; }
 
         .btn-checkin {
             display: inline-flex;
@@ -583,10 +569,7 @@
             box-shadow: 0 4px 15px rgba(32,178,170,0.3);
         }
 
-        .btn-checkin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(32,178,170,0.4);
-        }
+        .btn-checkin:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(32,178,170,0.4); }
 
         /* ── WEEKLY INSIGHT CARD ─────────────────────────────────────── */
         .insight-preview {
@@ -607,17 +590,8 @@
             border-radius: 50%;
         }
 
-        .insight-preview h3 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .insight-preview p {
-            font-size: 13px;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 16px;
-        }
+        .insight-preview h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .insight-preview p  { font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
 
         .btn-insight {
             display: inline-flex;
@@ -634,10 +608,7 @@
             transition: all 0.3s;
         }
 
-        .btn-insight:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
+        .btn-insight:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
 
         /* ── AI CHAT CARD ────────────────────────────────────────────── */
         .chat-card {
@@ -658,18 +629,8 @@
             border-radius: 50%;
         }
 
-        .chat-card h3 {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .chat-card p {
-            font-size: 13px;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
+        .chat-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .chat-card p  { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 16px; line-height: 1.6; }
 
         .chat-online {
             display: flex;
@@ -707,17 +668,10 @@
             box-shadow: 0 4px 15px rgba(32,178,170,0.3);
         }
 
-        .btn-chat:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(32,178,170,0.4);
-        }
+        .btn-chat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(32,178,170,0.4); }
 
         /* ── BOTTOM GRID ─────────────────────────────────────────────── */
-        .bottom-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
         /* ── QUICK LINKS ─────────────────────────────────────────────── */
         .quick-link-item {
@@ -731,7 +685,6 @@
         }
 
         .quick-link-item:last-child { border-bottom: none; }
-
         .quick-link-item:hover { padding-left: 6px; }
 
         .quick-link-icon {
@@ -744,20 +697,9 @@
             flex-shrink: 0;
         }
 
-        .quick-link-text {
-            flex: 1;
-        }
-
-        .quick-link-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .quick-link-desc {
-            font-size: 12px;
-            color: var(--gray);
-        }
+        .quick-link-text { flex: 1; }
+        .quick-link-name { font-size: 14px; font-weight: 600; color: var(--dark); }
+        .quick-link-desc { font-size: 12px; color: var(--gray); }
 
         .quick-link-arrow {
             color: var(--gray);
@@ -765,10 +707,7 @@
             transition: transform 0.2s;
         }
 
-        .quick-link-item:hover .quick-link-arrow {
-            transform: translateX(4px);
-            color: var(--teal);
-        }
+        .quick-link-item:hover .quick-link-arrow { transform: translateX(4px); color: var(--teal); }
 
         /* ── MOBILE MENU TOGGLE ──────────────────────────────────────── */
         .menu-toggle {
@@ -790,8 +729,8 @@
 
         /* ── RESPONSIVE ──────────────────────────────────────────────── */
         @media (max-width: 1200px) {
-            .stats-row      { grid-template-columns: repeat(2, 1fr); }
-            .features-grid  { grid-template-columns: repeat(3, 1fr); }
+            .stats-row     { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         @media (max-width: 1024px) {
@@ -800,22 +739,19 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.open { display: block; }
             .main        { margin-left: 0; }
             .menu-toggle { display: block; }
             .content     { padding: 20px 16px; }
             .topbar      { padding: 0 16px; }
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .bottom-grid   { grid-template-columns: 1fr; }
+            .features-grid  { grid-template-columns: repeat(2, 1fr); }
+            .bottom-grid    { grid-template-columns: 1fr; }
             .welcome-banner { flex-direction: column; gap: 20px; }
             .welcome-actions { flex-wrap: wrap; }
-            .stats-row { grid-template-columns: 1fr 1fr; }
+            .stats-row      { grid-template-columns: 1fr 1fr; }
+            .analyse-teaser { flex-direction: column; align-items: flex-start; }
         }
 
         @media (max-width: 480px) {
@@ -876,6 +812,11 @@
             </a>
 
             <div class="nav-section-label">Bien-être</div>
+
+            <a href="{{ path('user_analyse') }}" class="nav-item">
+                <i class="bi bi-heart-pulse-fill"></i>
+                Mon analyse bien-être
+            </a>
 
             <a href="{{ path('objectif_index') }}" class="nav-item">
                 <i class="bi bi-trophy-fill"></i>
@@ -977,6 +918,31 @@
                     </a>
                 </div>
             </div>
+
+            {# ── AI ANALYSE TEASER (links to dedicated page) ──────────── #}
+            {% if user.profilPsychologique is not null %}
+            <div class="analyse-teaser">
+                <div class="analyse-teaser-left">
+                    <div class="analyse-teaser-icon">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+                    <div class="analyse-teaser-text">
+                        <h3>Votre analyse bien-être est disponible</h3>
+                        <p>Score initial calculé · Analyse IA personnalisée générée</p>
+                    </div>
+                </div>
+                <div class="analyse-teaser-badges">
+                    <span class="badge-score">
+                        Score : <strong>{{ user.profilPsychologique.scoreGlobal }}</strong> / 100
+                    </span>
+                    <span class="badge-profil">{{ user.profilPsychologique.profilType }}</span>
+                    <a href="{{ path('user_analyse') }}" class="btn-analyse">
+                        <i class="bi bi-arrow-right-circle-fill"></i>
+                        Voir mon analyse
+                    </a>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Stats Row -->
             <div class="stats-row">
@@ -1084,12 +1050,12 @@
                         <div class="feature-desc">Découvrez les événements bien-être</div>
                     </a>
 
-                    <a href="#" class="feature-card fc-rose">
+                    <a href="{{ path('user_analyse') }}" class="feature-card fc-rose">
                         <div class="feature-icon icon-rose">
-                            <i class="bi bi-brain"></i>
+                            <i class="bi bi-heart-pulse-fill"></i>
                         </div>
-                        <div class="feature-name">Test mental</div>
-                        <div class="feature-desc">Évaluez votre santé mentale</div>
+                        <div class="feature-name">Mon analyse</div>
+                        <div class="feature-desc">Voir votre analyse bien-être IA</div>
                     </a>
 
                     <a href="{{ path('user_profile') }}" class="feature-card fc-purple">
@@ -1154,6 +1120,17 @@
                             <i class="bi bi-chevron-right quick-link-arrow"></i>
                         </a>
 
+                        <a href="{{ path('user_analyse') }}" class="quick-link-item">
+                            <div class="quick-link-icon icon-purple">
+                                <i class="bi bi-heart-pulse-fill"></i>
+                            </div>
+                            <div class="quick-link-text">
+                                <div class="quick-link-name">Mon analyse bien-être</div>
+                                <div class="quick-link-desc">Voir l'analyse IA initiale</div>
+                            </div>
+                            <i class="bi bi-chevron-right quick-link-arrow"></i>
+                        </a>
+
                         <a href="{{ path('objectif_new') }}" class="quick-link-item">
                             <div class="quick-link-icon icon-amber">
                                 <i class="bi bi-plus-circle-fill"></i>
@@ -1207,10 +1184,9 @@
     </div>
 
     <script>
-        // Sidebar toggle (mobile)
-        const menuToggle    = document.getElementById('menuToggle');
-        const sidebar       = document.getElementById('sidebar');
-        const overlay       = document.getElementById('sidebarOverlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar    = document.getElementById('sidebar');
+        const overlay    = document.getElementById('sidebarOverlay');
 
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('open');

@@ -365,6 +365,11 @@ class AvatarController extends AbstractController
     #[Route('/generator', name: 'avatar_generator')]
     public function generator(): Response
     {
-        return $this->render('user/avatar_generator.html.twig');
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        return $this->render('user/avatar_generator.html.twig', [
+            'user' => $user,
+        ]);
     }
 }

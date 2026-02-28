@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ evenement.titre }} — Bekri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --light:      #f8fafc;
+            --white:      #ffffff;
+            --sidebar-w:  260px;
+            --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+            --shadow:     0 8px 30px rgba(0,0,0,0.10);
+            --radius:     16px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
+
+        /* ── SIDEBAR ─────────────────────────────────────────────── */
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--teal),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; }
+        .sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+        .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
+        .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
+        .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
+        .nav-item i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
+
+        /* ── MAIN ────────────────────────────────────────────────── */
+        .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+        /* ── TOPBAR ──────────────────────────────────────────────── */
+        .topbar { background:white; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-title { font-size:18px; font-weight:700; color:var(--dark); }
+        .topbar-sub { font-size:13px; color:var(--gray); margin-top:2px; }
+        .topbar-right { display:flex; align-items:center; gap:10px; }
+        .topbar-btn { height:38px; padding:0 16px; border-radius:10px; background:var(--light); border:1px solid #e2e8f0; cursor:pointer; display:flex; align-items:center; gap:7px; color:var(--gray); font-size:13px; font-weight:500; text-decoration:none; transition:all 0.2s; white-space:nowrap; }
+        .topbar-btn:hover { background:var(--teal-light); color:var(--teal-dark); border-color:var(--teal); }
+        .topbar-btn.primary { background:linear-gradient(135deg,var(--teal),var(--teal-dark)); color:white; border-color:transparent; }
+        .topbar-btn.primary:hover { opacity:0.9; }
+        .topbar-avatar-sm { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; flex-shrink:0; }
+        .topbar-avatar-sm img { width:100%; height:100%; object-fit:cover; }
+        .menu-toggle { display:none; background:none; border:none; font-size:22px; color:var(--dark); cursor:pointer; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
+
+        /* ── CONTENT ─────────────────────────────────────────────── */
+        .content { flex:1; padding:32px 40px; max-width:calc(1000px + 80px); margin:0 auto; width:100%; }
+
+        /* ── FLASH ───────────────────────────────────────────────── */
+        .flash { border-radius:12px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:center; gap:12px; font-size:14px; font-weight:500; }
+        .flash.success { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+        .flash.error, .flash.danger { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+        .flash.warning { background:#fffbeb; border:1px solid #fcd34d; color:#92400e; }
+        .flash.info { background:#eff6ff; border:1px solid #93c5fd; color:#1e40af; }
+        .flash i { font-size:18px; flex-shrink:0; }
+
+        /* ── BREADCRUMB ──────────────────────────────────────────── */
+        .breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--gray); margin-bottom:24px; flex-wrap:wrap; }
+        .breadcrumb a { color:var(--teal-dark); text-decoration:none; font-weight:500; }
+        .breadcrumb a:hover { text-decoration:underline; }
+        .breadcrumb i { font-size:11px; color:#cbd5e1; }
+
+        /* ── HERO CARD ───────────────────────────────────────────── */
+        .hero-card { background:white; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; margin-bottom:24px; }
+        .hero-img { position:relative; height:320px; overflow:hidden; }
+        .hero-img img { width:100%; height:100%; object-fit:cover; }
+        .hero-img-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(26,35,50,0.7) 0%, transparent 60%); }
+        .hero-badges { position:absolute; top:20px; left:20px; display:flex; gap:8px; }
+        .hero-type-badge { padding:6px 14px; border-radius:50px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.95); color:var(--teal-dark); display:flex; align-items:center; gap:5px; }
+        .hero-status-badge { padding:6px 14px; border-radius:50px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:5px; }
+        .hero-status-badge.ouvert  { background:rgba(22,163,74,0.92); color:white; }
+        .hero-status-badge.complet { background:rgba(220,38,38,0.92); color:white; }
+        .hero-status-badge.termine { background:rgba(100,116,139,0.92); color:white; }
+        .hero-body { padding:28px 32px; }
+        .hero-title { font-size:26px; font-weight:800; color:var(--dark); margin-bottom:12px; line-height:1.3; }
+        .hero-meta-row { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:20px; }
+        .hero-meta-item { display:flex; align-items:center; gap:7px; font-size:14px; color:var(--gray); }
+        .hero-meta-item i { color:var(--teal); font-size:16px; }
+        .hero-meta-item strong { color:var(--dark); }
+
+        /* ── TWO COLUMNS ─────────────────────────────────────────── */
+        .two-col { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
+
+        /* ── DESCRIPTION CARD ────────────────────────────────────── */
+        .card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; padding:28px; margin-bottom:24px; }
+        .card-title { font-size:16px; font-weight:700; color:var(--dark); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .card-title i { color:var(--teal); }
+        .description-text { font-size:15px; color:var(--gray); line-height:1.8; }
+
+        /* ── SIDEBAR CARD ────────────────────────────────────────── */
+        .info-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9; font-size:14px; }
+        .info-row:last-child { border-bottom:none; }
+        .info-label { color:var(--gray); display:flex; align-items:center; gap:7px; }
+        .info-label i { color:var(--teal); width:16px; }
+        .info-value { font-weight:600; color:var(--dark); text-align:right; }
+
+        /* ── PROGRESS ────────────────────────────────────────────── */
+        .progress-wrap { margin:20px 0; }
+        .progress-label { display:flex; justify-content:space-between; font-size:13px; color:var(--gray); margin-bottom:8px; }
+        .progress-bar { height:10px; background:#e2e8f0; border-radius:50px; overflow:hidden; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,var(--teal),var(--teal-dark)); border-radius:50px; transition:width 0.4s; }
+
+        /* ── ACTION BUTTONS ──────────────────────────────────────── */
+        .action-wrap { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+        .btn-participate { width:100%; padding:14px; background:linear-gradient(135deg,var(--teal),var(--teal-dark)); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; }
+        .btn-participate:hover { opacity:0.9; transform:translateY(-2px); box-shadow:0 6px 20px rgba(32,178,170,0.35); }
+        .btn-cancel { width:100%; padding:14px; background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; }
+        .btn-cancel:hover { background:#dc2626; color:white; }
+        .btn-back { width:100%; padding:12px; background:var(--light); color:var(--gray); border:1px solid #e2e8f0; border-radius:12px; font-size:14px; font-weight:600; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; }
+        .btn-back:hover { background:var(--teal-light); color:var(--teal-dark); border-color:var(--teal); }
+
+        /* ── COACH CARD ──────────────────────────────────────────── */
+        .coach-avatar { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:20px; flex-shrink:0; overflow:hidden; }
+        .coach-avatar img { width:100%; height:100%; object-fit:cover; }
+        .coach-info { display:flex; align-items:center; gap:16px; }
+        .coach-name { font-size:15px; font-weight:700; color:var(--dark); }
+        .coach-role { font-size:12px; color:var(--gray); margin-top:3px; }
+
+        /* ── PARTICIPANTS ─────────────────────────────────────────── */
+        .participant-list { display:flex; flex-wrap:wrap; gap:8px; }
+        .participant-chip { display:flex; align-items:center; gap:6px; background:var(--light); border:1px solid #e2e8f0; border-radius:50px; padding:5px 12px; font-size:13px; color:var(--dark); font-weight:500; }
+        .participant-chip-avatar { width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:700; }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────── */
+        @media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .sidebar-overlay.open { display:block; }
+            .main { margin-left:0; }
+            .menu-toggle { display:block; }
+            .topbar { padding:0 16px; }
+            .topbar-btn span { display:none; }
+            .content { padding:20px 16px; }
+            .hero-body { padding:20px; }
+            .hero-title { font-size:20px; }
+            .card { padding:20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'" style="height:36px;">
+        <span class="sidebar-logo-text">Bekri</span>
+    </div>
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">
+            {% if app.user and app.user.avatar %}
+                <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+            {% elseif app.user %}
+                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+            {% else %}
+                <i class="bi bi-person-fill" style="font-size:20px;"></i>
+            {% endif %}
+        </div>
+        <div>
+            <div class="sidebar-user-name">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Invité' }}</div>
+            <div class="sidebar-user-role">
+                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_COACH') %}Coach
+                {% else %}Membre Bekri{% endif %}
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="{{ path('user_dashboard') }}"   class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+        <a href="{{ path('suivi_today') }}"        class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
+        <a href="{{ path('insight_weekly') }}"     class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
+        <a href="{{ path('chat_index') }}"         class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
+        <div class="nav-section-label">Bien-être</div>
+        <a href="{{ path('user_analyse') }}"       class="nav-item"><i class="bi bi-heart-pulse-fill"></i> Mon analyse</a>
+        <a href="{{ path('objectif_index') }}"     class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
+        <div class="nav-section-label">Communauté</div>
+        <a href="{{ path('posts_list') }}"         class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+        <a href="{{ path('evenements_list') }}"    class="nav-item active"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+        <div class="nav-section-label">Mon compte</div>
+        <a href="{{ path('user_profile') }}"       class="nav-item"><i class="bi bi-person-fill"></i> Mon profil</a>
+        <a href="{{ path('user_profile_edit') }}"  class="nav-item"><i class="bi bi-gear-fill"></i> Paramètres</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;"><i class="bi bi-box-arrow-left"></i> Se déconnecter</a>
+    </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+            <div>
+                <div class="topbar-title">{{ evenement.titre }}</div>
+                <div class="topbar-sub">Détail de l'événement</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('evenements_list') }}" class="topbar-btn">
+                <i class="bi bi-arrow-left"></i><span>Retour aux événements</span>
+            </a>
+            <a href="{{ path('user_profile') }}" class="topbar-avatar-sm">
+                {% if app.user and app.user.avatar %}
+                    <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                {% elseif app.user %}
+                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                {% else %}
+                    <i class="bi bi-person-fill"></i>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="content">
+
+            <!-- FLASH MESSAGES -->
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="flash {{ label }}">
+                        <i class="bi bi-{{ label == 'success' ? 'check-circle-fill' : label == 'error' or label == 'danger' ? 'x-circle-fill' : 'info-circle-fill' }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- BREADCRUMB -->
+            <div class="breadcrumb">
+                <a href="{{ path('evenements_list') }}"><i class="bi bi-house-fill"></i> Événements</a>
+                <i class="bi bi-chevron-right"></i>
+                <span>{{ evenement.titre }}</span>
+            </div>
+
+            <!-- HERO -->
+            <div class="hero-card">
+                <div class="hero-img">
+                    <img src="{{ asset('assets/img/health/consultation-3.webp') }}" alt="{{ evenement.titre }}"
+                         onerror="this.src='{{ asset('assets/img/health/consultation-3.webp') }}'">
+                    <div class="hero-img-overlay"></div>
+                    <div class="hero-badges">
+                        <div class="hero-type-badge">
+                            {% if evenement.type.value == 'EVENT' %}
+                                <i class="bi bi-people"></i> Événement
+                            {% else %}
+                                <i class="bi bi-heart-pulse"></i> Session
+                            {% endif %}
+                        </div>
+                        {% set count = evenement.participations.count %}
+                        {% set max   = evenement.capaciteMax %}
+                        {% if count >= max %}
+                            <div class="hero-status-badge complet"><i class="bi bi-x-circle-fill"></i> Complet</div>
+                        {% elseif evenement.statut.value == 'FINISHED' %}
+                            <div class="hero-status-badge termine"><i class="bi bi-check-circle-fill"></i> Terminé</div>
+                        {% else %}
+                            <div class="hero-status-badge ouvert"><i class="bi bi-circle-fill" style="font-size:8px;"></i> Ouvert</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="hero-body">
+                    <h1 class="hero-title">{{ evenement.titre }}</h1>
+                    <div class="hero-meta-row">
+                        <div class="hero-meta-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Du <strong>{{ evenement.dateDebut|date('d/m/Y à H:i') }}</strong></span>
+                        </div>
+                        {% if evenement.dateFin %}
+                        <div class="hero-meta-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Au <strong>{{ evenement.dateFin|date('d/m/Y à H:i') }}</strong></span>
+                        </div>
+                        {% endif %}
+                        <div class="hero-meta-item">
+                            <i class="bi bi-people-fill"></i>
+                            <span><strong>{{ evenement.participations.count }}</strong> / {{ evenement.capaciteMax }} participants</span>
+                        </div>
+                        {% if evenement.lienSession %}
+                        <div class="hero-meta-item">
+                            <i class="bi bi-camera-video"></i>
+                            <span><a href="{{ evenement.lienSession }}" target="_blank" style="color:var(--teal-dark);font-weight:600;">Rejoindre en ligne</a></span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TWO COLUMNS -->
+            <div class="two-col">
+                <!-- LEFT: Description + Participants -->
+                <div>
+                    <div class="card">
+                        <div class="card-title"><i class="bi bi-text-left"></i> Description</div>
+                        <p class="description-text">{{ evenement.description }}</p>
+                    </div>
+
+                    {% if evenement.participations.count > 0 %}
+                    <div class="card">
+                        <div class="card-title"><i class="bi bi-people-fill"></i> Participants ({{ evenement.participations.count }})</div>
+                        <div class="participant-list">
+                            {% for participation in evenement.participations %}
+                                <div class="participant-chip">
+                                    <div class="participant-chip-avatar">
+                                        {{ participation.utilisateur.prenom|first|upper }}{{ participation.utilisateur.nom|first|upper }}
+                                    </div>
+                                    {{ participation.utilisateur.prenom }} {{ participation.utilisateur.nom|first }}.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- RIGHT: Info + Actions -->
+                <div>
+                    <!-- Info Card -->
+                    <div class="card">
+                        <div class="card-title"><i class="bi bi-info-circle-fill"></i> Informations</div>
+
+                        <div class="info-row">
+                            <span class="info-label"><i class="bi bi-calendar3"></i> Début</span>
+                            <span class="info-value">{{ evenement.dateDebut|date('d/m/Y') }}<br><small style="color:var(--gray);font-weight:400;">{{ evenement.dateDebut|date('H:i') }}</small></span>
+                        </div>
+                        {% if evenement.dateFin %}
+                        <div class="info-row">
+                            <span class="info-label"><i class="bi bi-calendar-check"></i> Fin</span>
+                            <span class="info-value">{{ evenement.dateFin|date('d/m/Y') }}<br><small style="color:var(--gray);font-weight:400;">{{ evenement.dateFin|date('H:i') }}</small></span>
+                        </div>
+                        {% endif %}
+                        <div class="info-row">
+                            <span class="info-label"><i class="bi bi-tag"></i> Type</span>
+                            <span class="info-value">{{ evenement.type.value == 'EVENT' ? 'Événement' : 'Session' }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="bi bi-people"></i> Capacité</span>
+                            <span class="info-value">{{ evenement.capaciteMax }} places</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="bi bi-door-open"></i> Places restantes</span>
+                            <span class="info-value" style="color:{{ (evenement.capaciteMax - evenement.participations.count) <= 3 ? '#dc2626' : 'var(--teal-dark)' }};">
+                                {{ evenement.capaciteMax - evenement.participations.count }}
+                            </span>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="progress-wrap">
+                            <div class="progress-label">
+                                <span>{{ evenement.participations.count }} inscrits</span>
+                                <span>{{ evenement.capaciteMax }} max</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:{{ (evenement.participations.count / evenement.capaciteMax * 100)|round }}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="action-wrap">
+                            {% if app.user %}
+                                {% set isInscrit = false %}
+                                {% for p in evenement.participations %}
+                                    {% if p.utilisateur.id == app.user.id %}
+                                        {% set isInscrit = true %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if isInscrit %}
+                                    <form method="post" action="{{ path('evenements_annuler', {id: evenement.id}) }}">
+                                        <button type="submit" class="btn-cancel"
+                                                onclick="return confirm('Annuler votre participation ?')">
+                                            <i class="bi bi-x-circle"></i> Annuler ma participation
+                                        </button>
+                                    </form>
+                                {% elseif evenement.participations.count < evenement.capaciteMax and evenement.statut.value == 'OPEN' %}
+                                    <form method="post" action="{{ path('evenements_participer', {id: evenement.id}) }}">
+                                        <button type="submit" class="btn-participate">
+                                            <i class="bi bi-calendar-check"></i> Participer à cet événement
+                                        </button>
+                                    </form>
+                                {% elseif evenement.participations.count >= evenement.capaciteMax %}
+                                    <button class="btn-participate" disabled style="opacity:0.5;cursor:not-allowed;">
+                                        <i class="bi bi-x-circle"></i> Événement complet
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ path('app_login') }}" class="btn-participate" style="text-decoration:none;">
+                                    <i class="bi bi-box-arrow-in-right"></i> Connectez-vous pour participer
+                                </a>
+                            {% endif %}
+
+                            <a href="{{ path('evenements_list') }}" class="btn-back">
+                                <i class="bi bi-arrow-left"></i> Retour aux événements
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Coach Card -->
+                    {% if evenement.coach %}
+                    <div class="card">
+                        <div class="card-title"><i class="bi bi-person-badge-fill"></i> Organisé par</div>
+                        <div class="coach-info">
+                            <div class="coach-avatar">
+                                {% if evenement.coach.avatar %}
+                                    <img src="{{ asset('uploads/avatars/' ~ evenement.coach.avatar) }}" alt="coach">
+                                {% else %}
+                                    {{ evenement.coach.prenom|first|upper }}{{ evenement.coach.nom|first|upper }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="coach-name">{{ evenement.coach.prenom }} {{ evenement.coach.nom }}</div>
+                                <div class="coach-role">Coach Bien-être</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+    overlay?.addEventListener('click',   () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+</script>
+</body>
+</html>

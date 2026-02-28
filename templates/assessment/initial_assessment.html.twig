@@ -1,129 +1,342 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluation initiale du bien-être - Bekri Wellbeing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-{% block title %}Évaluation initiale du bien-être - Bekri Wellbeing{% endblock %}
+    <style>
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --white:      #ffffff;
+        }
 
-{% block body_class %}assessment-page{% endblock %}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-{% block main %}
-<div class="container py-5" style="margin-top: 80px; margin-bottom: 80px; max-width: 720px;">
-    <div class="text-center mb-4">
-        <h1 class="h3 mb-2">Évaluation initiale du bien-être</h1>
-        <p class="text-muted">Répondez à toutes les questions pour accéder à votre espace.</p>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f7f6 50%, #ede9fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .assessment-wrapper {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        /* ── HEADER ──────────────────────────────────────────────────── */
+        .assessment-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .assessment-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .assessment-logo img { height: 40px; width: auto; }
+
+        .assessment-logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.5px;
+        }
+
+        .assessment-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .assessment-header p {
+            font-size: 15px;
+            color: var(--gray);
+        }
+
+        /* ── PROGRESS ────────────────────────────────────────────────── */
+        .progress-wrapper {
+            margin-bottom: 24px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-info span {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), var(--purple));
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        /* ── CARD ────────────────────────────────────────────────────── */
+        .assessment-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            padding: 36px 40px;
+            margin-bottom: 20px;
+        }
+
+        /* ── QUESTION ────────────────────────────────────────────────── */
+        .question-block {
+            margin-bottom: 28px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .question-block:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .question-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        /* ── LIKERT ──────────────────────────────────────────────────── */
+        .likert-scale-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .likert-extremity {
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .likert-left  { color: #22c55e; }
+        .likert-right { color: #7c3aed; }
+
+        .likert-scale {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .likert-circle {
+            width: var(--circle-size, 20px);
+            height: var(--circle-size, 20px);
+            min-width: var(--circle-size, 20px);
+            min-height: var(--circle-size, 20px);
+            border: 2px solid var(--circle-color, #94a3b8);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .likert-circle:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .likert-circle.selected,
+        .likert-circle:has(input:checked) {
+            background-color: var(--circle-color);
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--circle-color);
+        }
+
+        /* ── BUTTONS ─────────────────────────────────────────────────── */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-prev {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #f1f5f9;
+            color: var(--dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-prev:hover { background: #e2e8f0; }
+
+        .btn-next {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(32,178,170,0.3);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32,178,170,0.4);
+        }
+
+        /* ── FOOTER NOTE ─────────────────────────────────────────────── */
+        .assessment-note {
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray);
+            margin-top: 16px;
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────────── */
+        @media (max-width: 576px) {
+            .assessment-card { padding: 24px 20px; }
+            .likert-scale-wrapper { flex-direction: column; align-items: stretch; }
+            .likert-scale { order: 1; }
+            .likert-extremity { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="assessment-wrapper">
+
+    <!-- HEADER -->
+    <div class="assessment-header">
+        <div class="assessment-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'">
+            <span class="assessment-logo-text">Bekri</span>
+        </div>
+        <h1>Évaluation initiale du bien-être</h1>
+        <p>Répondez à toutes les questions pour accéder à votre espace.</p>
     </div>
 
-    {# Progress indicator #}
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="text-muted small">Question {{ question_offset + 1 }} à {{ question_offset + (questions|length) }} sur {{ total_questions }}</span>
-            <span class="text-muted small">Page {{ current_page }}/{{ total_pages }}</span>
+    <!-- PROGRESS -->
+    <div class="progress-wrapper">
+        <div class="progress-info">
+            <span>Question {{ question_offset + 1 }} à {{ question_offset + (questions|length) }} sur {{ total_questions }}</span>
+            <span>Page {{ current_page }}/{{ total_pages }}</span>
         </div>
-        <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (current_page / total_pages * 100)|round }}%;" aria-valuenow="{{ current_page }}" aria-valuemin="1" aria-valuemax="{{ total_pages }}"></div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width: {{ (current_page / total_pages * 100)|round }}%;"></div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <form method="post" action="{{ path('app_initial_assessment', { page: current_page }) }}" id="assessment-form">
-                <input type="hidden" name="page" value="{{ current_page }}">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('assessment') }}">
+    <!-- CARD -->
+    <div class="assessment-card">
+        <form method="post" action="{{ path('app_initial_assessment', { page: current_page }) }}" id="assessment-form">
+            <input type="hidden" name="page" value="{{ current_page }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('assessment') }}">
 
-                {% for q in questions %}
-                    {% set globalIdx = question_offset + loop.index0 %}
-                    {% set saved = saved_answers[globalIdx] ?? null %}
-                    <div class="mb-4 pb-4 {% if not loop.last %}border-bottom{% endif %}">
-                        <p class="fw-semibold mb-3">{{ globalIdx + 1 }}. {{ q.text }}</p>
-                        <div class="likert-scale-wrapper" role="group" aria-label="Réponse question {{ globalIdx + 1 }}">
-                            <span class="likert-extremity likert-left">Jamais</span>
-                            <div class="likert-scale d-flex align-items-center justify-content-between gap-1">
-                                {% for value, label in likert_labels %}
-                                    <label class="likert-circle" data-value="{{ value }}" title="{{ label }}" style="--circle-size: {{ [24, 20, 14, 20, 24][value] }}px; --circle-color: {{ ['#22c55e', '#4ade80', '#94a3b8', '#a78bfa', '#7c3aed'][value] }};">
-                                        <input type="radio" name="q{{ globalIdx }}" value="{{ value }}" class="d-none" {% if saved is not null and saved == value %}checked{% endif %} required>
-                                    </label>
-                                {% endfor %}
-                            </div>
-                            <span class="likert-extremity likert-right">Très souvent</span>
+            {% for q in questions %}
+                {% set globalIdx = question_offset + loop.index0 %}
+                {% set saved = saved_answers[globalIdx] ?? null %}
+                <div class="question-block">
+                    <p class="question-text">{{ globalIdx + 1 }}. {{ q.text }}</p>
+                    <div class="likert-scale-wrapper" role="group" aria-label="Réponse question {{ globalIdx + 1 }}">
+                        <span class="likert-extremity likert-left">Jamais</span>
+                        <div class="likert-scale">
+                            {% for value, label in likert_labels %}
+                                <label class="likert-circle" data-value="{{ value }}" title="{{ label }}"
+                                       style="--circle-size: {{ [24, 20, 14, 20, 24][value] }}px; --circle-color: {{ ['#22c55e', '#4ade80', '#94a3b8', '#a78bfa', '#7c3aed'][value] }};">
+                                    <input type="radio" name="q{{ globalIdx }}" value="{{ value }}"
+                                           style="display:none;"
+                                           {% if saved is not null and saved == value %}checked{% endif %} required>
+                                </label>
+                            {% endfor %}
                         </div>
+                        <span class="likert-extremity likert-right">Très souvent</span>
                     </div>
-                {% endfor %}
-
-                <div class="d-flex justify-content-between mt-4 pt-3">
-                    {% if current_page > 1 %}
-                        <a href="{{ path('app_initial_assessment', { page: current_page - 1 }) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i> Précédent
-                        </a>
-                    {% else %}
-                        <span></span>
-                    {% endif %}
-                    <button type="submit" class="btn btn-primary px-4" id="submit-btn">
-                        {% if current_page >= total_pages %}
-                            <i class="bi bi-check-lg me-1"></i> Terminer l'évaluation
-                        {% else %}
-                            Suivant <i class="bi bi-arrow-right ms-1"></i>
-                        {% endif %}
-                    </button>
                 </div>
-            </form>
-        </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                {% if current_page > 1 %}
+                    <a href="{{ path('app_initial_assessment', { page: current_page - 1 }) }}" class="btn-prev">
+                        <i class="bi bi-arrow-left"></i> Précédent
+                    </a>
+                {% else %}
+                    <span></span>
+                {% endif %}
+
+                <button type="submit" class="btn-next" id="submit-btn">
+                    {% if current_page >= total_pages %}
+                        <i class="bi bi-check-lg"></i> Terminer l'évaluation
+                    {% else %}
+                        Suivant <i class="bi bi-arrow-right"></i>
+                    {% endif %}
+                </button>
+            </div>
+        </form>
     </div>
 
-    <p class="text-center text-muted small mt-3">
+    <p class="assessment-note">
+        <i class="bi bi-shield-lock" style="margin-right: 4px;"></i>
         Vos réponses sont confidentielles et servent à personnaliser votre accompagnement.
     </p>
-</div>
 
-<style>
-.likert-scale-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem 1rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-}
-.likert-extremity {
-    font-size: 0.85rem;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-.likert-left { color: #22c55e; }
-.likert-right { color: #7c3aed; }
-.likert-scale {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.25rem;
-}
-.likert-circle {
-    width: var(--circle-size, 20px);
-    height: var(--circle-size, 20px);
-    min-width: var(--circle-size, 20px);
-    min-height: var(--circle-size, 20px);
-    border: 2px solid var(--circle-color, #94a3b8);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.likert-circle:hover {
-    transform: scale(1.15);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.likert-circle.selected,
-.likert-circle:has(input:checked) {
-    background-color: var(--circle-color);
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--circle-color);
-}
-@media (max-width: 576px) {
-    .likert-scale-wrapper { flex-direction: column; align-items: stretch; }
-    .likert-scale { order: 1; }
-    .likert-extremity { text-align: center; }
-}
-</style>
+</div>
 
 <script>
 document.getElementById('assessment-form').addEventListener('submit', function(e) {
@@ -146,4 +359,6 @@ document.getElementById('assessment-form').addEventListener('submit', function(e
     }
 });
 </script>
-{% endblock %}
+
+</body>
+</html>

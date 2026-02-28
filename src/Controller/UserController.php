@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Enum\UtilisateurStatut;
 use App\Form\UserProfileType;
+use App\Service\AiEmotionalInsightService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -146,5 +147,58 @@ class UserController extends AbstractController
 
         $this->addFlash('success', 'Votre compte a été désactivé.');
         return $this->redirectToRoute('app_logout');
+    }
+
+    // ✅ NEW: Dedicated analysis page
+    #[Route('/analyse', name: 'analyse', methods: ['GET'])]
+    public function analyse(): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if ($user->getProfilPsychologique() === null) {
+            $this->addFlash('warning', 'Vous devez d\'abord compléter le test initial.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        return $this->render('user/analyse.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
+    // ✅ NEW: Regenerate AI feedback
+    #[Route('/regenerate-insight', name: 'regenerate_insight', methods: ['POST'])]
+    public function regenerateInsight(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        AiEmotionalInsightService $aiService
+    ): Response {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('regenerate_insight', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('user_analyse');
+        }
+
+        $profil = $user->getProfilPsychologique();
+        if ($profil === null) {
+            $this->addFlash('warning', 'Aucun profil trouvé.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        try {
+            $aiFeedback = $aiService->generateFromAssessment(
+                $profil->getScoreGlobal(),
+                $profil->getProfilType()
+            );
+            $profil->setAiFeedback($aiFeedback);
+            $entityManager->flush();
+            $this->addFlash('success', 'Votre analyse a été générée avec succès ! ✨');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Impossible de générer l\'analyse pour le moment.');
+        }
+
+        return $this->redirectToRoute('user_analyse');
     }
 }
