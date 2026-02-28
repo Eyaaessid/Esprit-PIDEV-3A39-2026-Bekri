@@ -19,23 +19,31 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 class UserController extends AbstractController
 {
-    #[Route('', name: 'home')]
+    // ✅ FIX 1: route is '' not '/user' because prefix already adds /user
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        return $this->render('index.html.twig', [
-            'user' => $this->getUser(),
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        return $this->render('user/index.html.twig', [
+            'user' => $user,
         ]);
     }
 
+    // ✅ FIX 2: added missing #[Route] attribute
+    #[Route('/profile', name: 'profile', methods: ['GET'])]
     public function profile(): Response
     {
         $user = $this->getUser();
-        
+
         return $this->render('user/profile.html.twig', [
             'user' => $user,
         ]);
     }
 
+    // ✅ FIX 3: added missing #[Route] attribute
+    #[Route('/profile/edit', name: 'profile_edit', methods: ['GET', 'POST'])]
     public function profileEdit(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -45,17 +53,16 @@ class UserController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
         $originalEmail = $user->getEmail();
-        
+
         $form = $this->createForm(UserProfileType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if email changed and if it's already taken by another user
             $newEmail = $form->get('email')->getData();
             if ($newEmail !== $originalEmail) {
                 $existingUser = $entityManager->getRepository(Utilisateur::class)
                     ->findOneBy(['email' => $newEmail]);
-                
+
                 if ($existingUser && $existingUser->getId() !== $user->getId()) {
                     $this->addFlash('error', 'This email is already in use by another account.');
                     return $this->render('user/profile_edit.html.twig', [
@@ -65,7 +72,6 @@ class UserController extends AbstractController
                 }
             }
 
-            // Handle password change
             $plainPassword = $form->get('plainPassword')->getData();
             if ($plainPassword) {
                 $user->setPassword(
@@ -73,7 +79,6 @@ class UserController extends AbstractController
                 );
             }
 
-            // Handle avatar upload
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
                 $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -83,17 +88,17 @@ class UserController extends AbstractController
                 try {
                     $avatarsDirectory = $this->getParameter('avatars_directory');
                     $avatarFile->move($avatarsDirectory, $newFilename);
-                    
+
                     if ($user->getAvatar()) {
                         $oldAvatarPath = $avatarsDirectory.'/'.$user->getAvatar();
                         if (file_exists($oldAvatarPath)) {
                             unlink($oldAvatarPath);
                         }
                     }
-                    
+
                     $user->setAvatar($newFilename);
                     $this->addFlash('success', 'Avatar uploaded successfully!');
-                    
+
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
                 } catch (\Exception $e) {
@@ -102,7 +107,7 @@ class UserController extends AbstractController
             }
 
             $user->setUpdatedAt(new \DateTime());
-            
+
             try {
                 $entityManager->flush();
                 $this->addFlash('success', 'Your profile has been updated successfully!');
@@ -119,9 +124,6 @@ class UserController extends AbstractController
         ]);
     }
 
-    /**
-     * User self-deactivation: set INACTIF, deactivated_by=user, then logout.
-     */
     #[Route('/profile/deactivate', name: 'profile_deactivate', methods: ['POST'])]
     public function deactivateAccount(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -142,7 +144,7 @@ class UserController extends AbstractController
         $user->setUpdatedAt(new \DateTime());
         $entityManager->flush();
 
-        $this->addFlash('success', 'Votre compte a été désactivé. Vous pouvez le réactiver à tout moment en vous connectant et en suivant le lien envoyé par email.');
+        $this->addFlash('success', 'Votre compte a été désactivé.');
         return $this->redirectToRoute('app_logout');
     }
 }

@@ -36,4 +36,10 @@ security:
         - { path: ^/request-reactivation, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/coach, roles: ROLE_COACH }
+<<<<<<< Updated upstream
         - { path: ^/user, roles: ROLE_USER }
+=======
+        - { path: ^/user, roles: ROLE_USER }
+        - { path: ^/api/mobile, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+>>>>>>> Stashed changes
