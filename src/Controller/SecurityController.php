@@ -16,12 +16,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private TokenStorageInterface $tokenStorage
     ) {}
 
     // ==================== LOGIN ====================
@@ -137,9 +140,10 @@ class SecurityController extends AbstractController
                     'error' => $e->getMessage()
                 ]);
 
-                $this->addFlash('error', 'We could not send the verification email. Please try resending it from the login page.');
             }
 
+            // Removed auto-login (setToken) to force email verification flow
+            $this->addFlash('info', 'Please verify your email before logging in.');
             return $this->redirectToRoute('app_check_email', ['email' => $user->getEmail()]);
         }
 

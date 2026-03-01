@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Enum\UtilisateurStatut;
 use App\Form\UserProfileType;
+use App\Service\AiEmotionalInsightService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -19,23 +20,28 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 class UserController extends AbstractController
 {
-    #[Route('', name: 'home')]
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        return $this->render('index.html.twig', [
-            'user' => $this->getUser(),
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        return $this->render('user/index.html.twig', [
+            'user' => $user,
         ]);
     }
 
+    #[Route('/profile', name: 'profile', methods: ['GET'])]
     public function profile(): Response
     {
         $user = $this->getUser();
-        
+
         return $this->render('user/profile.html.twig', [
             'user' => $user,
         ]);
     }
 
+    #[Route('/profile/edit', name: 'profile_edit', methods: ['GET', 'POST'])]
     public function profileEdit(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -45,17 +51,17 @@ class UserController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
         $originalEmail = $user->getEmail();
-        
+
         $form = $this->createForm(UserProfileType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if email changed and if it's already taken by another user
+
             $newEmail = $form->get('email')->getData();
             if ($newEmail !== $originalEmail) {
                 $existingUser = $entityManager->getRepository(Utilisateur::class)
                     ->findOneBy(['email' => $newEmail]);
-                
+
                 if ($existingUser && $existingUser->getId() !== $user->getId()) {
                     $this->addFlash('error', 'This email is already in use by another account.');
                     return $this->render('user/profile_edit.html.twig', [
@@ -65,7 +71,6 @@ class UserController extends AbstractController
                 }
             }
 
-            // Handle password change
             $plainPassword = $form->get('plainPassword')->getData();
             if ($plainPassword) {
                 $user->setPassword(
@@ -73,27 +78,26 @@ class UserController extends AbstractController
                 );
             }
 
-            // Handle avatar upload
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
                 $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$avatarFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $avatarFile->guessExtension();
 
                 try {
                     $avatarsDirectory = $this->getParameter('avatars_directory');
                     $avatarFile->move($avatarsDirectory, $newFilename);
-                    
+
                     if ($user->getAvatar()) {
-                        $oldAvatarPath = $avatarsDirectory.'/'.$user->getAvatar();
+                        $oldAvatarPath = $avatarsDirectory . '/' . $user->getAvatar();
                         if (file_exists($oldAvatarPath)) {
                             unlink($oldAvatarPath);
                         }
                     }
-                    
+
                     $user->setAvatar($newFilename);
                     $this->addFlash('success', 'Avatar uploaded successfully!');
-                    
+
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
                 } catch (\Exception $e) {
@@ -101,8 +105,9 @@ class UserController extends AbstractController
                 }
             }
 
-            $user->setUpdatedAt(new \DateTime());
-            
+            // ✅ FIXED HERE
+            $user->setUpdatedAt(new \DateTimeImmutable());
+
             try {
                 $entityManager->flush();
                 $this->addFlash('success', 'Your profile has been updated successfully!');
@@ -119,17 +124,11 @@ class UserController extends AbstractController
         ]);
     }
 
-    /**
-     * User self-deactivation: set INACTIF, deactivated_by=user, then logout.
-     */
     #[Route('/profile/deactivate', name: 'profile_deactivate', methods: ['POST'])]
     public function deactivateAccount(Request $request, EntityManagerInterface $entityManager): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
-        if (!$user instanceof Utilisateur) {
-            return $this->redirectToRoute('user_profile');
-        }
 
         if (!$this->isCsrfTokenValid('deactivate-account', $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de sécurité invalide.');
@@ -137,12 +136,66 @@ class UserController extends AbstractController
         }
 
         $user->setStatut(UtilisateurStatut::INACTIF);
-        $user->setDeactivatedAt(new \DateTime());
+        $user->setDeactivatedAt(new \DateTimeImmutable());
         $user->setDeactivatedBy('user');
-        $user->setUpdatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
         $entityManager->flush();
 
-        $this->addFlash('success', 'Votre compte a été désactivé. Vous pouvez le réactiver à tout moment en vous connectant et en suivant le lien envoyé par email.');
+        $this->addFlash('success', 'Votre compte a été désactivé.');
         return $this->redirectToRoute('app_logout');
+    }
+
+    #[Route('/analyse', name: 'analyse', methods: ['GET'])]
+    public function analyse(): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if ($user->getProfilPsychologique() === null) {
+            $this->addFlash('warning', 'Vous devez d\'abord compléter le test initial.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        return $this->render('user/analyse.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
+    #[Route('/regenerate-insight', name: 'regenerate_insight', methods: ['POST'])]
+    public function regenerateInsight(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        AiEmotionalInsightService $aiService
+    ): Response {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('regenerate_insight', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('user_analyse');
+        }
+
+        $profil = $user->getProfilPsychologique();
+        if ($profil === null) {
+            $this->addFlash('warning', 'Aucun profil trouvé.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        try {
+            $aiFeedback = $aiService->generateFromAssessment(
+                $profil->getScoreGlobal(),
+                $profil->getProfilType()
+            );
+
+            $profil->setAiFeedback($aiFeedback);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre analyse a été générée avec succès ! ✨');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Impossible de générer l\'analyse pour le moment.');
+        }
+
+        return $this->redirectToRoute('user_analyse');
     }
 }

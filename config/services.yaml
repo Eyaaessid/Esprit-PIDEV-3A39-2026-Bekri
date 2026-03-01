@@ -3,6 +3,7 @@
 parameters:
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
     uploads_directory: '%kernel.project_dir%/public/uploads/posts'
+    app.groq_api_key_default: ''
     app.ai_provider: '%env(AI_PROVIDER)%'
     app.ai_api_key: '%env(AI_API_KEY)%'
     app.ai_model: '%env(AI_MODEL)%'
@@ -33,3 +34,11 @@ services:
         arguments:
             $alertRecipient: '%app.risk_alert_email%'
             $senderEmail: '%app.sender_email%'
+
+    App\Service\WellbeingRecommendationService:
+        arguments:
+            $groqApiKey: '%env(default:app.groq_api_key_default:GROQ_API_KEY)%'
+
+    App\Service\AiEmotionalInsightService:
+        arguments:
+            $groqApiKey: '%env(default:app.groq_api_key_default:GROQ_API_KEY)%'

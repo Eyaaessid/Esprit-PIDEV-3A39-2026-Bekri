@@ -17,10 +17,6 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    /**
-     * All non-deleted posts for the list page, with author, likes and comments eager-loaded
-     * to avoid N+1 queries when rendering the template.
-     */
     public function findAllForList(): array
     {
         return $this->createQueryBuilder('p')
@@ -33,9 +29,6 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Query builder for paginated posts list.
-     */
     public function createListQueryBuilder(): QueryBuilder
     {
         return $this->createQueryBuilder('p')
@@ -44,10 +37,6 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.createdAt', 'DESC');
     }
 
-    /**
-     * One post by id for the detail page, with author, likes, comments and comment authors
-     * eager-loaded to avoid N+1 queries.
-     */
     public function findOneForShow(int $id): ?Post
     {
         return $this->createQueryBuilder('p')
@@ -61,9 +50,6 @@ class PostRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    /**
-     * Query used by community feed API with sorting and emotion filtering.
-     */
     public function createFeedQueryBuilder(string $sort = 'most_recent', ?string $emotion = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('p')
@@ -109,9 +95,6 @@ class PostRepository extends ServiceEntityRepository
             ->getArrayResult();
     }
 
-    /**
-     * Most popular recent posts (by likes + comments count), for guests or fallback.
-     */
     public function findMostPopularRecent(int $limit, array $excludeIds = []): array
     {
         $qb = $this->createQueryBuilder('p')
@@ -135,19 +118,20 @@ class PostRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * Posts in given categories or by given author IDs, excluding given post IDs and optional author (e.g. current user).
-     */
     public function findByCategoriesOrAuthors(array $categories, array $authorIds, array $excludePostIds, ?int $excludeAuthorId, int $limit): array
     {
         $categories = array_filter($categories);
-        $authorIds = array_filter(array_map('intval', $authorIds));
+        $authorIds  = array_filter(array_map('intval', $authorIds));
 
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
-            ->where('p.deletedAt IS NULL');
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
+            ->where('p.deletedAt IS NULL')
+            ->groupBy('p.id')
+            ->addGroupBy('u.id');
 
         if ($excludePostIds !== []) {
             $qb->andWhere('p.id NOT IN (:excludeIds)')->setParameter('excludeIds', $excludePostIds);
@@ -179,18 +163,19 @@ class PostRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * Related to a post: same category OR same author, then recent. Excludes the given post.
-     */
     public function findRelatedToPost(int $excludePostId, ?string $category, ?int $authorId, int $limit): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
             ->where('p.deletedAt IS NULL')
             ->andWhere('p.id != :excludeId')
             ->setParameter('excludeId', $excludePostId)
+            ->groupBy('p.id')
+            ->addGroupBy('u.id')
             ->orderBy('p.createdAt', 'DESC')
             ->setMaxResults($limit);
 
@@ -237,9 +222,6 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * Collaborative filtering from likes:
-     * users who liked my liked posts also liked these candidates.
-     *
      * @param int[] $baseLikedPostIds
      * @param int[] $excludePostIds
      * @return Post[]
@@ -252,8 +234,10 @@ class PostRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('candidate')
             ->leftJoin('candidate.utilisateur', 'author')->addSelect('author')
-            ->leftJoin('candidate.likes', 'candidateLikes')->addSelect('candidateLikes')
-            ->leftJoin('candidate.commentaires', 'candidateComments')->addSelect('candidateComments')
+            ->leftJoin('candidate.likes', 'candidateLikes')
+            ->leftJoin('candidate.commentaires', 'candidateComments')
+            ->addSelect('COUNT(DISTINCT candidateLikes.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT candidateComments.id) AS HIDDEN commentsCnt')
             ->innerJoin('candidate.likes', 'peerLike')
             ->innerJoin('peerLike.utilisateur', 'peerUser')
             ->innerJoin('peerUser.likes', 'peerBaseLike')
@@ -264,7 +248,7 @@ class PostRepository extends ServiceEntityRepository
             ->groupBy('candidate.id')
             ->addGroupBy('author.id')
             ->orderBy('COUNT(DISTINCT peerUser.id)', 'DESC')
-            ->addOrderBy('COUNT(DISTINCT candidateComments.id)', 'DESC')
+            ->addOrderBy('commentsCnt', 'DESC')
             ->addOrderBy('candidate.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->setParameter('baseLikedPostIds', $baseLikedPostIds)
@@ -291,15 +275,17 @@ class PostRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
             ->innerJoin(\App\Entity\SavedPost::class, 'sp', 'WITH', 'sp.post = p')
             ->where('p.deletedAt IS NULL')
             ->andWhere('sp.utilisateur IN (:peerUserIds)')
             ->groupBy('p.id')
             ->addGroupBy('u.id')
             ->orderBy('COUNT(sp.id)', 'DESC')
-            ->addOrderBy('COUNT(DISTINCT c.id)', 'DESC')
+            ->addOrderBy('commentsCnt', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->setParameter('peerUserIds', $peerUserIds)
             ->setMaxResults($limit);
@@ -326,15 +312,17 @@ class PostRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
             ->where('p.deletedAt IS NULL')
             ->andWhere('p.categorie IN (:categories)')
             ->setParameter('categories', $categories)
             ->groupBy('p.id')
             ->addGroupBy('u.id')
-            ->orderBy('COUNT(DISTINCT c.id)', 'DESC')
-            ->addOrderBy('COUNT(DISTINCT l.id)', 'DESC')
+            ->orderBy('commentsCnt', 'DESC')
+            ->addOrderBy('likesCnt', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->setMaxResults($limit);
 
@@ -358,13 +346,15 @@ class PostRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
             ->where('p.deletedAt IS NULL')
             ->groupBy('p.id')
             ->addGroupBy('u.id')
-            ->orderBy('COUNT(DISTINCT c.id)', 'DESC')
-            ->addOrderBy('COUNT(DISTINCT l.id)', 'DESC')
+            ->orderBy('commentsCnt', 'DESC')
+            ->addOrderBy('likesCnt', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->setMaxResults($limit);
 
@@ -377,8 +367,7 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int[] $userIds
-     * @return string[]
+     * @param string[] $userIds
      */
     public function findDistinctCategoriesByAuthorIds(array $userIds): array
     {
@@ -423,8 +412,6 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * Posts with real engagement only (likes or comments).
-     *
      * @param int[] $excludePostIds
      * @return Post[]
      */
@@ -432,14 +419,16 @@ class PostRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCnt')
+            ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCnt')
             ->where('p.deletedAt IS NULL')
             ->groupBy('p.id')
             ->addGroupBy('u.id')
             ->having('COUNT(DISTINCT l.id) > 0 OR COUNT(DISTINCT c.id) > 0')
-            ->orderBy('COUNT(DISTINCT c.id)', 'DESC')
-            ->addOrderBy('COUNT(DISTINCT l.id)', 'DESC')
+            ->orderBy('commentsCnt', 'DESC')
+            ->addOrderBy('likesCnt', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->setMaxResults($limit);
 

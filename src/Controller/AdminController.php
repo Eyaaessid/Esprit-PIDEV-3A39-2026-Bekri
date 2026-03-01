@@ -288,21 +288,24 @@ class AdminController extends AbstractController
             // Handle avatar upload
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
-                $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$avatarFile->guessExtension();
-
                 try {
-                    $avatarsDirectory = $this->getParameter('avatars_directory');
-                    $avatarFile->move($avatarsDirectory, $newFilename);
+                    $uploadDir = $this->getParameter('avatars_directory');
                     
+                    // Delete old avatar
                     if ($user->getAvatar()) {
-                        $oldAvatarPath = $avatarsDirectory.'/'.$user->getAvatar();
-                        if (file_exists($oldAvatarPath)) {
-                            unlink($oldAvatarPath);
+                        $oldFile = $uploadDir . '/' . $user->getAvatar();
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
                         }
                     }
                     
+                    // Generate unique filename
+                    $newFilename = 'avatar_' . uniqid() . '.' . $avatarFile->guessExtension();
+                    
+                    // Move file
+                    $avatarFile->move($uploadDir, $newFilename);
+                    
+                    // Set filename
                     $user->setAvatar($newFilename);
                     $this->addFlash('success', 'Avatar uploaded successfully!');
                     
@@ -311,7 +314,7 @@ class AdminController extends AbstractController
                 }
             }
 
-            $user->setUpdatedAt(new \DateTime());
+            $user->setUpdatedAt(new \DateTimeImmutable());
             
             try {
                 $entityManager->flush();
@@ -369,7 +372,7 @@ class AdminController extends AbstractController
                     $this->addFlash('error', 'Failed to upload avatar.');
                 }
             }
-
+            $user->setIsVerified(true); 
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -400,7 +403,7 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user->setUpdatedAt(new \DateTime());
+            $user->setUpdatedAt(new \DateTimeImmutable());
             if ($user->getStatut() === UtilisateurStatut::INACTIF) {
                 $user->setDeactivatedAt(new \DateTime());
                 $user->setDeactivatedBy('admin');
@@ -449,7 +452,7 @@ class AdminController extends AbstractController
         $user->setStatut(UtilisateurStatut::ACTIF);
         $user->setDeactivatedAt(null);
         $user->setDeactivatedBy(null);
-        $user->setUpdatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTimeImmutable());
         $rr->setStatus(ReactivationRequest::STATUS_APPROVED);
         $rr->setProcessedAt(new \DateTime());
         $entityManager->flush();
@@ -472,7 +475,7 @@ class AdminController extends AbstractController
         $user->setStatut(UtilisateurStatut::ACTIF);
         $user->setDeactivatedAt(null);
         $user->setDeactivatedBy(null);
-        $user->setUpdatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTimeImmutable());
         $entityManager->flush();
         $this->addFlash('success', "Account for {$user->getPrenom()} {$user->getNom()} has been reactivated.");
         return $this->redirectToRoute('admin_user_detail', ['id' => $id]);
@@ -498,3 +501,5 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('admin_reactivation_requests');
     }
 }
+
+

@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bekri - Bien-être Mental & Physique</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --teal:        #20b2aa;
+            --teal-dark:   #0d9488;
+            --teal-light:  #e0f7f6;
+            --purple:      #667eea;
+            --purple-dark: #764ba2;
+            --dark:        #1a2332;
+            --gray:        #64748b;
+            --light:       #f8fafc;
+            --white:       #ffffff;
+            --radius:      16px;
+            --shadow:      0 20px 60px rgba(0,0,0,0.08);
+            --shadow-sm:   0 4px 20px rgba(0,0,0,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--white);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ─────────────────────────────────────────────────────── */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 16px 0;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            padding: 12px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-size: 15px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .navbar.scrolled .nav-links a { color: var(--dark); }
+        .navbar:not(.scrolled) .nav-links a { color: rgba(255,255,255,0.9); }
+
+        .nav-links a:hover { color: var(--teal); }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-nav-login {
+            padding: 10px 22px;
+            border: 2px solid var(--teal);
+            border-radius: 50px;
+            color: var(--teal);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: transparent;
+        }
+
+        .navbar:not(.scrolled) .btn-nav-login {
+            border-color: rgba(255,255,255,0.7);
+            color: white;
+        }
+
+        .btn-nav-login:hover {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+
+        .btn-nav-register {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(32,178,170,0.3);
+        }
+
+        .btn-nav-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(32,178,170,0.4);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--dark);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .navbar:not(.scrolled) .hamburger span { background: white; }
+
+        /* ── HERO ────────────────────────────────────────────────────────── */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0d9488 0%, #20b2aa 40%, #667eea 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-blob-1 {
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 500px; height: 500px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            animation: blobFloat 8s ease-in-out infinite;
+        }
+
+        .hero-blob-2 {
+            position: absolute;
+            bottom: -150px; left: -100px;
+            width: 400px; height: 400px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            animation: blobFloat 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33%  { transform: translate(20px, -20px) scale(1.02); }
+            66%  { transform: translate(-10px, 15px) scale(0.98); }
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 8px 16px;
+            border-radius: 50px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .hero-badge i { font-size: 14px; }
+
+        .hero-title {
+            font-size: clamp(36px, 5vw, 58px);
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, #a7f3d0, #bfdbfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.7;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            padding: 16px 32px;
+            background: white;
+            color: var(--teal-dark);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+
+        .btn-hero-secondary {
+            padding: 16px 32px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .hero-stat-item { text-align: left; }
+
+        .hero-stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .hero-stat-label {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+
+        /* Hero dashboard mockup */
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-card-main {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 380px;
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-12px); }
+        }
+
+        .hero-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .hero-card-avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--teal), var(--purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .hero-card-name { font-weight: 700; font-size: 15px; color: var(--dark); }
+        .hero-card-sub  { font-size: 12px; color: var(--gray); }
+
+        .hero-card-score {
+            text-align: center;
+            padding: 20px;
+            background: var(--teal-light);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .hero-card-score-num {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--teal-dark);
+            line-height: 1;
+        }
+
+        .hero-card-score-label {
+            font-size: 13px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .hero-card-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hero-card-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-card-bar-label {
+            font-size: 12px;
+            color: var(--gray);
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .hero-card-bar-track {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .hero-card-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--teal), var(--purple));
+            animation: barGrow 2s ease-out forwards;
+        }
+
+        @keyframes barGrow {
+            from { width: 0; }
+        }
+
+        .hero-card-bar-val {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--teal-dark);
+            width: 30px;
+            text-align: right;
+        }
+
+        /* floating mini cards */
+        .hero-mini-card {
+            position: absolute;
+            background: white;
+            border-radius: 14px;
+            padding: 12px 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            white-space: nowrap;
+        }
+
+        .hero-mini-card-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+
+        .hero-mini-1 {
+            top: 10px; left: -40px;
+            animation: miniFloat1 4s ease-in-out infinite;
+        }
+
+        .hero-mini-2 {
+            bottom: 60px; right: -30px;
+            animation: miniFloat2 5s ease-in-out infinite;
+        }
+
+        @keyframes miniFloat1 {
+            0%,100% { transform: translateY(0) rotate(-2deg); }
+            50%      { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        @keyframes miniFloat2 {
+            0%,100% { transform: translateY(0) rotate(1deg); }
+            50%      { transform: translateY(-10px) rotate(-1deg); }
+        }
+
+        /* ── SECTION BASE ────────────────────────────────────────────────── */
+        section { padding: 100px 0; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--teal-light);
+            color: var(--teal-dark);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+        }
+
+        .section-title span {
+            background: linear-gradient(135deg, var(--teal), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-sub {
+            font-size: 17px;
+            color: var(--gray);
+            line-height: 1.7;
+            max-width: 560px;
+        }
+
+        /* ── WHO IS IT FOR ───────────────────────────────────────────────── */
+        .audience { background: var(--light); }
+
+        .audience-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 56px;
+        }
+
+        .audience-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 36px 28px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audience-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .audience-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow);
+            border-color: var(--teal-light);
+        }
+
+        .audience-card:hover::before { opacity: 1; }
+
+        .audience-card-1::before { background: linear-gradient(90deg, #20b2aa, #3ecdc7); }
+        .audience-card-2::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .audience-card-3::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+        .audience-icon {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+        }
+
+        .icon-teal   { background: var(--teal-light); color: var(--teal-dark); }
+        .icon-purple { background: #ede9fe; color: #7c3aed; }
+        .icon-amber  { background: #fef3c7; color: #d97706; }
+        .icon-blue   { background: #dbeafe; color: #2563eb; }
+        .icon-green  { background: #d1fae5; color: #059669; }
+        .icon-rose   { background: #ffe4e6; color: #e11d48; }
+
+        .audience-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .audience-desc {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ── FEATURES ────────────────────────────────────────────────────── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 56px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            border: 1px solid #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card.featured {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+            border: none;
+            color: white;
+        }
+
+        .feature-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card.featured .feature-icon {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feature-card.featured .feature-title { color: white; }
+
+        .feature-desc {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        .feature-card.featured .feature-desc { color: rgba(255,255,255,0.85); }
+
+        .feature-tag {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .feature-card:not(.featured) .feature-tag {
+            background: var(--teal-light);
+            color: var(--teal-dark);
+        }
+
+        .feature-card.featured .feature-tag {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* ── HOW IT WORKS ────────────────────────────────────────────────── */
+        .how { background: var(--light); }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-top: 56px;
+            position: relative;
+        }
+
+        .steps-grid::before {
+            content: '';
+            position: absolute;
+            top: 36px;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--teal), var(--purple));
+            z-index: 0;
+        }
+
+        .step-card {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 25px rgba(32,178,170,0.3);
+            border: 4px solid white;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ── VALUES ──────────────────────────────────────────────────────── */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 56px;
+        }
+
+        .value-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: all 0.3s;
+            border: 1px solid #f1f5f9;
+        }
+
+        .value-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .value-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .value-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .value-desc {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ── CTA ─────────────────────────────────────────────────────────── */
+        .cta {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--purple) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .cta-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .cta-sub {
+            font-size: 18px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 40px;
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-cta-primary {
+            padding: 16px 36px;
+            background: white;
+            color: var(--teal-dark);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+
+        .btn-cta-secondary {
+            padding: 16px 36px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cta-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+        }
+
+        /* ── FOOTER ──────────────────────────────────────────────────────── */
+        .footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.7);
+            padding: 60px 0 32px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 48px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .footer-logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-desc {
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            max-width: 280px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 12px;
+        }
+
+        .footer-social a {
+            width: 38px; height: 38px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .footer-social a:hover {
+            background: var(--teal);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--teal); }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-bottom-links a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-bottom-links a:hover { color: var(--teal); }
+
+        /* ── SCROLL TO TOP ───────────────────────────────────────────────── */
+        .scroll-top {
+            position: fixed;
+            bottom: 32px; right: 32px;
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 20px rgba(32,178,170,0.4);
+            transition: all 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .scroll-top:hover { transform: translateY(-4px); }
+
+        /* ── ANIMATIONS ──────────────────────────────────────────────────── */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-up-delay-1 { transition-delay: 0.1s; }
+        .fade-up-delay-2 { transition-delay: 0.2s; }
+        .fade-up-delay-3 { transition-delay: 0.3s; }
+        .fade-up-delay-4 { transition-delay: 0.4s; }
+        .fade-up-delay-5 { transition-delay: 0.5s; }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────────────── */
+        @media (max-width: 1024px) {
+            .hero-container    { grid-template-columns: 1fr; text-align: center; }
+            .hero-visual       { display: none; }
+            .hero-actions      { justify-content: center; }
+            .hero-stats        { justify-content: center; }
+            .features-grid     { grid-template-columns: repeat(2, 1fr); }
+            .steps-grid        { grid-template-columns: repeat(2, 1fr); }
+            .steps-grid::before{ display: none; }
+            .footer-grid       { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            section            { padding: 70px 0; }
+            .nav-links         { display: none; }
+            .hamburger         { display: flex; }
+            .audience-grid     { grid-template-columns: 1fr; }
+            .features-grid     { grid-template-columns: 1fr; }
+            .steps-grid        { grid-template-columns: 1fr 1fr; }
+            .values-grid       { grid-template-columns: 1fr; }
+            .footer-grid       { grid-template-columns: 1fr; }
+            .footer-bottom     { flex-direction: column; gap: 16px; text-align: center; }
+            .hero-stats        { flex-direction: column; gap: 16px; align-items: center; }
+        }
+
+        @media (max-width: 480px) {
+            .steps-grid { grid-template-columns: 1fr; }
+            .btn-hero-primary, .btn-hero-secondary { width: 100%; justify-content: center; }
+            .cta-actions .btn-cta-primary,
+            .cta-actions .btn-cta-secondary { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         NAVBAR
+         ═══════════════════════════════════════════════════════════════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'">
+                <span class="nav-logo-text">Bekri</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#features">Fonctionnalités</a></li>
+                <li><a href="#how">Comment ça marche</a></li>
+                <li><a href="#values">Nos valeurs</a></li>
+                <li><a href="#audience">Pour qui ?</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="{{ path('app_login') }}" class="btn-nav-login">Se connecter</a>
+                <a href="{{ path('app_register') }}" class="btn-nav-register">Commencer gratuitement</a>
+            </div>
+
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HERO
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="hero" id="hero">
+        <div class="hero-blob-1"></div>
+        <div class="hero-blob-2"></div>
+
+        <div class="hero-container">
+            <!-- Left: text -->
+            <div class="hero-text">
+                <div class="hero-badge">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    Plateforme de bien-être n°1
+                </div>
+
+                <h1 class="hero-title">
+                    Votre bien-être<br>
+                    <span>mental & physique</span><br>
+                    au quotidien
+                </h1>
+
+                <p class="hero-subtitle">
+                    Bekri vous accompagne chaque jour dans la prévention du bien-être —
+                    suivi quotidien, analyses intelligentes et coaching personnalisé,
+                    sans diagnostic médical.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="{{ path('app_register') }}" class="btn-hero-primary">
+                        <i class="bi bi-rocket-takeoff-fill"></i>
+                        Commencer gratuitement
+                    </a>
+                    <a href="{{ path('app_register') }}" class="btn-hero-secondary">
+                        <i class="bi bi-play-circle-fill"></i>
+                        Découvrir la plateforme
+                    </a>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-number">100%</div>
+                        <div class="hero-stat-label">Confidentiel</div>
+                    </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-number">7j/7</div>
+                        <div class="hero-stat-label">Suivi quotidien</div>
+                    </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-number">IA</div>
+                        <div class="hero-stat-label">Coach personnel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: visual mockup -->
+            <div class="hero-visual">
+                <div class="hero-mini-card hero-mini-1">
+                    <div class="hero-mini-card-icon icon-teal">
+                        <i class="bi bi-emoji-smile-fill"></i>
+                    </div>
+                    Humeur : Très bien ✨
+                </div>
+
+                <div class="hero-card-main">
+                    <div class="hero-card-header">
+                        <div class="hero-card-avatar">B</div>
+                        <div>
+                            <div class="hero-card-name">Résumé hebdomadaire</div>
+                            <div class="hero-card-sub">Cette semaine · 7 jours</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-card-score">
+                        <div class="hero-card-score-num">78<span style="font-size:20px;opacity:0.6">%</span></div>
+                        <div class="hero-card-score-label">Score bien-être global</div>
+                    </div>
+
+                    <div class="hero-card-bars">
+                        <div class="hero-card-bar-item">
+                            <span class="hero-card-bar-label">Humeur</span>
+                            <div class="hero-card-bar-track">
+                                <div class="hero-card-bar-fill" style="width:82%"></div>
+                            </div>
+                            <span class="hero-card-bar-val">82%</span>
+                        </div>
+                        <div class="hero-card-bar-item">
+                            <span class="hero-card-bar-label">Sommeil</span>
+                            <div class="hero-card-bar-track">
+                                <div class="hero-card-bar-fill" style="width:75%"></div>
+                            </div>
+                            <span class="hero-card-bar-val">75%</span>
+                        </div>
+                        <div class="hero-card-bar-item">
+                            <span class="hero-card-bar-label">Activité</span>
+                            <div class="hero-card-bar-track">
+                                <div class="hero-card-bar-fill" style="width:68%"></div>
+                            </div>
+                            <span class="hero-card-bar-val">68%</span>
+                        </div>
+                        <div class="hero-card-bar-item">
+                            <span class="hero-card-bar-label">Nutrition</span>
+                            <div class="hero-card-bar-track">
+                                <div class="hero-card-bar-fill" style="width:90%"></div>
+                            </div>
+                            <span class="hero-card-bar-val">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-mini-card hero-mini-2">
+                    <div class="hero-mini-card-icon icon-purple">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    Coach Eya disponible 🤖
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         WHO IS IT FOR
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="audience" id="audience">
+        <div class="container">
+            <div class="fade-up">
+                <div class="section-badge">
+                    <i class="bi bi-people-fill"></i> Pour qui ?
+                </div>
+                <h2 class="section-title">Conçu pour <span>vous</span></h2>
+                <p class="section-sub">
+                    Bekri s'adapte à votre rythme de vie, que vous soyez étudiant, professionnel ou simplement soucieux de votre bien-être.
+                </p>
+            </div>
+
+            <div class="audience-grid">
+                <div class="audience-card audience-card-1 fade-up fade-up-delay-1">
+                    <div class="audience-icon icon-teal">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <h3 class="audience-title">Étudiants</h3>
+                    <p class="audience-desc">
+                        Gérez le stress des examens, suivez votre humeur et restez en forme mentalement et physiquement tout au long de l'année.
+                    </p>
+                </div>
+
+                <div class="audience-card audience-card-2 fade-up fade-up-delay-2">
+                    <div class="audience-icon icon-purple">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <h3 class="audience-title">Employés</h3>
+                    <p class="audience-desc">
+                        Prévenez le burnout, améliorez votre équilibre vie pro/perso et boostez votre énergie au quotidien.
+                    </p>
+                </div>
+
+                <div class="audience-card audience-card-3 fade-up fade-up-delay-3">
+                    <div class="audience-icon icon-amber">
+                        <i class="bi bi-person-heart"></i>
+                    </div>
+                    <h3 class="audience-title">Grand public</h3>
+                    <p class="audience-desc">
+                        Prenez conscience de votre bien-être, créez de bonnes habitudes et vivez mieux chaque jour, sans expertise requise.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FEATURES
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section id="features">
+        <div class="container">
+            <div class="fade-up">
+                <div class="section-badge">
+                    <i class="bi bi-stars"></i> Fonctionnalités
+                </div>
+                <h2 class="section-title">Tout ce dont vous avez <span>besoin</span></h2>
+                <p class="section-sub">
+                    Un ensemble complet d'outils pensés pour accompagner votre bien-être au quotidien.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card fade-up fade-up-delay-1">
+                    <div class="feature-icon icon-teal">
+                        <i class="bi bi-clipboard2-pulse-fill"></i>
+                    </div>
+                    <h3 class="feature-title">Suivi quotidien</h3>
+                    <p class="feature-desc">Remplissez un check-in quotidien sur votre humeur, sommeil, activité, nutrition et hydratation.</p>
+                    <span class="feature-tag">Check-in journalier</span>
+                </div>
+
+                <div class="feature-card featured fade-up fade-up-delay-2">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h3 class="feature-title">Insights hebdomadaires</h3>
+                    <p class="feature-desc">Recevez chaque semaine une analyse intelligente de vos données avec des recommandations personnalisées par IA.</p>
+                    <span class="feature-tag">Powered by AI</span>
+                </div>
+
+                <div class="feature-card fade-up fade-up-delay-3">
+                    <div class="feature-icon icon-purple">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h3 class="feature-title">Coach IA — Eya</h3>
+                    <p class="feature-desc">Discutez avec Eya, votre coach bien-être IA, pour obtenir des conseils personnalisés en santé mentale et physique.</p>
+                    <span class="feature-tag">Chat intelligent</span>
+                </div>
+
+                <div class="feature-card fade-up fade-up-delay-1">
+                    <div class="feature-icon icon-amber">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <h3 class="feature-title">Objectifs bien-être</h3>
+                    <p class="feature-desc">Définissez et suivez vos objectifs personnels avec des indicateurs de progression clairs et motivants.</p>
+                    <span class="feature-tag">Suivi de progrès</span>
+                </div>
+
+                <div class="feature-card fade-up fade-up-delay-2">
+                    <div class="feature-icon icon-blue">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <h3 class="feature-title">Événements & Posts</h3>
+                    <p class="feature-desc">Découvrez des événements bien-être, lisez des publications inspirantes et partagez avec la communauté.</p>
+                    <span class="feature-tag">Communauté</span>
+                </div>
+
+                <div class="feature-card fade-up fade-up-delay-3">
+                    <div class="feature-icon icon-rose">
+                        <i class="bi bi-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Test de santé mentale</h3>
+                    <p class="feature-desc">Évaluez votre état mental avec des tests validés et obtenez des ressources adaptées à votre situation.</p>
+                    <span class="feature-tag">Évaluation</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HOW IT WORKS
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="how" id="how">
+        <div class="container">
+            <div class="fade-up" style="text-align:center;">
+                <div class="section-badge">
+                    <i class="bi bi-map-fill"></i> Comment ça marche
+                </div>
+                <h2 class="section-title">Simple, rapide, <span>efficace</span></h2>
+                <p class="section-sub" style="margin:0 auto;">
+                    En 4 étapes simples, prenez en main votre bien-être dès aujourd'hui.
+                </p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card fade-up fade-up-delay-1">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Créez votre compte</h3>
+                    <p class="step-desc">Inscrivez-vous gratuitement en quelques secondes avec votre email ou Face ID.</p>
+                </div>
+
+                <div class="step-card fade-up fade-up-delay-2">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Faites votre check-in</h3>
+                    <p class="step-desc">Chaque jour, répondez à quelques questions sur votre humeur, sommeil et activité.</p>
+                </div>
+
+                <div class="step-card fade-up fade-up-delay-3">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Recevez vos insights</h3>
+                    <p class="step-desc">Consultez votre résumé hebdomadaire avec des analyses et recommandations personnalisées.</p>
+                </div>
+
+                <div class="step-card fade-up fade-up-delay-4">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Progressez avec Eya</h3>
+                    <p class="step-desc">Chattez avec votre coach IA pour des conseils concrets adaptés à votre bien-être.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         VALUES
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section id="values">
+        <div class="container">
+            <div class="fade-up">
+                <div class="section-badge">
+                    <i class="bi bi-shield-heart-fill"></i> Nos valeurs
+                </div>
+                <h2 class="section-title">Une plateforme en qui vous pouvez <span>avoir confiance</span></h2>
+                <p class="section-sub">
+                    Bekri est construit sur des principes éthiques forts pour protéger votre santé et votre vie privée.
+                </p>
+            </div>
+
+            <div class="values-grid">
+                <div class="value-card fade-up fade-up-delay-1">
+                    <div class="value-icon icon-teal">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="value-title">Confidentialité totale</h3>
+                        <p class="value-desc">Vos données de santé sont strictement privées, chiffrées et jamais partagées avec des tiers. Vous gardez le contrôle total.</p>
+                    </div>
+                </div>
+
+                <div class="value-card fade-up fade-up-delay-2">
+                    <div class="value-icon icon-rose">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="value-title">Prévention, pas diagnostic</h3>
+                        <p class="value-desc">Bekri fournit des conseils préventifs bienveillants. Nous ne posons aucun diagnostic médical et orientons vers des professionnels si nécessaire.</p>
+                    </div>
+                </div>
+
+                <div class="value-card fade-up fade-up-delay-3">
+                    <div class="value-icon icon-amber">
+                        <i class="bi bi-eye-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="value-title">Prise de conscience</h3>
+                        <p class="value-desc">Nous encourageons chacun à mieux connaître son état mental et physique grâce à un suivi régulier et des analyses claires.</p>
+                    </div>
+                </div>
+
+                <div class="value-card fade-up fade-up-delay-4">
+                    <div class="value-icon icon-purple">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div>
+                        <h3 class="value-title">Détection précoce</h3>
+                        <p class="value-desc">Grâce au suivi quotidien, Bekri détecte les signes avant-coureurs de baisse de bien-être avant qu'ils ne deviennent problématiques.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         CTA
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content fade-up">
+                <h2 class="cta-title">Prêt à prendre soin de vous ?</h2>
+                <p class="cta-sub">
+                    Rejoignez Bekri gratuitement et commencez votre parcours bien-être dès aujourd'hui.
+                    Votre meilleure version commence ici.
+                </p>
+                <div class="cta-actions">
+                    <a href="{{ path('app_register') }}" class="btn-cta-primary">
+                        <i class="bi bi-rocket-takeoff-fill"></i>
+                        Créer mon compte gratuitement
+                    </a>
+                    <a href="{{ path('app_login') }}" class="btn-cta-secondary">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        J'ai déjà un compte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo">
+                        <img src="{{ asset('images/logo.png') }}" alt="Bekri" style="height:36px;" onerror="this.style.display='none'">
+                        <span class="footer-logo-text">Bekri</span>
+                    </div>
+                    <p class="footer-desc">
+                        Une plateforme unifiée dédiée à la prévention du bien-être mental et physique. Conçue pour étudiants, employés et grand public.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="footer-heading">Plateforme</h4>
+                    <ul class="footer-links">
+                        <li><a href="{{ path('app_login') }}">Suivi quotidien</a></li>
+                        <li><a href="{{ path('app_login') }}">Insights hebdomadaires</a></li>
+                        <li><a href="{{ path('app_login') }}">Coach Eya</a></li>
+                        <li><a href="{{ path('app_login') }}">Objectifs bien-être</a></li>
+                        <li><a href="{{ path('app_login') }}">Test de santé mentale</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-heading">Communauté</h4>
+                    <ul class="footer-links">
+                        <li><a href="{{ path('app_login') }}">Publications</a></li>
+                        <li><a href="{{ path('app_login') }}">Événements</a></li>
+                        <li><a href="{{ path('app_login') }}">Coaches</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-heading">Légal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Confidentialité</a></li>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Mentions légales</a></li>
+                        <li><a href="#">Éthique médicale</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© 2026 Bekri Wellbeing. Tous droits réservés.</span>
+                <div class="footer-bottom-links">
+                    <a href="#">Confidentialité</a>
+                    <a href="#">Conditions</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to top -->
+    <button class="scroll-top" id="scrollTop">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <script>
+        // ── Navbar scroll effect ─────────────────────────────────────────
+        const navbar    = document.getElementById('navbar');
+        const scrollTop = document.getElementById('scrollTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+                scrollTop.classList.add('visible');
+            } else {
+                navbar.classList.remove('scrolled');
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        scrollTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Fade-up on scroll ─────────────────────────────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+        // ── Smooth scroll for nav links ───────────────────────────────────
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // ── Hamburger menu ────────────────────────────────────────────────
+        document.getElementById('hamburger').addEventListener('click', function() {
+            const links = document.querySelector('.nav-links');
+            if (links.style.display === 'flex') {
+                links.style.display = 'none';
+            } else {
+                links.style.display = 'flex';
+                links.style.flexDirection = 'column';
+                links.style.position = 'absolute';
+                links.style.top = '70px';
+                links.style.left = '0';
+                links.style.right = '0';
+                links.style.background = 'white';
+                links.style.padding = '20px 24px';
+                links.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+                links.style.gap = '16px';
+            }
+        });
+
+        // ── Nav links color fix on mobile ────────────────────────────────
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            a.style.color = '#1a2332';
+        });
+    </script>
+</body>
+</html>

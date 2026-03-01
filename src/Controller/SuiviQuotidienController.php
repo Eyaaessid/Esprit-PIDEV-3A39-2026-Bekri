@@ -42,7 +42,6 @@ class SuiviQuotidienController extends AbstractController
             'date'        => $today,
         ]);
 
-        // If already submitted today AND has responses → block
         if ($existingSuivi && $existingSuivi->getReponses()->count() > 0) {
             $this->addFlash(
                 'warning',
@@ -59,13 +58,38 @@ class SuiviQuotidienController extends AbstractController
         }
 
         // ── 4. Load questions based on user's active objectives ───
-        $activeTypes = $objectifRepo->findActiveTypesByUser($user) ?? [];
+        // Get raw types from user's objectifs
+        $objectifs = $objectifRepo->findBy(['utilisateur' => $user]);
 
-        $questions = $questionRepo->createQueryBuilder('q')
-            ->where('q.category IN (:cats)')
-            ->setParameter('cats', $activeTypes)
-            ->getQuery()
-            ->getResult();
+        // Normalize to lowercase + trim to avoid case/space mismatches
+        $activeTypes = array_unique(
+            array_filter(
+                array_map(
+                    fn($o) => strtolower(trim((string) $o->getType())),
+                    $objectifs
+                )
+            )
+        );
+
+        // DEBUG — remove after confirming it works
+        // dump(['objectif_types' => $activeTypes]); die;
+
+        if (empty($activeTypes)) {
+            // Fallback: load ALL questions if user has no objectifs
+            $questions = $questionRepo->findAll();
+        } else {
+            // Use LOWER() in DQL to match case-insensitively
+            $questions = $questionRepo->createQueryBuilder('q')
+                ->where('LOWER(TRIM(q.category)) IN (:cats)')
+                ->setParameter('cats', $activeTypes)
+                ->getQuery()
+                ->getResult();
+
+            // If still empty (category format mismatch), fallback to all questions
+            if (empty($questions)) {
+                $questions = $questionRepo->findAll();
+            }
+        }
 
         // ── 5. Build form ─────────────────────────────────────────
         $formBuilder = $this->createFormBuilder($suivi);
@@ -94,12 +118,17 @@ class SuiviQuotidienController extends AbstractController
                 $question->getOption3() => $question->getOption3(),
             ]);
 
+            // Skip questions with no options
+            if (empty($choices)) {
+                continue;
+            }
+
             $formBuilder->add($fieldName, ChoiceType::class, [
                 'label'    => false,
                 'choices'  => $choices,
                 'expanded' => true,
                 'multiple' => false,
-                'required' => false, // HTML5 required disabled — we use Assert below
+                'required' => false,
                 'placeholder' => false,
                 'empty_data'  => null,
                 'mapped'      => false,
@@ -123,7 +152,13 @@ class SuiviQuotidienController extends AbstractController
 
             foreach ($questions as $question) {
                 $fieldName = 'question_' . $question->getId();
-                $valeur    = $form->get($fieldName)->getData();
+
+                // Skip if field was not added (no options)
+                if (!$form->has($fieldName)) {
+                    continue;
+                }
+
+                $valeur = $form->get($fieldName)->getData();
 
                 $reponse = $suivi->getReponses()->filter(
                     fn(ReponseSuivi $r) => $r->getQuestion() === $question

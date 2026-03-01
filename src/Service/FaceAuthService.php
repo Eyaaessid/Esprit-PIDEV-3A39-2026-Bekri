@@ -54,7 +54,7 @@ class FaceAuthService
             $user->setFaceDescriptor($encryptedDescriptor);
             $user->setFaceAuthEnabled(true);
             $user->setFaceRegisteredAt(new \DateTime());
-            $user->setUpdatedAt(new \DateTime());
+            $user->setUpdatedAt(new \DateTimeImmutable());
 
             $this->entityManager->flush();
 
@@ -169,7 +169,7 @@ class FaceAuthService
     {
         try {
             $user->resetFaceAuth();
-            $user->setUpdatedAt(new \DateTime());
+            $user->setUpdatedAt(new \DateTimeImmutable());
             $this->entityManager->flush();
 
             $this->logger->info('Face authentication disabled', [

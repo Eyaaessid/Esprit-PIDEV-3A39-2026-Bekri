@@ -5,8 +5,10 @@ namespace App\Entity;
 use App\Repository\ObjectifBienEtreRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ObjectifBienEtreRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class ObjectifBienEtre
 {
     #[ORM\Id]
@@ -20,6 +22,15 @@ class ObjectifBienEtre
 
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
+
+    /**
+     * Sluggable: automatically generates a unique URL-friendly slug from the titre.
+     * Example: "Boire plus d'eau" → "boire-plus-deau"
+     * The slug updates automatically when the titre changes.
+     */
+    #[Gedmo\Slug(fields: ['titre'])]
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
@@ -42,25 +53,21 @@ class ObjectifBienEtre
     #[ORM\Column(length: 50)]
     private ?string $statut = null;
 
+    /**
+     * Timestampable: automatically set to NOW when the entity is first persisted.
+     * You no longer need to call setCreatedAt() manually in your controller.
+     */
+    #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    /**
+     * Timestampable: automatically updated to NOW every time the entity is updated.
+     * You no longer need to call setUpdatedAt() manually in your controller.
+     */
+    #[Gedmo\Timestampable(on: 'update')]
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTimeImmutable();
-        // No more collection initialization here
-    }
-
-    #[ORM\PreUpdate]
-    public function preUpdate(): void
-    {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    // All your getters and setters (keep them as is)
 
     public function getId(): ?int
     {
@@ -88,6 +95,13 @@ class ObjectifBienEtre
         $this->titre = $titre;
         return $this;
     }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    // No setSlug needed — Gedmo manages it automatically
 
     public function getDescription(): ?string
     {

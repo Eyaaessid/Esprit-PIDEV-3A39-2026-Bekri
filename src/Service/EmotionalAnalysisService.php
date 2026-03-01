@@ -3,22 +3,21 @@
 namespace App\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EmotionalAnalysisService
 {
-    private readonly string $aiApiKeyTrimmed;
+    private const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+    private const GROQ_MODEL   = 'llama3-8b-8192';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly string $aiProvider,
-        string $aiApiKey,
+        private readonly string $aiApiKey,
         private readonly string $aiModel,
+        private readonly string $groqApiKey = '',
         private readonly ?LoggerInterface $logger = null,
-    ) {
-        $this->aiApiKeyTrimmed = trim($aiApiKey ?? '');
-    }
+    ) {}
 
     public function analyzePostContent(string $content): EmotionAnalysisResult
     {
@@ -27,113 +26,172 @@ class EmotionalAnalysisService
             return new EmotionAnalysisResult('neutral', 'low', false);
         }
 
-        $provider = strtolower(trim($this->aiProvider ?? ''));
-        if ($provider === 'openai' && $this->aiApiKeyTrimmed !== '') {
+        // Try Groq first (free & fast)
+        $groqKey = trim($this->groqApiKey);
+        if ($groqKey !== '') {
             try {
-                return $this->analyzeWithOpenAi($content);
+                return $this->analyzeWithGroq($content, $groqKey);
             } catch (\Throwable $e) {
-                $this->logger?->warning('OpenAI emotional analysis failed, using heuristics', [
-                    'message' => $e->getMessage(),
-                    'exception' => $e,
+                $this->logger?->warning('[EmotionalAnalysis] Groq failed, falling back to heuristics', [
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
+        // Try OpenAI if configured
+        $openAiKey = trim($this->aiApiKey);
+        if (strtolower(trim($this->aiProvider)) === 'openai' && $openAiKey !== '') {
+            try {
+                return $this->analyzeWithOpenAi($content, $openAiKey);
+            } catch (\Throwable $e) {
+                $this->logger?->warning('[EmotionalAnalysis] OpenAI failed, falling back to heuristics', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Final fallback: heuristics
+        $this->logger?->info('[EmotionalAnalysis] Using heuristics (no AI key configured)');
         return $this->analyzeWithHeuristics($content);
     }
 
-    /**
-     * Call OpenAI with a short test string. Throws on failure (use for debugging API key).
-     */
-    public function testOpenAIConnection(): EmotionAnalysisResult
+    // ─── Groq (primary AI — free) ────────────────────────────────────────────
+
+    private function analyzeWithGroq(string $content, string $apiKey): EmotionAnalysisResult
     {
-        if ($this->aiApiKeyTrimmed === '') {
-            throw new \InvalidArgumentException('AI_API_KEY is empty. Set it in .env');
-        }
-        if (strtolower(trim($this->aiProvider ?? '')) !== 'openai') {
-            throw new \InvalidArgumentException('AI_PROVIDER must be "openai" to test. Current: ' . ($this->aiProvider ?? 'empty'));
-        }
-        return $this->analyzeWithOpenAi('I feel a bit stressed today.');
+        $this->logger?->info('[EmotionalAnalysis] Using Groq AI');
+
+        $prompt = $this->buildPrompt($content);
+
+        $response = $this->httpClient->request('POST', self::GROQ_API_URL, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type'  => 'application/json',
+            ],
+            'json' => [
+                'model'       => self::GROQ_MODEL,
+                'messages'    => [
+                    ['role' => 'system', 'content' => 'You are a mental health content classifier. You ONLY return valid compact JSON, no explanation, no markdown.'],
+                    ['role' => 'user',   'content' => $prompt],
+                ],
+                'temperature' => 0,
+                'max_tokens'  => 200,
+            ],
+            'timeout' => 15,
+        ]);
+
+        return $this->parseAiResponse($response);
     }
 
-    private function analyzeWithOpenAi(string $content): EmotionAnalysisResult
+    // ─── OpenAI (secondary AI) ────────────────────────────────────────────────
+
+    private function analyzeWithOpenAi(string $content, string $apiKey): EmotionAnalysisResult
     {
-        $prompt = <<<PROMPT
-You are an emotion and risk classifier.
-Return ONLY valid JSON with keys:
-emotion (happy|sad|neutral|stressed|anxious|angry|hopeful),
-risk_level (low|medium|high),
-is_sensitive (boolean),
-matched_signals (array of short strings).
-Text:
-{$content}
-PROMPT;
+        $this->logger?->info('[EmotionalAnalysis] Using OpenAI');
+
+        $model = trim($this->aiModel) ?: 'gpt-3.5-turbo';
 
         $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
             'headers' => [
-                'Authorization' => 'Bearer ' . $this->aiApiKeyTrimmed,
-                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type'  => 'application/json',
             ],
             'json' => [
-                'model' => $this->aiModel,
-                'messages' => [
-                    ['role' => 'system', 'content' => 'You return compact JSON only.'],
-                    ['role' => 'user', 'content' => $prompt],
+                'model'           => $model,
+                'messages'        => [
+                    ['role' => 'system', 'content' => 'You are a mental health content classifier. You ONLY return valid compact JSON, no explanation, no markdown.'],
+                    ['role' => 'user',   'content' => $this->buildPrompt($content)],
                 ],
-                'temperature' => 0,
+                'temperature'     => 0,
+                'max_tokens'      => 200,
                 'response_format' => ['type' => 'json_object'],
             ],
-            'timeout' => 10,
+            'timeout' => 15,
         ]);
 
+        return $this->parseAiResponse($response);
+    }
+
+    // ─── Shared helpers ───────────────────────────────────────────────────────
+
+    private function buildPrompt(string $content): string
+    {
+        return <<<PROMPT
+Analyze the following post and return ONLY a valid JSON object with these exact keys:
+
+- "emotion": one of [happy, sad, neutral, stressed, anxious, angry, hopeful]
+- "risk_level": one of [low, medium, high]
+  * high   = explicit self-harm, suicide, wanting to die
+  * medium = hopelessness, giving up, no reason to live
+  * low    = everything else
+- "is_sensitive": boolean (true if risk_level is medium or high)
+- "matched_signals": array of short phrases that triggered the risk/emotion (empty array if none)
+
+Post content:
+"""
+{$content}
+"""
+
+Return ONLY the JSON object, nothing else.
+PROMPT;
+    }
+
+    private function parseAiResponse(\Symfony\Contracts\HttpClient\ResponseInterface $response): EmotionAnalysisResult
+    {
         $payload = $response->toArray(false);
-        $raw = $payload['choices'][0]['message']['content'] ?? '{}';
-        $decoded = json_decode((string) $raw, true);
+        $raw     = $payload['choices'][0]['message']['content'] ?? '{}';
+
+        // Strip markdown code blocks if model wraps in ```json ... ```
+        $raw = preg_replace('/^```(?:json)?\s*/i', '', trim($raw));
+        $raw = preg_replace('/\s*```$/', '', $raw);
+
+        $decoded = json_decode(trim($raw), true);
+
         if (!is_array($decoded)) {
-            throw new TransportException('Invalid AI JSON response.');
+            $this->logger?->error('[EmotionalAnalysis] Invalid JSON from AI', ['raw' => $raw]);
+            throw new \RuntimeException('Invalid JSON from AI: ' . $raw);
         }
 
+        $this->logger?->info('[EmotionalAnalysis] AI result', $decoded);
+
         return new EmotionAnalysisResult(
-            emotion: (string) ($decoded['emotion'] ?? 'neutral'),
-            riskLevel: (string) ($decoded['risk_level'] ?? 'low'),
-            isSensitive: (bool) ($decoded['is_sensitive'] ?? false),
-            matchedSignals: is_array($decoded['matched_signals'] ?? null) ? $decoded['matched_signals'] : []
+            emotion:        (string) ($decoded['emotion']          ?? 'neutral'),
+            riskLevel:      (string) ($decoded['risk_level']       ?? 'low'),
+            isSensitive:    (bool)   ($decoded['is_sensitive']     ?? false),
+            matchedSignals: is_array($decoded['matched_signals'] ?? null) ? $decoded['matched_signals'] : [],
         );
     }
+
+    // ─── Heuristic fallback (no API key) ─────────────────────────────────────
 
     private function analyzeWithHeuristics(string $content): EmotionAnalysisResult
     {
         $text = mb_strtolower($content);
 
         $emotionLexicon = [
-            'happy' => ['happy', 'great', 'joy', 'excited', 'grateful', 'motivation'],
-            'sad' => ['sad', 'depressed', 'cry', 'empty', 'hopeless'],
-            'stressed' => ['stressed', 'overwhelmed', 'burnout', 'pressure', 'exhausted'],
-            'anxious' => ['anxious', 'anxiety', 'panic', 'worried', 'fear'],
-            'angry' => ['angry', 'furious', 'hate', 'rage', 'annoyed'],
-            'hopeful' => ['hope', 'recover', 'improve', 'better', 'healing'],
+            'happy'    => ['happy', 'great', 'joy', 'excited', 'grateful', 'motivation', 'wonderful', 'amazing'],
+            'sad'      => ['sad', 'depressed', 'cry', 'empty', 'hopeless', 'miserable', 'lonely'],
+            'stressed' => ['stressed', 'overwhelmed', 'burnout', 'pressure', 'exhausted', 'tired'],
+            'anxious'  => ['anxious', 'anxiety', 'panic', 'worried', 'fear', 'nervous', 'dread'],
+            'angry'    => ['angry', 'furious', 'hate', 'rage', 'annoyed', 'frustrated'],
+            'hopeful'  => ['hope', 'recover', 'improve', 'better', 'healing', 'progress'],
         ];
 
-        // High risk = email alert sent. Medium = no email (only high triggers alert).
         $riskLexicon = [
             'high' => [
-                'suicide', 'suicidal',
-                'kill myself', 'killing myself',
-                'self-harm', 'self harm',
-                'want to die', 'end my life', 'end it all', 'take my life',
-                'hurt myself', 'harm myself',
-                // Common English variants
-                'i wanna die', 'wanna die', 'i want die', 'wish i was dead',
-                // Common French variants
+                'suicide', 'suicidal', 'kill myself', 'killing myself',
+                'self-harm', 'self harm', 'want to die', 'end my life',
+                'end it all', 'take my life', 'hurt myself', 'harm myself',
+                'i wanna die', 'wanna die', 'wish i was dead',
                 'je veux mourir', 'envie de mourir', 'me suicider', 'je vais me tuer',
             ],
             'medium' => [
-                'worthless', 'no reason to live', 'give up', 'toxic', 'violent',
-                'hopeless', 'no way out', 'cant go on', "can't go on",
+                'worthless', 'no reason to live', 'give up', 'hopeless',
+                'no way out', "can't go on", 'cant go on', 'nothing matters',
             ],
         ];
 
-        $emotion = 'neutral';
+        $emotion      = 'neutral';
         $emotionScore = 0;
         $matchedSignals = [];
 
@@ -147,7 +205,7 @@ PROMPT;
             }
             if ($score > $emotionScore) {
                 $emotionScore = $score;
-                $emotion = $candidateEmotion;
+                $emotion      = $candidateEmotion;
             }
         }
 
@@ -158,7 +216,6 @@ PROMPT;
                 $riskLevel = 'high';
             }
         }
-
         if ($riskLevel === 'low') {
             foreach ($riskLexicon['medium'] as $keyword) {
                 if (str_contains($text, $keyword)) {
@@ -170,9 +227,9 @@ PROMPT;
         }
 
         return new EmotionAnalysisResult(
-            emotion: $emotion,
-            riskLevel: $riskLevel,
-            isSensitive: $riskLevel === 'high',
+            emotion:        $emotion,
+            riskLevel:      $riskLevel,
+            isSensitive:    $riskLevel !== 'low',
             matchedSignals: array_values(array_unique($matchedSignals))
         );
     }

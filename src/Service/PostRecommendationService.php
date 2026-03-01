@@ -28,7 +28,13 @@ class PostRecommendationService
     public function getRecommendedForUser(?Utilisateur $user, int $limit = 8, array $excludePostIds = []): array
     {
         if ($user === null || $user->getId() === null) {
-            return $this->postRepository->findEngagedRecent($limit, $excludePostIds);
+            $guestRecommendations = $this->postRepository->findEngagedRecent($limit, $excludePostIds);
+            if ($guestRecommendations !== []) {
+                return $guestRecommendations;
+            }
+
+            // Fallback for low-engagement datasets.
+            return $this->postRepository->findMostPopularRecent($limit, $excludePostIds);
         }
 
         $userId = $user->getId();
@@ -81,7 +87,19 @@ class PostRecommendationService
         $push($scored, $seen, $engaged, 20, 'engaged');
 
         if ($scored === []) {
-            return [];
+            $popular = $this->postRepository->findMostPopularRecent($limit, $excludeIds);
+            if ($popular !== []) {
+                return $popular;
+            }
+
+            // Relax feed-only exclusions if the dataset is small.
+            $strictPersonalExcludes = array_values(array_unique(array_filter(array_merge(
+                $likedPostIds,
+                $savedPostIds,
+                $myPostIds
+            ))));
+
+            return $this->postRepository->findMostPopularRecent($limit, $strictPersonalExcludes);
         }
 
         uasort($scored, static function (array $a, array $b): int {
@@ -97,6 +115,28 @@ class PostRecommendationService
             if ($post instanceof Post) {
                 $result[] = $post;
             }
+            if (\count($result) >= $limit) {
+                break;
+            }
+        }
+
+        if (\count($result) >= $limit) {
+            return $result;
+        }
+
+        // Top up when scoring produced too few items.
+        $currentIds = array_values(array_unique(array_filter(array_map(
+            static fn (Post $post): ?int => $post->getId(),
+            $result
+        ))));
+
+        $topUpExcludeIds = array_values(array_unique(array_merge($excludeIds, $currentIds)));
+        $topUp = $this->postRepository->findMostPopularRecent($limit, $topUpExcludeIds);
+        foreach ($topUp as $post) {
+            if (!$post instanceof Post) {
+                continue;
+            }
+            $result[] = $post;
             if (\count($result) >= $limit) {
                 break;
             }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Tous les Événements</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #20b2aa; padding-bottom: 15px; margin-bottom: 20px; }
+        .title { color: #20b2aa; font-size: 24px; margin: 0; }
+        .subtitle { color: #666; font-size: 12px; margin-top: 6px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #e0f7f6; color: #0d9488; text-align: left; padding: 10px; border-bottom: 2px solid #20b2aa; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .badge-open     { background: #d1e7dd; color: #0f5132; }
+        .badge-full     { background: #f8d7da; color: #842029; }
+        .badge-finished { background: #e2e3e5; color: #41464b; }
+        .badge-planned  { background: #cfe2ff; color: #084298; }
+        .badge-type     { background: #e0f7f6; color: #0d9488; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; padding-top: 10px; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="title">Rapport — Tous les Événements</h1>
+        <p class="subtitle">Total : {{ evenements|length }} événements &nbsp;|&nbsp; Généré le {{ "now"|date("d/m/Y à H:i") }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Participants</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in evenements %}
+            <tr>
+                <td>#{{ event.id }}</td>
+                <td><strong>{{ event.titre }}</strong></td>
+                <td><span class="badge badge-type">{{ event.type.value }}</span></td>
+                <td>{{ event.dateDebut|date('d/m/Y H:i') }}</td>
+                <td>{{ event.participations|length }} / {{ event.capaciteMax }}</td>
+                <td>
+                    {% set s = event.statut.value %}
+                    <span class="badge badge-{{ s == 'OPEN' ? 'open' : s == 'FULL' ? 'full' : s == 'FINISHED' ? 'finished' : 'planned' }}">
+                        {{ s }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        BEKRI Wellbeing Platform — Tous droits réservés &copy; {{ "now"|date("Y") }}
+    </div>
+
+</body>
+</html>

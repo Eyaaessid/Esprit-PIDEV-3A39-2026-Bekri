@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier des Événements ��� Bekri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --light:      #f8fafc;
+            --white:      #ffffff;
+            --sidebar-w:  260px;
+            --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+            --shadow:     0 8px 30px rgba(0,0,0,0.10);
+            --radius:     16px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
+
+        /* ── SIDEBAR ─────────────────────────────────────────────── */
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--teal),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; }
+        .sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+        .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
+        .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
+        .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
+        .nav-item i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
+
+        /* ── MAIN ────────────────────────────────────────────────── */
+        .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+        /* ── TOPBAR ──────────────────────────────────────────────── */
+        .topbar { background:white; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-title { font-size:18px; font-weight:700; color:var(--dark); }
+        .topbar-sub { font-size:13px; color:var(--gray); margin-top:2px; }
+        .topbar-right { display:flex; align-items:center; gap:10px; }
+        .topbar-btn { height:38px; padding:0 16px; border-radius:10px; background:var(--light); border:1px solid #e2e8f0; cursor:pointer; display:flex; align-items:center; gap:7px; color:var(--gray); font-size:13px; font-weight:500; text-decoration:none; transition:all 0.2s; white-space:nowrap; }
+        .topbar-btn:hover { background:var(--teal-light); color:var(--teal-dark); border-color:var(--teal); }
+        .topbar-avatar-sm { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; flex-shrink:0; }
+        .topbar-avatar-sm img { width:100%; height:100%; object-fit:cover; }
+        .menu-toggle { display:none; background:none; border:none; font-size:22px; color:var(--dark); cursor:pointer; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
+
+        /* ── CONTENT ─────────────────────────────────────────────── */
+        .content { flex:1; padding:32px 40px; }
+
+        /* ── BREADCRUMB ──────────────────────────────────────────── */
+        .breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--gray); margin-bottom:24px; flex-wrap:wrap; }
+        .breadcrumb a { color:var(--teal-dark); text-decoration:none; font-weight:500; }
+        .breadcrumb a:hover { text-decoration:underline; }
+        .breadcrumb i { font-size:11px; color:#cbd5e1; }
+
+        /* ── HEADER ROW ──────────────────────────────────────────── */
+        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+        .page-header-left h2 { font-size:22px; font-weight:800; color:var(--dark); }
+        .page-header-left p { font-size:14px; color:var(--gray); margin-top:4px; }
+
+        /* ── LEGEND ──────────────────────────────────────────────── */
+        .legend { display:flex; gap:16px; flex-wrap:wrap; }
+        .legend-item { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray); font-weight:500; }
+        .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+        /* ── STATS ROW ───────────────────────────────────────────── */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-card { background:white; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; }
+        .stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+        .stat-icon.teal   { background:var(--teal-light); color:var(--teal-dark); }
+        .stat-icon.purple { background:#f3f0ff; color:#7c3aed; }
+        .stat-icon.green  { background:#f0fdf4; color:#16a34a; }
+        .stat-icon.orange { background:#fff7ed; color:#ea580c; }
+        .stat-value { font-size:22px; font-weight:800; color:var(--dark); line-height:1; }
+        .stat-label { font-size:12px; color:var(--gray); margin-top:4px; }
+
+        /* ── CALENDAR CARD ───────────────────────────────────────── */
+        .calendar-card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; padding:28px; }
+
+        /* ── FULLCALENDAR OVERRIDES ──────────────────────────────── */
+        .fc { --fc-border-color:#e2e8f0; --fc-today-bg-color:rgba(32,178,170,0.07); font-family:'Inter',sans-serif !important; }
+        .fc .fc-button { background:linear-gradient(135deg,var(--teal),var(--teal-dark)) !important; border-color:transparent !important; border-radius:8px !important; font-weight:600 !important; font-size:13px !important; padding:6px 14px !important; box-shadow:none !important; transition:opacity 0.2s !important; }
+        .fc .fc-button:hover { opacity:0.88 !important; }
+        .fc .fc-button-active { background:var(--dark) !important; }
+        .fc .fc-toolbar-title { font-size:18px !important; font-weight:800 !important; color:var(--dark) !important; }
+        .fc .fc-col-header-cell-cushion { font-size:13px; font-weight:700; color:var(--gray); text-decoration:none !important; text-transform:uppercase; letter-spacing:0.5px; }
+        .fc .fc-daygrid-day-number { font-size:13px; font-weight:600; color:var(--dark); text-decoration:none !important; }
+        .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { background:var(--teal); color:white; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
+        .fc-event { border-radius:6px !important; border:none !important; padding:2px 6px !important; font-size:12px !important; font-weight:600 !important; cursor:pointer !important; transition:transform 0.15s, box-shadow 0.15s !important; }
+        .fc-event:hover { transform:translateY(-1px) !important; box-shadow:0 4px 12px rgba(0,0,0,0.15) !important; }
+        .fc .fc-list-event:hover td { background:var(--teal-light) !important; }
+        .fc .fc-list-event-title a { font-weight:600; text-decoration:none; color:var(--dark); }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────── */
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .sidebar-overlay.open { display:block; }
+            .main { margin-left:0; }
+            .menu-toggle { display:block; }
+            .topbar { padding:0 16px; }
+            .topbar-btn span { display:none; }
+            .content { padding:20px 16px; }
+            .calendar-card { padding:16px; }
+            .fc .fc-toolbar { flex-direction:column; gap:10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'" style="height:36px;">
+        <span class="sidebar-logo-text">Bekri</span>
+    </div>
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">
+            {% if app.user and app.user.avatar %}
+                <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+            {% elseif app.user %}
+                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+            {% else %}
+                <i class="bi bi-person-fill" style="font-size:20px;"></i>
+            {% endif %}
+        </div>
+        <div>
+            <div class="sidebar-user-name">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Invité' }}</div>
+            <div class="sidebar-user-role">
+                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                {% elseif is_granted('ROLE_COACH') %}Coach
+                {% else %}Membre Bekri{% endif %}
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="{{ path('user_dashboard') }}"   class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+        <a href="{{ path('suivi_today') }}"        class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
+        <a href="{{ path('insight_weekly') }}"     class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
+        <a href="{{ path('chat_index') }}"         class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
+        <div class="nav-section-label">Bien-être</div>
+        <a href="{{ path('user_analyse') }}"       class="nav-item"><i class="bi bi-heart-pulse-fill"></i> Mon analyse</a>
+        <a href="{{ path('objectif_index') }}"     class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
+        <div class="nav-section-label">Communauté</div>
+        <a href="{{ path('posts_list') }}"         class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+        <a href="{{ path('evenements_list') }}"    class="nav-item active"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+        <div class="nav-section-label">Mon compte</div>
+        <a href="{{ path('user_profile') }}"       class="nav-item"><i class="bi bi-person-fill"></i> Mon profil</a>
+        <a href="{{ path('user_profile_edit') }}"  class="nav-item"><i class="bi bi-gear-fill"></i> Paramètres</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;"><i class="bi bi-box-arrow-left"></i> Se déconnecter</a>
+    </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+            <div>
+                <div class="topbar-title">Calendrier</div>
+                <div class="topbar-sub">Vue calendrier des événements</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('evenements_list') }}" class="topbar-btn">
+                <i class="bi bi-list-ul"></i><span>Vue liste</span>
+            </a>
+            <a href="{{ path('user_profile') }}" class="topbar-avatar-sm">
+                {% if app.user and app.user.avatar %}
+                    <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                {% elseif app.user %}
+                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                {% else %}
+                    <i class="bi bi-person-fill"></i>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="content">
+
+            <!-- BREADCRUMB -->
+            <div class="breadcrumb">
+                <a href="{{ path('evenements_list') }}"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+                <i class="bi bi-chevron-right"></i>
+                <span>Calendrier</span>
+            </div>
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <h2><i class="bi bi-calendar3" style="color:var(--teal);margin-right:10px;"></i>Calendrier des Événements</h2>
+                    <p>Visualisez et naviguez dans tous les événements à venir</p>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#4e73df;"></div> Événement</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#1cc88a;"></div> Session</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#36b9cc;"></div> Autre</div>
+                </div>
+            </div>
+
+            <!-- CALENDAR CARD -->
+            <div class="calendar-card">
+                <div id="calendar" style="min-height:700px;"></div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+    // Sidebar toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+    overlay?.addEventListener('click',   () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
+    // FullCalendar
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left:   'prev,next today',
+                center: 'title',
+                right:  'dayGridMonth,timeGridWeek,listMonth'
+            },
+            locale: 'fr',
+            events: '{{ path('evenement_calendar_data') }}',
+            eventClick: function (info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
+                }
+            },
+            eventTimeFormat: {
+                hour:     '2-digit',
+                minute:   '2-digit',
+                meridiem: false
+            },
+            eventDidMount: function (info) {
+                info.el.title = info.event.title;
+            }
+        });
+        calendar.render();
+    });
+</script>
+</body>
+</html>

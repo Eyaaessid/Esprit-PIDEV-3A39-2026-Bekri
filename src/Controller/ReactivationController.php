@@ -97,7 +97,7 @@ class ReactivationController extends AbstractController
         $user->setReactivationToken(null);
         $user->setReactivationTokenExpiresAt(null);
         $user->setLastLoginAt(new \DateTime());
-        $user->setUpdatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTimeImmutable());
 
         $this->entityManager->flush();
 

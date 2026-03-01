@@ -21,30 +21,21 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            user_checker: App\Security\UserChecker  # ← ADD THIS LINE
             custom_authenticator: App\Security\LoginFormAuthenticator
 
             logout:
                 path: app_logout
                 target: app_login
 
-            # Two-factor authentication
-            two_factor:
-                auth_form_path: 2fa_login
-                check_path: 2fa_login_check
-                default_target_path: /
-                success_handler: App\Security\LoginSuccessHandler
-
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/verify, roles: PUBLIC_ACCESS }
         - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
         - { path: ^/reinitialiser-mot-de-passe, roles: PUBLIC_ACCESS }
         - { path: ^/reactivate-account, roles: PUBLIC_ACCESS }
         - { path: ^/request-reactivation, roles: PUBLIC_ACCESS }
-        - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/coach, roles: ROLE_COACH }
         - { path: ^/user, roles: ROLE_USER }
         - { path: ^/api/mobile, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }

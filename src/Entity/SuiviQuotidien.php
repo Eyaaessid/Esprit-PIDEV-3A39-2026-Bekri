@@ -6,6 +6,7 @@ use App\Repository\SuiviQuotidienRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SuiviQuotidienRepository::class)]
@@ -35,6 +36,14 @@ class SuiviQuotidien
         maxMessage: "Le commentaire ne peut pas dépasser {{ limit }} caractères."
     )]
     private ?string $commentaire = null;
+
+    /**
+     * Timestampable: automatically records the exact datetime the check-in was submitted.
+     * Useful for weekly insights to know precisely when data was entered.
+     */
+    #[Gedmo\Timestampable(on: 'create')]
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $soumisAt = null;
 
     #[ORM\OneToMany(
         mappedBy: 'suivi',
@@ -87,6 +96,13 @@ class SuiviQuotidien
         $this->commentaire = $commentaire;
         return $this;
     }
+
+    public function getSoumisAt(): ?\DateTimeImmutable
+    {
+        return $this->soumisAt;
+    }
+
+    // No setSoumisAt needed — Gedmo manages it automatically
 
     public function getReponses(): Collection
     {
