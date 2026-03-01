@@ -1,631 +1,377 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <title>Edit Profile - DASHMIN</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link href="{{ asset('admin/img/favicon.ico') }}" rel="icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le profil — Bekri</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('admin/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
-    
     <style>
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        :root {
+            --dark:       #1a2332;
+            --dark2:      #1e3a5f;
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --light:      #f8fafc;
+            --white:      #ffffff;
+            --gray:       #64748b;
+            --sidebar-w:  260px;
+            --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+            --shadow:     0 8px 30px rgba(0,0,0,0.10);
+            --radius:     16px;
         }
-        
-        body {
-            background: #f5f7fa;
-        }
-        
-        .content {
-            background: #f5f7fa;
-        }
-        
-        .page-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        
-        .page-header {
-            margin-bottom: 2.5rem;
-        }
-        
-        .page-title {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .page-title i {
-            color: #20b2aa;
-            font-size: 1.75rem;
-        }
-        
-        .page-subtitle {
-            color: #64748b;
-            font-size: 1rem;
-            font-weight: 400;
-        }
-        
-        .card-section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
-        }
-        
-        .section-header {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .section-header i {
-            color: #20b2aa;
-            font-size: 1.25rem;
-        }
-        
-        .avatar-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .avatar-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #20b2aa 0%, #17a398 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.25rem;
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        
-        .avatar-circle img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .upload-info {
-            flex: 1;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            font-size: 0.9375rem;
-            letter-spacing: 0.3px;
-            display: block;
-        }
-        
-        .form-control {
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.9375rem;
-            color: #1e293b;
-            transition: all 0.2s ease;
-            background: white;
-        }
-        
-        .form-control:focus {
-            border-color: #20b2aa;
-            box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.1);
-            background: white;
-        }
-        
-        .form-control::placeholder {
-            color: #94a3b8;
-        }
-        
-        .password-wrapper {
-            position: relative;
-        }
-        
-        .toggle-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 1.1rem;
-            transition: color 0.2s ease;
-            z-index: 10;
-        }
-        
-        .toggle-password:hover {
-            color: #20b2aa;
-        }
-        
-        .password-notice {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 4px solid #f59e0b;
-            padding: 1rem 1.25rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .password-notice p {
-            margin: 0;
-            color: #92400e;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .password-notice i {
-            color: #f59e0b;
-            font-size: 1rem;
-        }
-        
-        .password-requirements {
-            margin-top: 0.5rem;
-            padding: 0.75rem;
-            background: #f8fafc;
-            border-radius: 6px;
-            font-size: 0.8125rem;
-            color: #64748b;
-        }
-        
-        .password-requirements ul {
-            margin: 0;
-            padding-left: 1.5rem;
-            list-style: none;
-        }
-        
-        .password-requirements li {
-            position: relative;
-            padding-left: 1.25rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .password-requirements li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #20b2aa;
-        }
-        
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .btn {
-            padding: 0.75rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9375rem;
-            transition: all 0.2s ease;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-cancel {
-            background: #e2e8f0;
-            color: #475569;
-        }
-        
-        .btn-cancel:hover {
-            background: #cbd5e1;
-            color: #334155;
-            transform: translateY(-1px);
-        }
-        
-        .btn-save {
-            background: linear-gradient(135deg, #20b2aa 0%, #17a398 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(32, 178, 170, 0.25);
-        }
-        
-        .btn-save:hover {
-            background: linear-gradient(135deg, #17a398 0%, #128f84 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(32, 178, 170, 0.35);
-            color: white;
-        }
-        
-        .alert {
-            border-radius: 8px;
-            border: none;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-        
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-        
-        .custom-file-input {
-            display: none;
-        }
-        
-        .custom-file-label {
-            display: inline-block;
-            padding: 0.5rem 1.25rem;
-            background: white;
-            border: 2px solid #cbd5e1;
-            border-radius: 6px;
-            color: #475569;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-        }
-        
-        .custom-file-label:hover {
-            border-color: #20b2aa;
-            color: #20b2aa;
-            background: #f0fdfa;
-        }
-        
-        .file-info {
-            margin-top: 0.75rem;
-        }
-        
-        .file-name {
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        .file-name.selected {
-            color: #20b2aa;
-            font-weight: 500;
-        }
-        
-        .invalid-feedback {
-            display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-            color: #ef4444;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--teal),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; position:relative; }
+        .sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+        .avatar-dot { width:10px; height:10px; background:#22c55e; border-radius:50%; border:2px solid var(--dark); position:absolute; bottom:1px; right:1px; }
+        .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
+        .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
+        .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
+        .nav-item i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
+
+        /* ── MAIN ── */
+        .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+        /* ── TOPBAR ── */
+        .topbar { background:white; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; }
+        .topbar-left { display:flex; align-items:center; gap:16px; }
+        .topbar-title { font-size:18px; font-weight:700; color:var(--dark); }
+        .topbar-sub { font-size:13px; color:var(--gray); margin-top:1px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .topbar-icon-btn { width:38px; height:38px; border-radius:10px; background:var(--light); border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; color:var(--gray); font-size:16px; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+        .topbar-icon-btn:hover { background:var(--teal-light); color:var(--teal-dark); border-color:var(--teal); }
+        .topbar-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; flex-shrink:0; }
+        .topbar-avatar img { width:100%; height:100%; object-fit:cover; }
+
+        /* ── PAGE HEADER ── */
+        .page-header { background:linear-gradient(135deg,var(--dark) 0%,#1e3a5f 60%,#0d9488 100%); padding:36px 40px 28px; position:relative; overflow:hidden; }
+        .page-header::before { content:''; position:absolute; top:-60px; right:-60px; width:260px; height:260px; background:rgba(32,178,170,0.08); border-radius:50%; }
+        .page-header::after { content:''; position:absolute; bottom:-40px; right:200px; width:160px; height:160px; background:rgba(102,126,234,0.06); border-radius:50%; }
+        .page-header-inner { max-width:1200px; margin:0 auto; position:relative; z-index:1; }
+        .page-header-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(32,178,170,0.2); border:1px solid rgba(32,178,170,0.35); color:#7fffd4; padding:4px 12px; border-radius:50px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+        .page-header-title { font-size:26px; font-weight:800; color:white; margin-bottom:4px; }
+        .page-header-sub { font-size:14px; color:rgba(255,255,255,0.55); }
+
+        /* ── CONTENT ── */
+        .content { flex:1; padding:32px 40px; max-width:900px; margin:0 auto; width:100%; }
+
+        /* ── CARDS ── */
+        .card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; overflow:hidden; margin-bottom:24px; }
+        .card-header-bar { padding:20px 24px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; }
+        .card-header-bar i { color:var(--teal-dark); font-size:18px; }
+        .card-title { font-size:15px; font-weight:700; color:var(--dark); }
+        .card-body { padding:24px; }
+
+        /* ── FORM ELEMENTS ── */
+        .form-group { margin-bottom:20px; }
+        .form-label { display:block; font-size:13px; font-weight:600; color:var(--dark); margin-bottom:6px; }
+        .form-control { width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:11px 14px; font-size:14px; color:var(--dark); transition:all 0.2s; background:white; font-family:'Inter',sans-serif; }
+        .form-control:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(32,178,170,0.1); outline:none; }
+        .form-control::placeholder { color:#94a3b8; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .invalid-feedback { display:block; font-size:12px; color:#ef4444; margin-top:4px; }
+
+        /* ── PASSWORD FIELD ── */
+        .password-wrapper { position:relative; }
+        .toggle-password { position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; color:#94a3b8; font-size:16px; transition:color 0.2s; }
+        .toggle-password:hover { color:var(--teal-dark); }
+
+        /* ── AVATAR UPLOAD ── */
+        .avatar-upload-area { display:flex; align-items:center; gap:20px; padding:20px; background:var(--light); border-radius:12px; border:1.5px dashed #cbd5e1; transition:all 0.2s; }
+        .avatar-upload-area:hover { border-color:var(--teal); background:var(--teal-light); }
+        .avatar-preview-lg { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:28px; overflow:hidden; flex-shrink:0; border:3px solid var(--teal-light); }
+        .avatar-preview-lg img { width:100%; height:100%; object-fit:cover; }
+        .custom-file-input { display:none; }
+        .btn-upload { display:inline-flex; align-items:center; gap:6px; background:white; border:1.5px solid #cbd5e1; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; color:var(--gray); cursor:pointer; transition:all 0.2s; }
+        .btn-upload:hover { border-color:var(--teal); color:var(--teal-dark); background:var(--teal-light); }
+        .file-name { font-size:12px; color:var(--gray); margin-top:6px; }
+        .file-name.selected { color:var(--teal-dark); font-weight:600; }
+
+        /* ── NOTICE ── */
+        .notice-box { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:4px solid #f59e0b; padding:12px 16px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#92400e; display:flex; align-items:center; gap:8px; }
+        .requirements-box { background:var(--light); border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; margin-bottom:20px; }
+        .requirements-box strong { font-size:13px; color:var(--dark); display:block; margin-bottom:8px; }
+        .requirements-box ul { margin:0; padding-left:0; list-style:none; }
+        .requirements-box li { font-size:12px; color:var(--gray); padding:3px 0; display:flex; align-items:center; gap:6px; }
+        .requirements-box li::before { content:''; width:6px; height:6px; background:var(--teal-dark); border-radius:50%; flex-shrink:0; }
+
+        /* ── BUTTONS ── */
+        .btn-save { background:linear-gradient(135deg,var(--teal),var(--teal-dark)); color:white; border:none; padding:12px 28px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; font-family:'Inter',sans-serif; }
+        .btn-save:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 6px 16px rgba(32,178,170,0.35); }
+        .btn-cancel { background:var(--light); color:var(--gray); border:1.5px solid #e2e8f0; padding:12px 28px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; }
+        .btn-cancel:hover { border-color:var(--teal); color:var(--teal-dark); background:var(--teal-light); }
+        .form-actions { display:flex; justify-content:flex-end; gap:12px; padding-top:20px; border-top:1px solid #f1f5f9; margin-top:8px; }
+
+        /* ── ALERTS ── */
+        .alert { padding:12px 16px; border-radius:10px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+        .alert-success { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+        .alert-danger  { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+        .alert-warning { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width:768px) { .main { margin-left:0; } .content { padding:20px 16px; } .form-row { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
-    <div class="container-xxl position-relative bg-white d-flex p-0">
-        <!-- Sidebar Start -->
-        <div class="sidebar pe-4 pb-3">
-            <nav class="navbar bg-light navbar-light">
-                <a href="{{ path('admin_dashboard') }}" class="navbar-brand mx-4 mb-3">
-                    <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
-                </a>
-                <div class="d-flex align-items-center ms-4 mb-4">
-                    <div class="position-relative">
-                        {% if app.user.avatar %}
-                            <img class="rounded-circle" src="{{ asset('uploads/avatars/' ~ app.user.avatar) ~ '?v=' ~ app.user.updatedAt|date('U') }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
-                        {% else %}
-                            <img class="rounded-circle" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
-                        {% endif %}
-                        <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="mb-0">{{ app.user.nom }} {{ app.user.prenom }}</h6>
-                        <span>{{ app.user.role.getLabel() }}</span>
-                    </div>
-                </div>
-                <div class="navbar-nav w-100">
-                    <a href="{{ path('admin_dashboard') }}" class="nav-item nav-link">
-                        <i class="fa fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a href="{{ path('admin_users_list') }}" class="nav-item nav-link">
-                        <i class="fa fa-users me-2"></i>Users
-                    </a>
-                    <a href="{{ path('admin_profile') }}" class="nav-item nav-link active">
-                        <i class="fa fa-user me-2"></i>My Profile
-                    </a>
-                </div>
-            </nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'" style="height:36px;">
+        <span class="sidebar-logo-text">Bekri Admin</span>
+    </div>
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">
+            {% if app.user and app.user.avatar %}
+                <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+            {% else %}
+                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+            {% endif %}
+            <div class="avatar-dot"></div>
         </div>
-        <!-- Sidebar End -->
+        <div>
+            <div class="sidebar-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+            <div class="sidebar-user-role">{{ app.user.role.getLabel() }}</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a href="{{ path('admin_dashboard') }}" class="nav-item"><i class="bi bi-grid-fill"></i> Dashboard</a>
+        <a href="{{ path('admin_profile') }}" class="nav-item active"><i class="bi bi-person-fill"></i> Mon profil</a>
 
-        <!-- Content Start -->
-        <div class="content">
-            <!-- Navbar Start -->
-            <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
-                <a href="{{ path('admin_dashboard') }}" class="navbar-brand d-flex d-lg-none me-4">
-                    <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
-                </a>
-                <a href="#" class="sidebar-toggler flex-shrink-0">
-                    <i class="fa fa-bars"></i>
-                </a>
-                <div class="navbar-nav align-items-center ms-auto">
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            {% if app.user.avatar %}
-                                <img class="rounded-circle me-lg-2" src="{{ asset('uploads/avatars/' ~ app.user.avatar) ~ '?v=' ~ app.user.updatedAt|date('U') }}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
-                            {% else %}
-                                <img class="rounded-circle me-lg-2" src="{{ asset('admin/img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
-                            {% endif %}
-                            <span class="d-none d-lg-inline-flex">{{ app.user.nom }} {{ app.user.prenom }}</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                            <a href="{{ path('admin_profile') }}" class="dropdown-item"><i class="fa fa-user me-2"></i>My Profile</a>
-                            <a href="{{ path('admin_profile_edit') }}" class="dropdown-item active"><i class="fa fa-cog me-2"></i>Settings</a>
-                            <hr class="dropdown-divider">
-                            <a href="{{ path('app_logout') }}" class="dropdown-item text-danger"><i class="fa fa-sign-out-alt me-2"></i>Log Out</a>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-            <!-- Navbar End -->
+        <div class="nav-section-label">Gestion</div>
+        <a href="{{ path('admin_users_list') }}" class="nav-item"><i class="bi bi-people-fill"></i> Utilisateurs</a>
+        <a href="{{ path('admin_question_index') }}" class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Questions de suivi</a>
+        <a href="{{ path('admin_post_list') }}" class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+        <a href="{{ path('evenements_admin_supervision') }}" class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>
 
-            <!-- Main Content -->
-            <div class="page-wrapper">
-                
-                <!-- Page Header -->
-                <div class="page-header">
-                    <h1 class="page-title">
-                        <i class="bi bi-pencil-square"></i>
-                        Edit Profile
-                    </h1>
-                    <p class="page-subtitle">Update your personal information and settings</p>
-                </div>
+        <div class="nav-section-label">Compte</div>
+        <a href="{{ path('app_login') }}" class="nav-item"><i class="bi bi-box-arrow-in-right"></i> Connexion</a>
+        <a href="{{ path('app_register') }}" class="nav-item"><i class="bi bi-person-plus-fill"></i> Inscription</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;">
+            <i class="bi bi-box-arrow-left"></i> Se déconnecter
+        </a>
+    </div>
+</aside>
 
-                <!-- Flash Messages -->
-                {% for message in app.flashes('success') %}
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span>{{ message }}</span>
-                    </div>
-                {% endfor %}
-                
-                {% for message in app.flashes('error') %}
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span>{{ message }}</span>
-                    </div>
-                {% endfor %}
-                
-                {% for message in app.flashes('warning') %}
-                    <div class="alert" style="background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b;">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <span>{{ message|raw }}</span>
-                    </div>
-                {% endfor %}
+<!-- MAIN -->
+<div class="main">
 
-                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm', 'onsubmit': 'console.log("Form submitting..."); return true;'}}) }}
-
-                <!-- Profile Picture Card -->
-                <div class="card-section">
-                    <h3 class="section-header">
-                        <i class="bi bi-camera"></i>
-                        Profile Picture
-                    </h3>
-                    <div class="avatar-wrapper">
-                        <div class="avatar-circle" id="avatarPreview">
-                            {% if user.avatar %}
-                                <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar">
-                            {% else %}
-                                {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
-                            {% endif %}
-                        </div>
-                        <div class="upload-info">
-                            <label for="{{ form.avatarFile.vars.id }}" class="custom-file-label">
-                                <i class="bi bi-upload me-2"></i>Choose File
-                            </label>
-                            {{ form_widget(form.avatarFile, {'attr': {'class': 'custom-file-input'}}) }}
-                            <div class="file-info">
-                                <p class="file-name mb-0" id="fileName">No file chosen</p>
-                                <small class="text-muted d-block mt-1">JPG, PNG or GIF. Max size 2MB</small>
-                            </div>
-                            {{ form_errors(form.avatarFile) }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Personal Information Card -->
-                <div class="card-section">
-                    <h3 class="section-header">
-                        <i class="bi bi-person-badge"></i>
-                        Personal Information
-                    </h3>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            {{ form_row(form.prenom) }}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form_row(form.nom) }}
-                        </div>
-                        <div class="col-12">
-                            {{ form_row(form.email) }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Change Password Card -->
-                <div class="card-section">
-                    <h3 class="section-header">
-                        <i class="bi bi-shield-lock"></i>
-                        Change Password
-                    </h3>
-                    <div class="password-notice">
-                        <p>
-                            <i class="bi bi-info-circle-fill"></i>
-                            <strong>Leave blank to keep your current password.</strong>
-                        </p>
-                    </div>
-                    
-                    <div class="password-requirements mb-4">
-                        <strong class="d-block mb-2" style="color: #1e293b;">Password Requirements:</strong>
-                        <ul>
-                            <li>Minimum 6 characters</li>
-                            <li>At least one uppercase letter (A-Z)</li>
-                            <li>At least one lowercase letter (a-z)</li>
-                            <li>At least one number (0-9)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="password-wrapper">
-                                {{ form_label(form.plainPassword.first) }}
-                                {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
-                                <i class="bi bi-eye toggle-password" data-target="password-first"></i>
-                                {{ form_errors(form.plainPassword.first) }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="password-wrapper">
-                                {{ form_label(form.plainPassword.second) }}
-                                {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
-                                <i class="bi bi-eye toggle-password" data-target="password-second"></i>
-                                {{ form_errors(form.plainPassword.second) }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <a href="{{ path('admin_profile') }}" class="btn btn-cancel">
-                            <i class="bi bi-x-circle"></i>
-                            Cancel
-                        </a>
-                        <button type="submit" class="btn btn-save" onclick="console.log('Button clicked');">
-                            <i class="bi bi-check-circle"></i>
-                            Save Changes
-                        </button>
-                    </div>
-
-                {{ form_end(form) }}
-                </div>
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div>
+                <div class="topbar-title">Modifier le profil</div>
+                <div class="topbar-sub">Mettez à jour vos informations personnelles</div>
             </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('admin_profile') }}" class="topbar-icon-btn" title="Mon profil">
+                <i class="bi bi-person"></i>
+            </a>
+            <a href="{{ path('admin_profile') }}" class="topbar-avatar">
+                {% if app.user and app.user.avatar %}
+                    <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                {% else %}
+                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                {% endif %}
+            </a>
+        </div>
+    </header>
 
-            <!-- Footer -->
-            <div class="container-fluid pt-4 px-4">
-                <div class="bg-light rounded-top p-4">
-                    <div class="row">
-                        <div class="col-12 text-center">
-                             Bekri Wellbeing Platform, All Rights Reserved.
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-tag"><i class="bi bi-pencil-square"></i> Édition du profil</div>
+            <div class="page-header-title">Modifier mon profil</div>
+            <div class="page-header-sub">Mettez à jour vos informations et paramètres de sécurité</div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('admin/js/main.js') }}"></script>
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // File input preview and name display
-        const fileInput = document.querySelector('input[name="form[avatarFile]"]');
-        const fileName = document.getElementById('fileName');
-        const avatarPreview = document.getElementById('avatarPreview');
-        
-        console.log('File input:', fileInput); // Debug
-        console.log('File name element:', fileName); // Debug
-        
-        if (fileInput && fileName && avatarPreview) {
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                
-                console.log('File selected:', file); // Debug
-                
-                if (file) {
-                    // Validate file type
-                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                    if (!validTypes.includes(file.type)) {
-                        alert('Please select a valid image file (JPG, PNG, GIF, or WebP)');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    // Validate file size (2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                        alert('File size must be less than 2MB');
-                        fileInput.value = '';
-                        return;
-                    }
-                    
-                    // Update file name display
-                    fileName.textContent = file.name;
-                    fileName.classList.add('selected');
-                    
-                    // Preview image
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        avatarPreview.innerHTML = '<img src="' + e.target.result + '" alt="Avatar">';
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    fileName.textContent = 'No file chosen';
-                    fileName.classList.remove('selected');
-                }
-            });
-        } else {
-            console.error('Missing elements:', { fileInput, fileName, avatarPreview });
-        }
-        
-        // Password toggle functionality
-        const passwordToggles = document.querySelectorAll('.toggle-password');
-        
-        passwordToggles.forEach(toggle => {
-            toggle.addEventListener('click', function() {
-                const passwordField = this.previousElementSibling;
-                
-                if (passwordField && passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    this.classList.remove('bi-eye');
-                    this.classList.add('bi-eye-slash');
-                } else if (passwordField) {
-                    passwordField.type = 'password';
-                    this.classList.remove('bi-eye-slash');
-                    this.classList.add('bi-eye');
-                }
-            });
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning"><i class="bi bi-info-circle-fill"></i> {{ message|raw }}</div>
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profileForm'}}) }}
+
+        <!-- Profile Picture -->
+        <div class="card">
+            <div class="card-header-bar">
+                <i class="bi bi-camera-fill"></i>
+                <div class="card-title">Photo de profil</div>
+            </div>
+            <div class="card-body">
+                <div class="avatar-upload-area">
+                    <div class="avatar-preview-lg" id="avatarPreview">
+                        {% if user.avatar %}
+                            <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar">
+                        {% else %}
+                            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.avatarFile.vars.id }}" class="btn-upload">
+                            <i class="bi bi-upload"></i> Choisir une image
+                        </label>
+                        {{ form_widget(form.avatarFile, {'attr': {'class': 'custom-file-input'}}) }}
+                        <div class="file-name" id="fileName">Aucun fichier sélectionné</div>
+                        <div style="font-size:11px; color:var(--gray); margin-top:4px;">JPG, PNG ou GIF — Max 2 Mo</div>
+                        {{ form_errors(form.avatarFile) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="card">
+            <div class="card-header-bar">
+                <i class="bi bi-person-badge-fill"></i>
+                <div class="card-title">Informations personnelles</div>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+            <div class="card-header-bar">
+                <i class="bi bi-shield-lock-fill"></i>
+                <div class="card-title">Changer le mot de passe</div>
+            </div>
+            <div class="card-body">
+                <div class="notice-box">
+                    <i class="bi bi-info-circle-fill" style="color:#f59e0b; flex-shrink:0;"></i>
+                    <span><strong>Laissez vide</strong> pour conserver votre mot de passe actuel.</span>
+                </div>
+                <div class="requirements-box">
+                    <strong>Exigences du mot de passe :</strong>
+                    <ul>
+                        <li>Minimum 6 caractères</li>
+                        <li>Au moins une lettre majuscule (A–Z)</li>
+                        <li>Au moins une lettre minuscule (a–z)</li>
+                        <li>Au moins un chiffre (0–9)</li>
+                    </ul>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="password-wrapper">
+                            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control', 'style': 'padding-right:42px;'}}) }}
+                            <i class="bi bi-eye toggle-password"></i>
+                        </div>
+                        {{ form_errors(form.plainPassword.first) }}
+                    </div>
+                    <div class="form-group">
+                        <div class="password-wrapper">
+                            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control', 'style': 'padding-right:42px;'}}) }}
+                            <i class="bi bi-eye toggle-password"></i>
+                        </div>
+                        {{ form_errors(form.plainPassword.second) }}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ path('admin_profile') }}" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle-fill"></i> Sauvegarder
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+
+    </div>
+    <!-- Content End -->
+
+</div>
+<!-- Main End -->
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('admin/js/main.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.querySelector('input[name="form[avatarFile]"]');
+    const fileName  = document.getElementById('fileName');
+    const avatarPreview = document.getElementById('avatarPreview');
+
+    if (fileInput && fileName && avatarPreview) {
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) { fileName.textContent = 'Aucun fichier sélectionné'; fileName.classList.remove('selected'); return; }
+            const validTypes = ['image/jpeg','image/png','image/gif','image/webp'];
+            if (!validTypes.includes(file.type)) { alert('Veuillez sélectionner une image valide (JPG, PNG, GIF ou WebP)'); fileInput.value=''; return; }
+            if (file.size > 2 * 1024 * 1024) { alert('La taille du fichier doit être inférieure à 2 Mo'); fileInput.value=''; return; }
+            fileName.textContent = file.name;
+            fileName.classList.add('selected');
+            const reader = new FileReader();
+            reader.onload = e => { avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Avatar">`; };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const input = this.previousElementSibling;
+            if (input && (input.type === 'password' || input.type === 'text')) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('bi-eye');
+                this.classList.toggle('bi-eye-slash');
+            }
         });
     });
-    </script>
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,6 @@
+stof_doctrine_extensions:
+    default_locale: fr_FR
+    orm:
+        default:
+            timestampable: true   # Auto-manages createdAt / updatedAt / soumisAt
+            sluggable: true       # Auto-generates slug from titre in ObjectifBienEtre

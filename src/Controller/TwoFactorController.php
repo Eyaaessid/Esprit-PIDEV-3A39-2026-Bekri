@@ -6,8 +6,8 @@ use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
-use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Psr\Log\LoggerInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
@@ -36,7 +36,7 @@ class TwoFactorController extends AbstractController
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
-        
+
         if ($user->getRole()->value === 'admin') {
             return 'admin_profile';
         } elseif ($user->getRole()->value === 'coach') {
@@ -71,18 +71,19 @@ class TwoFactorController extends AbstractController
         $qrCodeContent = $this->totpAuthenticator->getQRContent($user);
 
         // Generate QR code image using endroid/qr-code v6
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->writerOptions([])
-            ->data($qrCodeContent)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
-            ->size(300)
-            ->margin(10)
-            ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
-            ->validateResult(false)
-            ->build();
+        $builder = new Builder(
+            writer: new PngWriter(),
+            writerOptions: [],
+            validateResult: false,
+            data: $qrCodeContent,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::High,
+            size: 300,
+            margin: 10,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+        );
 
+        $result = $builder->build();
         $qrCodeDataUri = $result->getDataUri();
 
         return $this->render('two_factor/enable.html.twig', [

@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 #[Route('/objectif')]
 class ObjectifBienEtreController extends AbstractController
@@ -27,10 +26,10 @@ class ObjectifBienEtreController extends AbstractController
             throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page.');
         }
 
-        $search = $request->query->get('search', '');
+        $search      = $request->query->get('search', '');
         $searchField = $request->query->get('searchField', 'titre');
-        $sort = $request->query->get('sort', 'createdAt');
-        $direction = $request->query->get('direction', 'desc');
+        $sort        = $request->query->get('sort', 'createdAt');
+        $direction   = $request->query->get('direction', 'desc');
 
         $query = $repo->createQueryBuilder('o')
             ->where('o.utilisateur = :user')
@@ -46,24 +45,24 @@ class ObjectifBienEtreController extends AbstractController
 
         $sortMapping = [
             'createdAt' => 'o.createdAt',
-            'titre' => 'o.titre',
+            'titre'     => 'o.titre',
             'dateDebut' => 'o.dateDebut',
-            'dateFin' => 'o.dateFin',
+            'dateFin'   => 'o.dateFin',
         ];
 
         $sortField = $sortMapping[$sort] ?? 'o.createdAt';
-        $sortDir = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+        $sortDir   = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
 
         $query->orderBy($sortField, $sortDir);
 
         $objectifs = $query->getQuery()->getResult();
 
         return $this->render('objectif/index.html.twig', [
-            'objectifs' => $objectifs,
-            'search' => $search,
+            'objectifs'   => $objectifs,
+            'search'      => $search,
             'searchField' => $searchField,
-            'sort' => $sort,
-            'direction' => $direction,
+            'sort'        => $sort,
+            'direction'   => $direction,
         ]);
     }
 
@@ -86,7 +85,9 @@ class ObjectifBienEtreController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $objectif->setUtilisateur($user);
-            $objectif->setCreatedAt(new \DateTimeImmutable());
+
+            // ✅ No need for $objectif->setCreatedAt(new \DateTimeImmutable()) anymore!
+            // Timestampable handles it automatically on persist.
 
             $em->persist($objectif);
             $em->flush();
@@ -121,7 +122,9 @@ class ObjectifBienEtreController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $objectif->setUpdatedAt(new \DateTimeImmutable());
+            // ✅ No need for $objectif->setUpdatedAt(new \DateTimeImmutable()) anymore!
+            // Timestampable handles it automatically on flush.
+
             $em->flush();
             $this->addFlash('success', 'Objectif modifié !');
             return $this->redirectToRoute('objectif_index');
@@ -129,7 +132,7 @@ class ObjectifBienEtreController extends AbstractController
 
         return $this->render('objectif/edit.html.twig', [
             'objectif' => $objectif,
-            'form'     => $form->createView()
+            'form'     => $form->createView(),
         ]);
     }
 

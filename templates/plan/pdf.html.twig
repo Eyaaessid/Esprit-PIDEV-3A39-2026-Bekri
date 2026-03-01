@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #333; padding: 20px; }
+
+        .header { background: #0d9488; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { font-size: 20px; margin-bottom: 5px; }
+        .header p { font-size: 11px; opacity: 0.85; }
+
+        .stats { display: table; width: 100%; margin-bottom: 16px; }
+        .stat-box { display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 6px; padding: 10px; text-align: center; }
+        .stat-value { font-size: 18px; font-weight: bold; color: #0d9488; }
+        .stat-label { font-size: 9px; color: #6b7280; }
+
+        .section { margin-bottom: 16px; }
+        .section-title { font-size: 13px; font-weight: bold; color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 4px; margin-bottom: 10px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        th { background: #f0fdf4; color: #0d9488; padding: 6px; text-align: left; border: 1px solid #d1fae5; }
+        td { padding: 5px 6px; border: 1px solid #e5e7eb; vertical-align: top; }
+        tr:nth-child(even) td { background: #f9fafb; }
+
+        .exercise-grid { display: table; width: 100%; }
+        .exercise-cell { display: table-cell; width: 14.28%; padding: 4px; vertical-align: top; }
+        .exercise-box { background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 4px; padding: 6px; font-size: 9px; }
+        .exercise-box.repos { background: #f9fafb; border-color: #e5e7eb; }
+        .exercise-day { font-weight: bold; color: #374151; margin-bottom: 2px; }
+        .exercise-type { color: #0d9488; font-weight: bold; }
+
+        .tips-grid { display: table; width: 100%; }
+        .tips-col { display: table-cell; width: 50%; padding-right: 8px; vertical-align: top; }
+        .tips-col:last-child { padding-right: 0; padding-left: 8px; }
+        .tips-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px; }
+        .tips-box.sleep { background: #faf5ff; border-color: #e9d5ff; }
+        .tips-title { font-size: 12px; font-weight: bold; color: #1d4ed8; margin-bottom: 6px; }
+        .tips-box.sleep .tips-title { color: #7e22ce; }
+        .tip-item { margin-bottom: 4px; font-size: 9px; color: #374151; }
+
+        .conseils-list { list-style: none; }
+        .conseils-list li { padding: 3px 0; font-size: 10px; color: #374151; }
+        .conseils-list li:before { content: "✓ "; color: #0d9488; font-weight: bold; }
+
+        .footer { margin-top: 20px; text-align: center; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏋️ Plan Bien-Être Personnalisé</h1>
+        <p>Généré pour {{ user.prenom ?? user.email }} · {{ generatedAt|date('d/m/Y à H:i') }}</p>
+        <p>Poids: {{ formData.poids }}kg · Taille: {{ formData.taille }}cm · Âge: {{ formData.age }} ans · Objectif: {{ formData.objectif|replace({'_': ' '}) }}</p>
+    </div>
+
+    {# Stats #}
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-value">{{ plan.imc }}</div>
+            <div class="stat-label">IMC</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ plan.calories_journalieres }}</div>
+            <div class="stat-label">Calories/jour</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ plan.hydratation.litres_par_jour }}L</div>
+            <div class="stat-label">Eau/jour</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ plan.sommeil.heures_recommandees }}</div>
+            <div class="stat-label">Sommeil/nuit</div>
+        </div>
+    </div>
+
+    {# Resume #}
+    <div class="section">
+        <div class="section-title">📊 Résumé</div>
+        <p style="font-size:10px; color:#374151;">{{ plan.resume }}</p>
+    </div>
+
+    {# General tips #}
+    <div class="section">
+        <div class="section-title">💡 Conseils Généraux</div>
+        <ul class="conseils-list">
+            {% for conseil in plan.conseils_generaux %}
+            <li>{{ conseil }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {# Meal plan #}
+    <div class="section">
+        <div class="section-title">🍽️ Plan Alimentaire de la Semaine</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Jour</th>
+                    <th>Petit-déjeuner</th>
+                    <th>Déjeuner</th>
+                    <th>Dîner</th>
+                    <th>Collation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+                {% for jour in jours %}
+                <tr>
+                    <td style="font-weight:bold; text-transform:capitalize;">{{ jour }}</td>
+                    <td>{{ plan.repas[jour].petit_dejeuner ?? '-' }}</td>
+                    <td>{{ plan.repas[jour].dejeuner ?? '-' }}</td>
+                    <td>{{ plan.repas[jour].diner ?? '-' }}</td>
+                    <td>{{ plan.repas[jour].collation ?? '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Exercise plan #}
+    <div class="section">
+        <div class="section-title">🏃 Plan d'Exercices</div>
+        <div class="exercise-grid">
+            {% set jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+            {% for jour in jours %}
+            {% set ex = plan.exercices[jour] %}
+            <div class="exercise-cell">
+                <div class="exercise-box {{ ex.type == 'repos' ? 'repos' : '' }}">
+                    <div class="exercise-day" style="text-transform:capitalize;">{{ jour }}</div>
+                    <div class="exercise-type">{{ ex.type == 'repos' ? 'Repos' : ex.type }}</div>
+                    {% if ex.type != 'repos' %}
+                    <div style="color:#6b7280;">{{ ex.duree }}</div>
+                    {% endif %}
+                    <div style="color:#374151; margin-top:2px;">{{ ex.description }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Hydration + Sleep #}
+    <div class="tips-grid">
+        <div class="tips-col">
+            <div class="tips-box">
+                <div class="tips-title">💧 Hydratation — {{ plan.hydratation.litres_par_jour }}L/jour</div>
+                {% for conseil in plan.hydratation.conseils %}
+                <div class="tip-item">· {{ conseil }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="tips-col">
+            <div class="tips-box sleep">
+                <div class="tips-title">😴 Sommeil — {{ plan.sommeil.heures_recommandees }}/nuit</div>
+                {% for conseil in plan.sommeil.conseils %}
+                <div class="tip-item">· {{ conseil }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Bekri Wellbeing Platform · Plan généré par IA · {{ generatedAt|date('d/m/Y') }} · Ce plan est indicatif, consultez un professionnel de santé.
+    </div>
+
+</body>
+</html>

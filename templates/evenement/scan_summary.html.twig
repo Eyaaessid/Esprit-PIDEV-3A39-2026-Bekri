@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résumé — {{ evenement.titre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --teal:#20b2aa; --teal-dark:#0d9488; --teal-light:#e0f7f6;
+            --dark:#1a2332; --gray:#64748b;
+            --green:#16a34a; --green-light:#f0fdf4;
+            --red:#dc2626; --red-light:#fef2f2;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#f1f5f9;display:flex;justify-content:center;min-height:100vh;}
+        .container{width:100%;max-width:480px;background:white;min-height:100vh;padding-bottom:130px;position:relative;}
+        .hero{height:38vh;min-height:220px;background:linear-gradient(135deg,var(--dark),#2d3f55);position:relative;display:flex;align-items:flex-end;padding:24px;overflow:hidden;}
+        .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(32,178,170,0.15);}
+        .hero-badge{position:absolute;top:20px;left:20px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+        .hero-content{position:relative;z-index:1;}
+        .hero-content h1{font-size:24px;font-weight:800;color:white;margin-bottom:10px;line-height:1.3;}
+        .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;}
+        .status-pill.open{background:rgba(22,163,74,0.2);color:#4ade80;border:1px solid rgba(22,163,74,0.3);}
+        .status-pill.full{background:rgba(220,38,38,0.2);color:#f87171;border:1px solid rgba(220,38,38,0.3);}
+        .status-pill.finished{background:rgba(100,116,139,0.2);color:#94a3b8;border:1px solid rgba(100,116,139,0.3);}
+        .status-pill.planned{background:rgba(59,130,246,0.2);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);}
+        .content{background:white;border-radius:28px 28px 0 0;margin-top:-24px;position:relative;z-index:10;padding:28px 20px 20px;}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+        .info-card{background:#f8fafc;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;}
+        .info-card.full{grid-column:1/-1;}
+        .info-icon{width:36px;height:36px;border-radius:10px;background:var(--teal-light);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+        .info-label{font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+        .info-value{font-size:14px;font-weight:700;color:var(--dark);margin-top:2px;}
+        .desc-section{margin:20px 0;}
+        .desc-section h3{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:8px;}
+        .desc-section p{font-size:14px;color:var(--gray);line-height:1.65;}
+        .capacity-box{background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:20px;}
+        .capacity-row{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:8px;}
+        .capacity-row .left{color:var(--dark);} .capacity-row .right{color:var(--gray);}
+        .progress-bar-wrap{background:#e2e8f0;border-radius:50px;height:8px;overflow:hidden;}
+        .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-dark));border-radius:50px;transition:width 0.3s;}
+        .session-link{display:flex;align-items:center;gap:10px;background:var(--teal-light);border-radius:14px;padding:14px 16px;margin-bottom:20px;text-decoration:none;}
+        .session-link i{color:var(--teal-dark);font-size:20px;}
+        .session-link span{font-size:14px;font-weight:700;color:var(--teal-dark);}
+        .sticky-actions{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:white;padding:16px 20px;box-shadow:0 -8px 30px rgba(0,0,0,0.08);border-radius:20px 20px 0 0;z-index:100;}
+        .alert-inscrit{background:var(--green-light);color:var(--green);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+        .btn-join{width:100%;padding:16px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.2s;font-family:'Inter',sans-serif;}
+        .btn-join:hover{opacity:0.9;}
+        .btn-join:disabled{background:#cbd5e1;cursor:not-allowed;}
+        .btn-outline{width:100%;padding:13px;background:white;color:var(--teal-dark);border:2px solid var(--teal);border-radius:14px;font-size:15px;font-weight:600;text-align:center;text-decoration:none;display:block;margin-top:10px;}
+        .btn-link{display:block;text-align:center;margin-top:10px;color:var(--gray);font-size:13px;font-weight:500;text-decoration:none;}
+        .btn-link:hover{color:var(--teal-dark);}
+        .btn-download-pdf{width:100%;padding:14px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;}
+        .btn-download-pdf:hover{opacity:0.9;color:white;}
+
+        /* ── QR CODE SECTION ── */
+        .qr-section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:22px 18px;margin-bottom:20px;text-align:center;}
+        .qr-section-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;text-align:left;}
+        .qr-section-header > i{font-size:28px;color:var(--teal-dark);flex-shrink:0;}
+        .qr-section-header h3{font-size:15px;font-weight:700;color:var(--dark);margin:0 0 3px;}
+        .qr-section-header p{font-size:12px;color:var(--gray);margin:0;}
+        .qr-code-wrapper{display:inline-block;padding:14px;background:white;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:14px;}
+        .qr-code-img{width:190px;height:190px;display:block;}
+        .qr-hint{font-size:12px;color:#94a3b8;display:flex;align-items:center;justify-content:center;gap:6px;margin:0;}
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="hero">
+        <div class="hero-badge">{{ evenement.type.value }}</div>
+        <div class="hero-content">
+            <h1>{{ evenement.titre }}</h1>
+            {% set s = evenement.statut.value %}
+            <span class="status-pill {{ s == 'OPEN' ? 'open' : s == 'FULL' ? 'full' : s == 'FINISHED' ? 'finished' : 'planned' }}">
+                <i class="bi bi-circle-fill" style="font-size:8px;"></i> {{ s }}
+            </span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-icon"><i class="bi bi-calendar-event"></i></div>
+                <div>
+                    <div class="info-label">Date</div>
+                    <div class="info-value">{{ evenement.dateDebut|date('d/m/Y') }}</div>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon"><i class="bi bi-clock"></i></div>
+                <div>
+                    <div class="info-label">Heure</div>
+                    <div class="info-value">
+                        {{ evenement.dateDebut|date('H:i') }}
+                        {% if evenement.dateFin %} - {{ evenement.dateFin|date('H:i') }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="info-card full">
+                <div class="info-icon"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="info-label">Participants</div>
+                    <div class="info-value">{{ participationsActives }} / {{ evenement.capaciteMax }} inscrits</div>
+                </div>
+            </div>
+        </div>
+
+        {% if evenement.lienSession %}
+        <a href="{{ evenement.lienSession }}" target="_blank" class="session-link">
+            <i class="bi bi-camera-video-fill"></i>
+            <span>Rejoindre la session en ligne</span>
+            <i class="bi bi-arrow-right" style="color:var(--teal);margin-left:auto;"></i>
+        </a>
+        {% endif %}
+
+        <div class="desc-section">
+            <h3>À propos</h3>
+            <p>{{ evenement.description|length > 200 ? evenement.description|slice(0, 200) ~ '…' : evenement.description }}</p>
+        </div>
+
+        {% set pct = evenement.capaciteMax > 0 ? ((participationsActives / evenement.capaciteMax) * 100)|round : 0 %}
+        {% set left = evenement.capaciteMax - participationsActives %}
+        <div class="capacity-box">
+            <div class="capacity-row">
+                <span class="left">{{ left }} place(s) restante(s)</span>
+                <span class="right">{{ participationsActives }}/{{ evenement.capaciteMax }}</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" style="width:{{ pct }}%;"></div>
+            </div>
+        </div>
+
+        <!-- QR CODE -->
+        <div class="qr-section">
+            <div class="qr-section-header">
+                <i class="bi bi-qr-code"></i>
+                <div>
+                    <h3>QR Code de l'événement</h3>
+                    <p>Scannez pour accéder à cet événement</p>
+                </div>
+            </div>
+            <div class="qr-code-wrapper">
+                <img src="{{ qrCodeDataUri }}" alt="QR Code - {{ evenement.titre }}" class="qr-code-img">
+            </div>
+            <p class="qr-hint"><i class="bi bi-phone"></i> Pointez votre caméra sur le QR code</p>
+        </div>
+
+    </div>
+
+    <div class="sticky-actions">
+        {# PDF Download button - always visible #}
+        <a href="{{ pdfDataUri }}"
+           download="{{ pdfFilename }}"
+           class="btn-download-pdf">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Télécharger le PDF
+        </a>
+
+        {% if isParticipant %}
+            <div class="alert-inscrit" style="margin-top:10px;">
+                <i class="bi bi-patch-check-fill"></i> Vous êtes déjà inscrit à cet événement
+            </div>
+            <a href="{{ path('evenements_show', {id: evenement.id}) }}" class="btn-outline">
+                Voir les détails complets
+            </a>
+        {% elseif evenement.statut.value == 'FULL' %}
+            <button class="btn-join" disabled style="margin-top:10px;">Événement complet</button>
+            <a href="{{ path('evenements_list') }}" class="btn-link">Voir d'autres événements</a>
+        {% else %}
+            <form method="post" action="{{ path('evenements_participer', {id: evenement.id}) }}">
+                <button type="submit" class="btn-join" style="margin-top:10px;">
+                    <i class="bi bi-calendar-check"></i> Rejoindre l'événement
+                </button>
+            </form>
+            <a href="{{ path('evenements_show', {id: evenement.id}) }}" class="btn-link">Plus d'informations</a>
+        {% endif %}
+    </div>
+
+</div>
+</body>
+</html>

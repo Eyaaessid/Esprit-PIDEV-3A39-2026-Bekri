@@ -5,136 +5,233 @@
     <title>Connexion - Bekri</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
-        /* NOUVEAU DESIGN SIGNIN - VERSION 2 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --white:      #ffffff;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #e0f2f7 0%, #f0f8fa 100%);
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            background: var(--dark);
         }
 
-        .login-container {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-            max-width: 480px;
-            width: 100%;
-            padding: 50px 40px;
+        /* ── LEFT PANEL ──────────────────────────────────────────────── */
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #0d9488 0%, #20b2aa 45%, #667eea 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 48px;
             position: relative;
             overflow: hidden;
         }
 
-        .login-container::before {
+        .left-panel::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #20b2aa, #3ecdc7);
+            top: -80px; right: -80px;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
         }
 
-        .logo-container {
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 250px; height: 250px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 1;
             text-align: center;
-            margin-bottom: 35px;
+            max-width: 400px;
         }
 
-        .logo {
-            max-width: 140px;
-            height: auto;
-            margin-bottom: 10px;
+        .left-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 48px;
         }
 
-        .welcome-text {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+        .left-logo img { height: 48px; width: auto; }
 
-        .welcome-text h1 {
-            color: #2c3e50;
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
+        .left-logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
             letter-spacing: -0.5px;
         }
 
-        .welcome-text p {
-            color: #95a5a6;
-            font-size: 15px;
-            font-weight: 400;
+        .left-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
         }
 
-        .form-group {
-            margin-bottom: 24px;
+        .left-title span {
+            background: linear-gradient(135deg, #a7f3d0, #bfdbfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .form-label {
-            display: block;
-            color: #2c3e50;
+        .left-subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.7;
+            margin-bottom: 48px;
+        }
+
+        .left-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .left-feature {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 14px 18px;
+            text-align: left;
+        }
+
+        .left-feature-icon {
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .left-feature-text {
             font-size: 14px;
             font-weight: 500;
+            color: white;
+        }
+
+        .left-feature-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            margin-top: 2px;
+        }
+
+        /* ── RIGHT PANEL ───────��─────────────────────────────────────── */
+        .right-panel {
+            width: 520px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 52px;
+            overflow-y: auto;
+        }
+
+        .form-header { margin-bottom: 36px; }
+
+        .form-header h1 {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.5px;
             margin-bottom: 8px;
         }
 
-        .input-wrapper {
-            position: relative;
+        .form-header p { font-size: 15px; color: var(--gray); }
+
+        .form-group { margin-bottom: 22px; }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
         }
+
+        .input-wrapper { position: relative; }
 
         .input-icon {
             position: absolute;
-            left: 18px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #bdc3c7;
-            font-size: 18px;
+            color: #cbd5e1;
+            font-size: 16px;
+            pointer-events: none;
         }
 
         .form-input {
             width: 100%;
-            padding: 16px 18px 16px 52px;
-            border: 2px solid #e8eef1;
+            padding: 14px 16px 14px 46px;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 15px;
-            color: #2c3e50;
-            transition: all 0.3s ease;
-            background: #f8fafb;
+            color: var(--dark);
             font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            transition: all 0.25s;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #20b2aa;
+            border-color: var(--teal);
             background: white;
-            box-shadow: 0 0 0 4px rgba(32, 178, 170, 0.08);
+            box-shadow: 0 0 0 4px rgba(32,178,170,0.1);
         }
 
-        .form-input::placeholder {
-            color: #bdc3c7;
+        .form-input::placeholder { color: #cbd5e1; }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            transition: color 0.2s;
         }
+
+        .toggle-password:hover { color: var(--teal); }
 
         .form-options {
             display: flex;
@@ -147,332 +244,270 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
         }
 
         .remember-me input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #dfe6e9;
-            border-radius: 4px;
+            width: 16px; height: 16px;
+            accent-color: var(--teal);
             cursor: pointer;
-            accent-color: #20b2aa;
         }
 
         .remember-me label {
-            color: #7f8c8d;
             font-size: 14px;
+            color: var(--gray);
             cursor: pointer;
-            user-select: none;
         }
 
-        .forgot-password {
-            color: #20b2aa;
+        .forgot-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--teal);
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            transition: color 0.2s;
         }
 
-        .forgot-password:hover {
-            color: #1a8f89;
-            transform: translateX(2px);
-        }
+        .forgot-link:hover { color: var(--teal-dark); }
 
-        .forgot-password i {
-            font-size: 12px;
-        }
-
-        .btn-login {
+        .btn-primary {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #20b2aa 0%, #3ecdc7 100%);
+            padding: 15px;
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3);
+            box-shadow: 0 4px 15px rgba(32,178,170,0.3);
+            font-family: 'Inter', sans-serif;
         }
 
-        .btn-login:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(32, 178, 170, 0.4);
+            box-shadow: 0 8px 25px rgba(32,178,170,0.4);
         }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
+        .btn-primary:active { transform: translateY(0); }
 
-        /* Face Login Button */
-        .btn-face-login {
+        .btn-face {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            background: linear-gradient(135deg, var(--purple) 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            margin-top: 12px;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+            font-family: 'Inter', sans-serif;
         }
 
-        .btn-face-login:hover {
+        .btn-face:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.4);
         }
 
         .divider {
             display: flex;
             align-items: center;
-            text-align: center;
-            margin: 24px 0;
+            gap: 16px;
+            margin: 20px 0;
         }
 
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #e8eef1;
+            height: 1px;
+            background: #e2e8f0;
         }
 
         .divider span {
-            padding: 0 16px;
-            color: #95a5a6;
-            font-size: 14px;
+            font-size: 13px;
+            color: #94a3b8;
             font-weight: 500;
         }
 
-        .signup-link {
+        .form-footer {
             text-align: center;
-            margin-top: 28px;
-            color: #95a5a6;
+            margin-top: 24px;
             font-size: 14px;
+            color: var(--gray);
         }
 
-        .signup-link a {
-            color: #20b2aa;
-            text-decoration: none;
+        .form-footer a {
+            color: var(--teal);
             font-weight: 600;
+            text-decoration: none;
+        }
+
+        .form-footer a:hover { text-decoration: underline; }
+
+        .form-footer-secondary {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .form-footer-secondary a {
+            color: var(--gray);
+            text-decoration: none;
             transition: color 0.2s;
         }
 
-        .signup-link a:hover {
-            color: #1a8f89;
-        }
+        .form-footer-secondary a:hover { color: var(--teal); }
 
         .alert {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 24px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             font-size: 14px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 10px;
             line-height: 1.5;
         }
 
-        .alert-danger {
-            background: #fff5f5;
-            color: #e74c3c;
-            border-left: 4px solid #e74c3c;
-        }
+        .alert-danger  { background: #fff5f5; color: #dc2626; border-left: 4px solid #ef4444; }
+        .alert-success { background: #f0fdf4; color: #166534; border-left: 4px solid #22c55e; }
 
-        .alert-danger a {
-            color: #c0392b;
-            text-decoration: underline;
-            font-weight: 600;
-        }
-
-        .alert-danger a:hover {
-            color: #a93226;
-        }
-
-        .alert-success {
-            background: #f0fdf4;
-            color: #059669;
-            border-left: 4px solid #10b981;
-        }
-
-        @media (max-width: 576px) {
-            .login-container {
-                padding: 40px 28px;
-            }
-
-            .welcome-text h1 {
-                font-size: 26px;
-            }
-
-            .form-input {
-                padding: 14px 16px 14px 48px;
-            }
-            
-            .form-options {
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
-        }
-
-        .btn-login.loading {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .btn-login .spinner {
+        .spinner {
             display: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #ffffff;
-            border-top-color: transparent;
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
 
-        .btn-login.loading .spinner {
-            display: inline-block;
-        }
+        .btn-primary.loading .spinner { display: inline-block; }
+        .btn-primary.loading { opacity: 0.75; cursor: not-allowed; }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Honeypot: invisible */
         .captcha-honeypot {
             position: absolute !important;
             left: -9999px !important;
-            width: 1px !important;
-            height: 1px !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
+            width: 1px !important; height: 1px !important;
+            opacity: 0 !important; pointer-events: none !important;
         }
 
-        /* CAPTCHA Modal */
-        .captcha-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* ── CAPTCHA MODAL ───────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
             z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        .captcha-modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-        .captcha-modal-content {
-            position: relative;
+
+        .modal-box {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
             max-width: 440px;
             width: 100%;
-            animation: modalSlideIn 0.3s ease-out;
             overflow: hidden;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.25);
+            animation: modalIn 0.3s ease-out;
         }
-        @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-40px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        @keyframes modalIn {
+            from { opacity:0; transform: translateY(-30px); }
+            to   { opacity:1; transform: translateY(0); }
         }
-        .captcha-modal-header {
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            color: white;
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
             padding: 24px;
             text-align: center;
-        }
-        .captcha-modal-header i { font-size: 32px; display: block; margin-bottom: 10px; }
-        .captcha-modal-header h5 { margin: 0; font-size: 18px; font-weight: 600; }
-        .captcha-modal-body { padding: 28px; }
-        .captcha-modal-body .captcha-question {
-            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
             color: white;
-            padding: 18px 20px;
+        }
+
+        .modal-header i  { font-size: 32px; display: block; margin-bottom: 10px; }
+        .modal-header h5 { margin: 0; font-size: 18px; font-weight: 700; }
+
+        .modal-body { padding: 28px; }
+
+        .captcha-q {
+            background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+            color: white;
+            padding: 18px;
             border-radius: 12px;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             text-align: center;
             margin-bottom: 20px;
-            line-height: 1.5;
         }
-        .captcha-input-group { margin-top: 8px; }
-        .captcha-input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #2c3e50;
-            font-size: 14px;
-        }
-        .captcha-input-group input {
+
+        .modal-body input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px;
             font-size: 18px;
             text-align: center;
-            border: 2px solid #e8eef1;
-            border-radius: 10px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s;
         }
-        .captcha-input-group input:focus {
+
+        .modal-body input:focus {
             outline: none;
-            border-color: #14b8a6;
-            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+            border-color: var(--teal);
+            box-shadow: 0 0 0 4px rgba(32,178,170,0.1);
         }
-        .captcha-modal-footer {
+
+        .modal-footer {
             padding: 20px 28px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #f1f5f9;
             display: flex;
             gap: 12px;
             justify-content: flex-end;
         }
-        .captcha-modal-footer .btn-modal {
-            padding: 12px 24px;
+
+        .btn-modal-cancel {
+            padding: 11px 22px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
             border-radius: 10px;
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
-            border: none;
-            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
-        .captcha-modal-footer .btn-modal-secondary {
-            background: #f1f5f9;
-            color: #475569;
-        }
-        .captcha-modal-footer .btn-modal-secondary:hover { background: #e2e8f0; }
-        .captcha-modal-footer .btn-modal-primary {
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            color: white;
-        }
-        .captcha-modal-footer .btn-modal-primary:hover { opacity: 0.95; transform: translateY(-1px); }
 
-        /* ── 2FA Login Modal ──────────────────────────────────────────────────── */
+        .btn-modal-cancel:hover { background: #e2e8f0; }
+
+        .btn-modal-confirm {
+            padding: 11px 22px;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ── 2FA MODAL ───────────────────────────────────────────────── */
         #twofa-login-overlay {
             display: none;
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             z-index: 10100;
             background: rgba(0,0,0,0.55);
             backdrop-filter: blur(6px);
@@ -480,74 +515,112 @@
             justify-content: center;
             padding: 20px;
         }
+
         #twofa-login-overlay.active { display: flex; }
+
         #twofa-login-box {
-            background: #fff;
+            background: white;
             border-radius: 20px;
             max-width: 420px;
             width: 100%;
             box-shadow: 0 24px 70px rgba(0,0,0,0.25);
             overflow: hidden;
-            animation: modalSlideIn 0.3s ease-out;
+            animation: modalIn 0.3s ease-out;
         }
-        #twofa-login-box .twofa-bar {
-            height: 4px;
-            background: linear-gradient(90deg, #20b2aa, #3ecdc7, #667eea);
-        }
-        #twofa-login-box .twofa-body { padding: 36px 32px 28px; }
-        /* digit boxes */
-        .twofa-digits-row { display:flex; align-items:center; justify-content:center; gap:8px; }
-        .twofa-digit {
-            width:48px; height:58px; text-align:center;
-            font-size:1.6rem; font-weight:700;
-            border:2px solid #dee2e6; border-radius:12px;
-            background:#fff; color:#2c3e50; outline:none;
-            transition: border-color .2s, box-shadow .2s, transform .1s;
-        }
-        .twofa-digit:focus { border-color:#20b2aa; box-shadow:0 0 0 3px rgba(32,178,170,.18); transform:scale(1.05); }
-        .twofa-digit.filled { border-color:#20b2aa; background:#f0fffe; }
-        .twofa-digit.error  { border-color:#e74c3c !important; background:#fff5f5 !important; }
-        @keyframes twofaShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-        .twofa-digit.shake  { animation: twofaShake .35s ease; }
-        .twofa-digit-sep { color:#aaa; font-size:1.2rem; user-select:none; }
-        /* icon ring */
-        .twofa-icon-ring {
-            width:72px; height:72px; border-radius:50%;
-            background:linear-gradient(135deg,rgba(32,178,170,.13),rgba(62,205,199,.13));
-            border:3px solid rgba(32,178,170,.27);
-            display:flex; align-items:center; justify-content:center;
-            font-size:2rem; color:#20b2aa;
-            animation: twofaPulse 2s ease-in-out infinite;
-            margin: 0 auto;
-        }
-        @keyframes twofaPulse{0%,100%{box-shadow:0 0 0 0 rgba(32,178,170,.3)}50%{box-shadow:0 0 0 12px rgba(32,178,170,0)}}
-        /* submit btn */
-        .twofa-submit-btn {
-            background: linear-gradient(135deg,#20b2aa 0%,#3ecdc7 100%);
-            border:none; color:#fff; width:100%; padding:14px;
-            border-radius:12px; font-size:15px; font-weight:600;
-            cursor:pointer; transition:all .3s;
-            box-shadow:0 4px 15px rgba(32,178,170,.35);
-        }
-        .twofa-submit-btn:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 6px 25px rgba(32,178,170,.45); }
-        .twofa-submit-btn:disabled { opacity:.55; cursor:not-allowed; }
-        /* spinner */
-        .twofa-spinner {
-            display:inline-block; width:16px; height:16px;
-            border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
-            border-radius:50%; animation:twofaSpin .7s linear infinite; vertical-align:middle; margin-right:6px;
-        }
-        @keyframes twofaSpin{to{transform:rotate(360deg)}}
 
-        /* Face Login Modal */
+        .twofa-bar { height: 4px; background: linear-gradient(90deg, var(--teal), var(--purple)); }
+        .twofa-body { padding: 36px 32px 28px; }
+
+        .twofa-icon-ring {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(32,178,170,0.1), rgba(62,205,199,0.1));
+            border: 3px solid rgba(32,178,170,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--teal);
+            margin: 0 auto 16px;
+            animation: twofaPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes twofaPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(32,178,170,0.3); }
+            50%      { box-shadow: 0 0 0 12px rgba(32,178,170,0); }
+        }
+
+        .twofa-digits-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .twofa-digit {
+            width: 48px; height: 58px;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: var(--dark);
+            outline: none;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .twofa-digit:focus  { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(32,178,170,0.15); transform: scale(1.05); }
+        .twofa-digit.filled { border-color: var(--teal); background: #f0fffe; }
+        .twofa-digit.error  { border-color: #ef4444 !important; background: #fff5f5 !important; }
+        .twofa-digit-sep    { color: #94a3b8; font-size: 1.2rem; }
+
+        @keyframes twofaShake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-6px); }
+            40%     { transform: translateX(6px); }
+            60%     { transform: translateX(-4px); }
+            80%     { transform: translateX(4px); }
+        }
+
+        .twofa-digit.shake { animation: twofaShake 0.35s ease; }
+
+        .twofa-submit-btn {
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            border: none;
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(32,178,170,0.3);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .twofa-submit-btn:not(:disabled):hover { transform: translateY(-2px); }
+        .twofa-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .twofa-spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* ── FACE MODAL ──────────────────────────────────────────────── */
         .face-modal {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(5px);
             z-index: 10000;
             align-items: center;
@@ -555,146 +628,147 @@
             padding: 20px;
         }
 
-        .face-modal.active {
-            display: flex;
-        }
+        .face-modal.active { display: flex; }
 
         .face-modal-content {
             background: white;
             border-radius: 20px;
-            max-width: 600px;
+            max-width: 560px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: modalSlideIn 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s ease-out;
         }
 
         .face-modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--purple), #764ba2);
             color: white;
             padding: 24px;
             border-radius: 20px 20px 0 0;
             text-align: center;
         }
 
-        .face-modal-body {
-            padding: 32px;
-        }
+        .face-modal-body { padding: 28px; }
 
         #face-login-video {
             width: 100%;
             border-radius: 12px;
-            max-height: 400px;
+            max-height: 360px;
         }
 
         .face-status-box {
-            margin-top: 20px;
-            padding: 16px;
+            margin-top: 16px;
+            padding: 14px 16px;
             border-radius: 12px;
             text-align: center;
             font-weight: 500;
+            font-size: 14px;
         }
 
-        .face-status-box.info {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
+        .face-status-box.info    { background: #e0f2fe; color: #0369a1; }
+        .face-status-box.success { background: #d1fae5; color: #065f46; }
+        .face-status-box.error   { background: #fee2e2; color: #991b1b; }
 
-        .face-status-box.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .face-status-box.error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-close-modal {
-            background: #e5e7eb;
-            color: #374151;
-            padding: 12px 24px;
+        .btn-close-face {
+            background: #f1f5f9;
+            color: var(--dark);
+            padding: 12px;
             border: none;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 16px;
             width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
         }
 
-        .btn-close-modal:hover {
-            background: #d1d5db;
-        }
+        .btn-close-face:hover { background: #e2e8f0; }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────────── */
+        @media (max-width: 1024px) { .left-panel { display: none; } }
+        @media (max-width: 600px)  { .right-panel { width: 100%; padding: 36px 24px; } }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo-container">
-            <img src="{{ asset('images/logo.png') }}" alt="Bekri Logo" class="logo" onerror="this.style.display='none'">
-        </div>
 
-        <div class="welcome-text">
-            <h1>Bon retour</h1>
-            <p>Connectez-vous à votre compte</p>
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+        <div class="left-content">
+            <div class="left-logo">
+                <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'">
+                <span class="left-logo-text">Bekri</span>
+            </div>
+            <h1 class="left-title">Prenez soin de<br><span>votre bien-être</span><br>chaque jour</h1>
+            <p class="left-subtitle">Une plateforme dédiée à la prévention mentale et physique, conçue pour vous accompagner au quotidien.</p>
+            <div class="left-features">
+                <div class="left-feature">
+                    <div class="left-feature-icon"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+                    <div>
+                        <div class="left-feature-text">Suivi quotidien</div>
+                        <div class="left-feature-sub">Humeur, sommeil, activité & nutrition</div>
+                    </div>
+                </div>
+                <div class="left-feature">
+                    <div class="left-feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div>
+                        <div class="left-feature-text">Insights hebdomadaires IA</div>
+                        <div class="left-feature-sub">Analyses personnalisées chaque semaine</div>
+                    </div>
+                </div>
+                <div class="left-feature">
+                    <div class="left-feature-icon"><i class="bi bi-robot"></i></div>
+                    <div>
+                        <div class="left-feature-text">Coach Eya — IA bien-être</div>
+                        <div class="left-feature-sub">Disponible 24h/24 en français & anglais</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+        <div class="form-header">
+            <h1>Bon retour 👋</h1>
+            <p>Connectez-vous à votre espace bien-être</p>
         </div>
 
         {% if error %}
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle"></i>
-                <div>{{ error.messageKey|trans(error.messageData, 'security')|raw }}</div>
+                <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
             </div>
         {% endif %}
-
-        {# Fallback: login_error flash is set by LoginFormAuthenticator when the AJAX
-           login form's fetch(redirect:'follow') silently consumes the standard Symfony
-           session error key before the browser's navigation GET reaches the controller. #}
-        {% for message in app.flashes('login_error') %}
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i>
-                <div>{{ message|raw }}</div>
-            </div>
-        {% endfor %}
 
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i>
-                <div>{{ message|raw }}</div>
+                <span>{{ message }}</span>
             </div>
         {% endfor %}
 
         <form method="post" action="{{ path('app_login') }}" id="loginForm">
+
             <div class="form-group">
-                <label class="form-label" for="email">Adresse email</label>
+                <label class="form-label">Adresse email</label>
                 <div class="input-wrapper">
                     <i class="fas fa-envelope input-icon"></i>
-                    <input 
-                        type="email" 
-                        class="form-input" 
-                        id="email" 
-                        name="_username"
-                        value="{{ last_username }}"
-                        placeholder="nom@exemple.com"
-                        required
-                        autocomplete="email"
-                    >
+                    <input type="email" class="form-input" name="_username"
+                           value="{{ last_username }}" placeholder="nom@exemple.com"
+                           required autocomplete="email">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">Mot de passe</label>
+                <label class="form-label">Mot de passe</label>
                 <div class="input-wrapper">
                     <i class="fas fa-lock input-icon"></i>
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="password" 
-                        name="_password"
-                        placeholder="••••••••"
-                        required
-                        autocomplete="current-password"
-                    >
-                    <button type="button" class="toggle-password" style="position: absolute; right: 18px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #bdc3c7; cursor: pointer; padding: 0; font-size: 18px;">
+                    <input type="password" class="form-input" id="password"
+                           name="_password" placeholder="••••••••"
+                           required autocomplete="current-password">
+                    <button type="button" class="toggle-password" id="togglePwd">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
@@ -702,166 +776,123 @@
 
             <div class="form-options">
                 <div class="remember-me">
-                    <input 
-                        type="checkbox" 
-                        id="remember_me" 
-                        name="_remember_me"
-                    >
+                    <input type="checkbox" id="remember_me" name="_remember_me">
                     <label for="remember_me">Se souvenir de moi</label>
                 </div>
-                <a href="{{ path('forgot_password_request') }}" class="forgot-password">
-                    <i class="fas fa-key"></i>
-                    <span>Mot de passe oublié ?</span>
-                </a>
+                <a href="{{ path('forgot_password_request') }}" class="forgot-link">Mot de passe oublié ?</a>
             </div>
 
-            {# Invisible honeypot + timestamp #}
             <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="captcha-honeypot" aria-hidden="true">
             <input type="hidden" name="form_timestamp" value="{{ 'now'|date('U') }}">
-
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <button type="submit" class="btn-login" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i>
+            <button type="submit" class="btn-primary" id="loginBtn">
+                <i class="bi bi-box-arrow-in-right"></i>
                 <span>Se connecter</span>
                 <div class="spinner"></div>
             </button>
 
-            <div class="divider">
-                <span>OU</span>
-            </div>
+            <div class="divider"><span>OU</span></div>
 
-            <button type="button" class="btn-face-login" id="faceLoginBtn">
+            <button type="button" class="btn-face" id="faceLoginBtn">
                 <i class="bi bi-camera-video-fill"></i>
                 <span>Se connecter avec Face ID</span>
             </button>
 
-            <div class="signup-link">
+            <div class="form-footer">
                 Pas encore de compte ? <a href="{{ path('app_register') }}">Créer un compte</a>
             </div>
-            <div class="signup-link mt-2">
-                <a href="{{ path('request_reactivation') }}">Compte désactivé par un admin ? Demander une réactivation</a>
+            <div class="form-footer-secondary">
+                <a href="{{ path('request_reactivation') }}">Compte désactivé ? Demander une réactivation</a>
             </div>
         </form>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         2FA Login Modal — appears ON the login page after valid credentials
-         ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 2FA Modal -->
     <div id="twofa-login-overlay">
         <div id="twofa-login-box">
             <div class="twofa-bar"></div>
             <div class="twofa-body">
-                <!-- Logo -->
-                <div class="text-center" style="margin-bottom:20px;">
-                    <img src="{{ asset('images/logo.png') }}" alt="Bekri" style="max-width:80px;height:auto;" onerror="this.style.display='none'">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <img src="{{ asset('images/logo.png') }}" alt="Bekri" style="max-width:64px;" onerror="this.style.display='none'">
                 </div>
-
-                <!-- Icon + title -->
-                <div class="text-center" style="margin-bottom:24px;">
-                    <div class="twofa-icon-ring" style="margin-bottom:16px;">
-                        <i class="bi bi-shield-lock-fill"></i>
-                    </div>
-                    <h5 style="color:#2c3e50;font-weight:700;margin:0 0 6px;">Authentification à deux facteurs</h5>
-                    <p style="color:#95a5a6;font-size:14px;margin:0;">Entrez le code à 6 chiffres de votre application TOTP</p>
+                <div style="text-align:center; margin-bottom:24px;">
+                    <div class="twofa-icon-ring"><i class="bi bi-shield-lock-fill"></i></div>
+                    <h5 style="color:var(--dark);font-weight:800;margin:12px 0 6px;">Authentification à deux facteurs</h5>
+                    <p style="color:var(--gray);font-size:14px;">Entrez le code à 6 chiffres de votre application TOTP</p>
                 </div>
-
-                <!-- Error area -->
-                <div id="twofa-login-error" style="display:none;" class="alert" style="background:#fff5f5;color:#e74c3c;border-left:4px solid #e74c3c;padding:12px 16px;border-radius:10px;font-size:14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+                <div id="twofa-login-error" style="display:none;background:#fff5f5;color:#dc2626;border-left:4px solid #ef4444;padding:12px 16px;border-radius:10px;font-size:14px;margin-bottom:18px;align-items:center;gap:10px;">
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="twofa-login-error-text">Code incorrect. Réessayez.</span>
                 </div>
-
-                <!-- Digit inputs -->
                 <div class="twofa-digits-row" id="twofa-login-digits" style="margin-bottom:24px;">
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" autocomplete="one-time-code">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric">
                     <span class="twofa-digit-sep">—</span>
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric">
+                    <input type="text" class="twofa-digit" maxlength="1" inputmode="numeric">
                 </div>
-
-                <!-- Hidden assembled code -->
                 <input type="hidden" id="twofa-login-code" value="">
-
-                <!-- Timer -->
-                <p style="text-align:center;color:#95a5a6;font-size:13px;margin-bottom:20px;">
+                <p style="text-align:center;color:var(--gray);font-size:13px;margin-bottom:20px;">
                     <i class="bi bi-clock" style="margin-right:4px;"></i>Code valable 30 secondes
                 </p>
-
-                <!-- Submit -->
                 <button type="button" id="twofa-login-submit" class="twofa-submit-btn" disabled>
                     <i class="bi bi-check-circle" style="margin-right:8px;"></i>Vérifier le code
                 </button>
-
-                <!-- Cancel -->
                 <div style="text-align:center;margin-top:16px;">
-                    <a href="{{ path('app_logout') }}" style="color:#95a5a6;font-size:14px;text-decoration:none;">
+                    <a href="{{ path('app_logout') }}" style="color:var(--gray);font-size:14px;text-decoration:none;">
                         <i class="bi bi-arrow-left" style="margin-right:4px;"></i>Annuler et se déconnecter
                     </a>
                 </div>
-
-                <!-- Footer note -->
-                <p style="text-align:center;margin-top:20px;color:#bdc3c7;font-size:12px;">
-                    <i class="bi bi-lock" style="margin-right:4px;"></i>Connexion sécurisée · Bekri Wellbeing
-                </p>
             </div>
         </div>
     </div>
 
-    <!-- CAPTCHA Modal (shown when login_attempts >= 2) -->
-    <div id="captcha-modal" class="captcha-modal" style="display: none;">
-        <div class="captcha-modal-overlay" onclick="closeCaptchaModal()"></div>
-        <div class="captcha-modal-content">
-            <div class="captcha-modal-header">
+    <!-- CAPTCHA Modal -->
+    <div id="captcha-modal" style="display:none;" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
                 <i class="fas fa-shield-alt"></i>
                 <h5>Vérification de sécurité</h5>
             </div>
-            <div class="captcha-modal-body">
-                <div class="captcha-question">
-                    <span id="captcha-question-text">{{ captcha_question|default('')|e('js') }}</span>
-                </div>
-                <div class="captcha-input-group">
-                    <label for="captcha-modal-input">Votre réponse</label>
-                    <input type="number" id="captcha-modal-input" class="form-input" placeholder="?" min="0" step="1" autocomplete="off">
-                </div>
+            <div class="modal-body">
+                <div class="captcha-q"><span id="captcha-question-text">{{ captcha_question|default('')|e('html') }}</span></div>
+                <input type="number" id="captcha-modal-input" placeholder="?" min="0" step="1" autocomplete="off">
             </div>
-            <div class="captcha-modal-footer">
-                <button type="button" class="btn-modal btn-modal-secondary" onclick="closeCaptchaModal()">Annuler</button>
-                <button type="button" class="btn-modal btn-modal-primary" onclick="submitCaptchaAndLogin()">Vérifier et connecter</button>
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="closeCaptchaModal()">Annuler</button>
+                <button class="btn-modal-confirm" onclick="submitCaptchaAndLogin()">Vérifier et connecter</button>
             </div>
         </div>
     </div>
 
     <!-- Face Login Modal -->
-    <div id="face-login-modal" class="face-modal" onclick="if(event.target === this) { document.getElementById('close-face-modal-btn').click(); }">
-        <div class="face-modal-content" onclick="event.stopPropagation();">
+    <div id="face-login-modal" class="face-modal" onclick="if(event.target===this)document.getElementById('close-face-modal-btn').click()">
+        <div class="face-modal-content" onclick="event.stopPropagation()">
             <div class="face-modal-header">
-                <h3><i class="bi bi-camera-video-fill me-2"></i>Face Authentication</h3>
-                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Look at the camera to sign in</p>
+                <h3><i class="bi bi-camera-video-fill" style="margin-right:8px;"></i>Face Authentication</h3>
+                <p style="margin:6px 0 0;font-size:14px;opacity:0.85;">Look at the camera to sign in</p>
             </div>
             <div class="face-modal-body">
                 <div id="face-login-email-step">
-                    <label for="face-login-email" style="display: block; margin-bottom: 8px; font-weight: 500;">Enter your email first:</label>
-                    <input type="email" id="face-login-email" class="form-input" placeholder="your@email.com" style="margin-bottom: 16px;">
-                    <button type="button" class="btn-login" id="start-face-login-btn">
+                    <label style="display:block;margin-bottom:8px;font-weight:600;font-size:14px;">Enter your email first:</label>
+                    <input type="email" id="face-login-email" class="form-input" placeholder="your@email.com" style="margin-bottom:16px;padding-left:16px;">
+                    <button type="button" class="btn-primary" id="start-face-login-btn">
                         <i class="bi bi-camera-video-fill"></i>
                         <span>Start Face Login</span>
                     </button>
                 </div>
-
-                <div id="face-login-camera-step" style="display: none;">
+                <div id="face-login-camera-step" style="display:none;">
                     <video id="face-login-video" autoplay muted></video>
                     <div id="face-login-status" class="face-status-box info">
-                        <i class="bi bi-camera-video me-2"></i>
+                        <i class="bi bi-camera-video" style="margin-right:8px;"></i>
                         <span id="face-login-status-text">Initializing camera...</span>
                     </div>
                 </div>
-
-                <button type="button" class="btn-close-modal" id="close-face-modal-btn">
-                    <i class="bi bi-x-circle me-2"></i>Cancel
+                <button type="button" class="btn-close-face" id="close-face-modal-btn">
+                    <i class="bi bi-x-circle" style="margin-right:8px;"></i>Cancel
                 </button>
             </div>
         </div>
@@ -869,589 +900,258 @@
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
-        // Ensure faceapi is available globally
-        if (typeof faceapi === 'undefined') {
-            console.error('face-api.js library failed to load');
-        }
-    </script>
-    <script>
-        // Password CAPTCHA (existing code)
-        var loginAttempts = {{ app.session.get('login_attempts', 0) }};
+        // ── Password toggle ───────────────────────────────────────────
+        document.getElementById('togglePwd').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            const icon  = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // ── CAPTCHA ───────────────────────────────────────────────────
+        var loginAttempts   = {{ app.session.get('login_attempts', 0) }};
         var captchaVerified = false;
         var captchaQuestion = {{ captcha_question|default('')|json_encode|raw }};
 
-        function showCaptchaModal(question) {
-            document.getElementById('captcha-question-text').textContent = question || captchaQuestion;
+        function showCaptchaModal() {
+            document.getElementById('captcha-question-text').textContent = captchaQuestion;
             document.getElementById('captcha-modal').style.display = 'flex';
-            document.getElementById('captcha-modal-input').value = '';
-            setTimeout(function() { document.getElementById('captcha-modal-input').focus(); }, 100);
+            setTimeout(() => document.getElementById('captcha-modal-input').focus(), 100);
         }
+
         function closeCaptchaModal() {
             document.getElementById('captcha-modal').style.display = 'none';
         }
+
         function submitCaptchaAndLogin() {
-            var userAnswer = document.getElementById('captcha-modal-input').value.trim();
-            if (!userAnswer) {
-                alert('Veuillez entrer une réponse.');
-                return;
-            }
+            var ans = document.getElementById('captcha-modal-input').value.trim();
+            if (!ans) { alert('Veuillez entrer une réponse.'); return; }
             var input = document.querySelector('input[name="captcha_answer"]');
             if (!input) {
                 input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'captcha_answer';
+                input.type = 'hidden'; input.name = 'captcha_answer';
                 document.getElementById('loginForm').appendChild(input);
             }
-            input.value = userAnswer;
+            input.value = ans;
             captchaVerified = true;
             closeCaptchaModal();
-            // Use requestSubmit() so the async submit listener runs (not native bypass)
-            var form = document.getElementById('loginForm');
-            if (form.requestSubmit) {
-                form.requestSubmit();
-            } else {
-                form.submit(); // Fallback for old browsers
-            }
+            document.getElementById('loginForm').requestSubmit
+                ? document.getElementById('loginForm').requestSubmit()
+                : document.getElementById('loginForm').submit();
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            var captchaInput = document.getElementById('captcha-modal-input');
-            if (captchaInput) {
-                captchaInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') { submitCaptchaAndLogin(); }
-                });
-            }
+
+        document.getElementById('captcha-modal-input').addEventListener('keypress', e => {
+            if (e.key === 'Enter') submitCaptchaAndLogin();
         });
-        /* ══════════════════════════════════════════════════════════════════════
-           LOGIN FORM — normal submit so browser follows 302 redirect (old working flow)
-           ── Only block submit for client-side guards (honeypot, timestamp, captcha).
-           ══════════════════════════════════════════════════════════════════════ */
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            var honeypot = document.querySelector('input[name="website"]');
-            if (honeypot && honeypot.value !== '') {
-                e.preventDefault();
-                return;
-            }
+
+        // ── Login form ────────────────────────────────────────────────
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (document.querySelector('input[name="website"]').value !== '') return;
+
             var ts = parseInt(document.querySelector('input[name="form_timestamp"]').value, 10);
             if (ts && (Math.floor(Date.now() / 1000) - ts) < 3) {
-                e.preventDefault();
-                alert('Veuillez patienter quelques secondes avant de vous connecter.');
+                alert('Veuillez patienter quelques secondes.');
                 return;
             }
-            if (loginAttempts >= 2 && !captchaVerified) {
-                e.preventDefault();
-                showCaptchaModal();
-                return;
+
+            if (loginAttempts >= 2 && !captchaVerified) { showCaptchaModal(); return; }
+
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.querySelector('span').textContent = 'Connexion...';
+
+            let response;
+            try {
+                response = await fetch(this.action, {
+                    method: 'POST', body: new FormData(this),
+                    redirect: 'follow', credentials: 'same-origin'
+                });
+            } catch (err) {
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+                this.submit(); return;
             }
-            // Let form submit normally → server returns 302 → browser redirects
+
+            const finalPath = (() => { try { return new URL(response.url).pathname; } catch(e) { return ''; } })();
+
+            if (finalPath.startsWith('/2fa')) {
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+                openTwofaLoginModal(); return;
+            }
+
+            if (finalPath === '/login') {
+                btn.classList.remove('loading');
+                btn.querySelector('span').textContent = 'Se connecter';
+                this.removeEventListener('submit', arguments.callee);
+                this.submit(); return;
+            }
+
+            window.location.href = response.url || '/';
         });
 
-        /**
-         * Display an authentication error inline in the login form.
-         * Creates or reuses a dedicated #login-ajax-error <div>.
-         */
-        function showLoginError(htmlMessage) {
-            var container = document.getElementById('login-ajax-error');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'login-ajax-error';
-                container.className = 'alert alert-danger';
-                container.style.display = 'flex';
-                container.innerHTML = '<i class="fas fa-exclamation-circle"></i><div id="login-ajax-error-text"></div>';
-                // Insert before the form
-                var form = document.getElementById('loginForm');
-                form.parentNode.insertBefore(container, form);
-            }
-            document.getElementById('login-ajax-error-text').innerHTML = htmlMessage;
-            container.style.display = 'flex';
-            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        /* ══════════════════════════════════════════════════════════════════════
-           2FA LOGIN MODAL — digit UX + AJAX code verification
-           ═════════════════════════════���════════════════════════════════════════ */
+        // ── 2FA modal ─────────────────────────────────────────────────
         function openTwofaLoginModal() {
-            var overlay = document.getElementById('twofa-login-overlay');
+            const overlay = document.getElementById('twofa-login-overlay');
             overlay.classList.add('active');
-
-            // Reset state
-            clearTwofaError();
-            var digits = document.querySelectorAll('#twofa-login-digits .twofa-digit');
-            digits.forEach(function(d) {
-                d.value = '';
-                d.classList.remove('filled', 'error', 'shake');
-            });
+            const digits = [...document.querySelectorAll('#twofa-login-digits .twofa-digit')];
+            digits.forEach(d => { d.value = ''; d.classList.remove('filled','error','shake'); });
             document.getElementById('twofa-login-code').value = '';
             document.getElementById('twofa-login-submit').disabled = true;
-
-            // Focus first digit
-            if (digits[0]) setTimeout(function() { digits[0].focus(); }, 150);
-
-            // Wire digit inputs (only once)
-            if (!overlay.dataset.wired) {
-                overlay.dataset.wired = '1';
-                initTwofaDigits();
-                document.getElementById('twofa-login-submit').addEventListener('click', submitTwofaCode);
-            }
+            document.getElementById('twofa-login-error').style.display = 'none';
+            if (digits[0]) setTimeout(() => digits[0].focus(), 150);
+            if (!overlay.dataset.wired) { overlay.dataset.wired = '1'; initTwofaDigits(); document.getElementById('twofa-login-submit').addEventListener('click', submitTwofaCode); }
         }
 
         function initTwofaDigits() {
-            var digits = Array.from(document.querySelectorAll('#twofa-login-digits .twofa-digit'));
-            var hidden = document.getElementById('twofa-login-code');
-            var btn    = document.getElementById('twofa-login-submit');
-
-            function sync() {
-                var val = digits.map(function(d) { return d.value; }).join('');
-                hidden.value = val;
-                btn.disabled = val.length < 6;
-                digits.forEach(function(d) { d.classList.toggle('filled', d.value !== ''); });
-                return val;
-            }
-
-            digits.forEach(function(d, i) {
-                d.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !d.value && i > 0) digits[i-1].focus();
-                });
-                d.addEventListener('input', function() {
-                    d.value = d.value.replace(/[^0-9]/g, '').slice(-1);
-                    var val = sync();
-                    if (d.value && i < digits.length - 1) digits[i+1].focus();
-                    if (val.length === 6) setTimeout(submitTwofaCode, 250);
-                });
-                d.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    var nums = (e.clipboardData || window.clipboardData)
-                        .getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-                    Array.from(nums).forEach(function(n, j) { if (digits[j]) digits[j].value = n; });
-                    var val = sync();
-                    digits[Math.min(nums.length, digits.length - 1)].focus();
-                    if (val.length === 6) setTimeout(submitTwofaCode, 250);
-                });
+            const digits = [...document.querySelectorAll('#twofa-login-digits .twofa-digit')];
+            const hidden = document.getElementById('twofa-login-code');
+            const btn    = document.getElementById('twofa-login-submit');
+            const sync   = () => { const v = digits.map(d => d.value).join(''); hidden.value = v; btn.disabled = v.length < 6; digits.forEach(d => d.classList.toggle('filled', d.value !== '')); return v; };
+            digits.forEach((d, i) => {
+                d.addEventListener('keydown', e => { if (e.key === 'Backspace' && !d.value && i > 0) digits[i-1].focus(); });
+                d.addEventListener('input', () => { d.value = d.value.replace(/[^0-9]/g,'').slice(-1); const v = sync(); if (d.value && i < digits.length-1) digits[i+1].focus(); if (v.length === 6) setTimeout(submitTwofaCode, 250); });
+                d.addEventListener('paste', e => { e.preventDefault(); const nums = (e.clipboardData||window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,6); [...nums].forEach((n,j) => { if(digits[j]) digits[j].value=n; }); const v = sync(); digits[Math.min(nums.length, digits.length-1)].focus(); if (v.length===6) setTimeout(submitTwofaCode,250); });
             });
         }
 
-        function clearTwofaError() {
-            var err = document.getElementById('twofa-login-error');
-            if (err) err.style.display = 'none';
-        }
-
-        function showTwofaError(msg) {
-            var err = document.getElementById('twofa-login-error');
-            var txt = document.getElementById('twofa-login-error-text');
-            if (txt) txt.textContent = msg || 'Code incorrect. Réessayez.';
-            if (err) { err.style.display = 'flex'; }
-        }
-
         async function submitTwofaCode() {
-            var code = document.getElementById('twofa-login-code').value;
+            const code = document.getElementById('twofa-login-code').value;
             if (code.length < 6) return;
-
-            var btn = document.getElementById('twofa-login-submit');
-            var origHTML = btn.innerHTML;
+            const btn = document.getElementById('twofa-login-submit');
+            const orig = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="twofa-spinner"></span>Vérification…';
-            clearTwofaError();
-
-            var fd = new FormData();
-            fd.append('_auth_code', code);
-
-            var response;
-            try {
-                response = await fetch('/2fa_check', {
-                    method: 'POST',
-                    body: fd,
-                    redirect: 'follow',
-                    credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-            } catch(err) {
-                // Network error — navigate to 2FA page as fallback
-                window.location.href = '/2fa';
+            document.getElementById('twofa-login-error').style.display = 'none';
+            const fd = new FormData(); fd.append('_auth_code', code);
+            let res;
+            try { res = await fetch('/2fa_check', { method:'POST', body:fd, redirect:'follow', credentials:'same-origin', headers:{'X-Requested-With':'XMLHttpRequest'} }); }
+            catch(e) { window.location.href = '/2fa'; return; }
+            const path = (() => { try { return new URL(res.url).pathname; } catch(e) { return ''; } })();
+            if (path.startsWith('/2fa')) {
+                const digits = [...document.querySelectorAll('#twofa-login-digits .twofa-digit')];
+                digits.forEach(d => { d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake','error'); d.value=''; d.classList.remove('filled'); });
+                document.getElementById('twofa-login-code').value=''; btn.disabled=true; btn.innerHTML=orig;
+                const err = document.getElementById('twofa-login-error'); err.style.display='flex';
+                setTimeout(() => { digits.forEach(d=>d.classList.remove('shake','error')); digits[0]?.focus(); }, 400);
                 return;
             }
-
-            var finalPath = '';
-            try { finalPath = new URL(response.url).pathname; } catch(e) {}
-
-            var is2faFail = finalPath === '/2fa' || finalPath.startsWith('/2fa');
-
-            if (is2faFail) {
-                // Wrong code — shake digits, show error
-                var digits = document.querySelectorAll('#twofa-login-digits .twofa-digit');
-                digits.forEach(function(d) {
-                    d.classList.remove('shake');
-                    void d.offsetWidth; // reflow to restart animation
-                    d.classList.add('shake', 'error');
-                    d.value = '';
-                    d.classList.remove('filled');
-                });
-                document.getElementById('twofa-login-code').value = '';
-                btn.disabled = true;
-                btn.innerHTML = origHTML;
-
-                showTwofaError('Code incorrect. Réessayez.');
-
-                // Remove error styling after shake
-                setTimeout(function() {
-                    digits.forEach(function(d) { d.classList.remove('shake', 'error'); });
-                    var first = document.querySelector('#twofa-login-digits .twofa-digit');
-                    if (first) first.focus();
-                }, 400);
-                return;
-            }
-
-            // ✅ 2FA passed — navigate to dashboard
-            window.location.href = response.url || '/';
+            window.location.href = res.url || '/';
         }
 
-        // FACE LOGIN FUNCTIONALITY
-        let faceLoginStream = null;
-        
-        // Security settings
-        const MIN_DETECTION_CONFIDENCE = 0.5; // Minimum confidence score (0-1)
-        const MIN_DETECTION_DURATION = 2000; // Minimum milliseconds face must be detected before authentication (longer for login)
-        const MIN_FACE_SIZE = 100; // Minimum face size in pixels
-        
-        let faceLoginDetectedStartTime = null;
-        let lastLoginDetectionConfidence = 0;
-        
-        const faceLoginModal = document.getElementById('face-login-modal');
-        const faceLoginBtn = document.getElementById('faceLoginBtn');
-        const startFaceLoginBtn = document.getElementById('start-face-login-btn');
-        const closeFaceModalBtn = document.getElementById('close-face-modal-btn');
-        const faceLoginEmail = document.getElementById('face-login-email');
-        const faceLoginVideo = document.getElementById('face-login-video');
-        const faceLoginStatus = document.getElementById('face-login-status');
-        const faceLoginStatusText = document.getElementById('face-login-status-text');
-        const emailStep = document.getElementById('face-login-email-step');
-        const cameraStep = document.getElementById('face-login-camera-step');
+        // ── Face Login ────────────────────────────────────────────────
+        let faceLoginStream = null, isAuthenticating = false, faceLoginDetectedStartTime = null;
+        const MIN_CONFIDENCE = 0.5, MIN_DURATION = 2000, MIN_FACE_SIZE = 100;
 
-        // Open face login modal
-        faceLoginBtn.addEventListener('click', function() {
-            faceLoginModal.classList.add('active');
-            // Pre-fill email if available
-            const emailInput = document.getElementById('email');
-            if (emailInput && emailInput.value) {
-                faceLoginEmail.value = emailInput.value;
-            }
+        document.getElementById('faceLoginBtn').addEventListener('click', () => {
+            document.getElementById('face-login-modal').classList.add('active');
+            const emailInput = document.querySelector('input[name="_username"]');
+            if (emailInput?.value) document.getElementById('face-login-email').value = emailInput.value;
         });
 
-        // Close face login modal
-        closeFaceModalBtn.addEventListener('click', function() {
+        document.getElementById('close-face-modal-btn').addEventListener('click', () => {
             stopFaceLoginCamera();
-            isAuthenticating = false;
-            detectionRunning = false;
-            faceLoginDetectedStartTime = null;
-            lastLoginDetectionConfidence = 0;
-            faceLoginModal.classList.remove('active');
-            emailStep.style.display = 'block';
-            cameraStep.style.display = 'none';
-            faceLoginStatusText.textContent = 'Initializing camera...';
-            faceLoginStatus.className = 'face-status-box info';
+            isAuthenticating = false; faceLoginDetectedStartTime = null;
+            document.getElementById('face-login-modal').classList.remove('active');
+            document.getElementById('face-login-email-step').style.display = 'block';
+            document.getElementById('face-login-camera-step').style.display = 'none';
+            document.getElementById('face-login-status').className = 'face-status-box info';
+            document.getElementById('face-login-status-text').textContent = 'Initializing camera...';
         });
 
-        // Start face login process
-        startFaceLoginBtn.addEventListener('click', async function() {
-            const email = faceLoginEmail.value.trim();
-            if (!email || !email.includes('@')) {
-                alert('Please enter a valid email address');
-                return;
-            }
-
-            // Reset state
-            isAuthenticating = false;
-            detectionRunning = false;
-            faceLoginDetectedStartTime = null;
-            lastLoginDetectionConfidence = 0;
-            
-            emailStep.style.display = 'none';
-            cameraStep.style.display = 'block';
-
-            // Load models first
-            const modelsLoaded = await loadFaceLoginModels();
-            if (!modelsLoaded) {
-                emailStep.style.display = 'block';
-                cameraStep.style.display = 'none';
-                return;
-            }
-
-            // Start camera after models are loaded
-            await startFaceLoginCamera(email);
-        });
-
-        // Load face-api models
-        async function loadFaceLoginModels() {
+        document.getElementById('start-face-login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('face-login-email').value.trim();
+            if (!email || !email.includes('@')) { alert('Please enter a valid email address'); return; }
+            isAuthenticating = false; faceLoginDetectedStartTime = null;
+            document.getElementById('face-login-email-step').style.display = 'none';
+            document.getElementById('face-login-camera-step').style.display = 'block';
             const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
             try {
-                faceLoginStatusText.textContent = 'Loading AI models...';
-                faceLoginStatus.className = 'face-status-box info';
+                document.getElementById('face-login-status-text').textContent = 'Loading AI models...';
                 await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-                console.log('Face models loaded successfully');
-                return true;
-            } catch (error) {
-                console.error('Error loading models:', error);
-                showFaceLoginError('Failed to load face recognition models. Please refresh and try again.');
-                return false;
+            } catch(e) {
+                document.getElementById('face-login-status').className = 'face-status-box error';
+                document.getElementById('face-login-status-text').textContent = 'Failed to load models.';
+                document.getElementById('face-login-email-step').style.display = 'block';
+                document.getElementById('face-login-camera-step').style.display = 'none'; return;
             }
-        }
-
-        // Start camera for face login
-        async function startFaceLoginCamera(email) {
             try {
-                faceLoginStatusText.textContent = 'Starting camera...';
-                faceLoginStatus.className = 'face-status-box info';
-                
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'user'
-                    } 
-                });
-                
-                faceLoginVideo.srcObject = stream;
-                faceLoginStream = stream;
-                
-                // Wait for video to be ready
-                await new Promise((resolve) => {
-                    faceLoginVideo.onloadedmetadata = () => {
-                        faceLoginVideo.play().then(() => {
-                            faceLoginStatusText.textContent = 'Camera ready. Position your face in the frame...';
-                            faceLoginStatus.className = 'face-status-box info';
-                            resolve();
-                        });
-                    };
-                });
-                
-                // Start face detection and authentication loop
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' } });
+                const video = document.getElementById('face-login-video');
+                video.srcObject = stream; faceLoginStream = stream;
+                await new Promise(r => { video.onloadedmetadata = () => video.play().then(r); });
+                document.getElementById('face-login-status-text').textContent = 'Camera ready. Position your face...';
                 detectAndAuthenticateFace(email);
-                
-            } catch (error) {
-                console.error('Camera error:', error);
-                showFaceLoginError('Unable to access camera. Please check permissions.');
+            } catch(e) {
+                document.getElementById('face-login-status').className = 'face-status-box error';
+                document.getElementById('face-login-status-text').textContent = 'Unable to access camera.';
             }
-        }
+        });
 
-        // Stop camera
         function stopFaceLoginCamera() {
-            if (faceLoginStream) {
-                faceLoginStream.getTracks().forEach(track => track.stop());
-                faceLoginStream = null;
-            }
-            if (faceLoginVideo.srcObject) {
-                faceLoginVideo.srcObject = null;
-            }
+            faceLoginStream?.getTracks().forEach(t => t.stop());
+            faceLoginStream = null;
+            const v = document.getElementById('face-login-video');
+            if (v.srcObject) v.srcObject = null;
             isAuthenticating = false;
-            detectionRunning = false;
         }
 
-        // Detect face and authenticate
-        let isAuthenticating = false;
-        let detectionRunning = false;
-        
         async function detectAndAuthenticateFace(email) {
-            if (!faceLoginStream || !faceLoginVideo.srcObject) return;
-            if (isAuthenticating) return; // Don't start new detection if already authenticating
-            
-            detectionRunning = true;
-            
+            if (!faceLoginStream || isAuthenticating) return;
+            const video = document.getElementById('face-login-video');
+            const status = document.getElementById('face-login-status');
+            const statusText = document.getElementById('face-login-status-text');
             try {
-                const detection = await faceapi
-                    .detectSingleFace(faceLoginVideo, new faceapi.TinyFaceDetectorOptions({ 
-                        inputSize: 512, // Higher resolution for better accuracy
-                        scoreThreshold: MIN_DETECTION_CONFIDENCE 
-                    }))
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-                
-                if (detection && detection.detection) {
-                    const confidence = detection.detection.score;
-                    const box = detection.detection.box;
-                    const faceSize = Math.max(box.width, box.height);
-                    
-                    // Check confidence threshold
-                    if (confidence < MIN_DETECTION_CONFIDENCE) {
-                        faceLoginStatusText.textContent = `Low detection quality (${Math.round(confidence * 100)}%). Please ensure good lighting and look directly at the camera.`;
-                        faceLoginStatus.className = 'face-status-box error';
+                const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:512,scoreThreshold:MIN_CONFIDENCE})).withFaceLandmarks().withFaceDescriptor();
+                if (det?.detection) {
+                    const { score, box } = det.detection;
+                    if (score < MIN_CONFIDENCE || Math.max(box.width,box.height) < MIN_FACE_SIZE) {
+                        status.className = 'face-status-box error';
+                        statusText.textContent = score < MIN_CONFIDENCE ? 'Low quality. Ensure good lighting.' : 'Move closer to camera.';
                         faceLoginDetectedStartTime = null;
-                        
-                        if (faceLoginStream && faceLoginVideo.srcObject) {
-                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
-                        }
-                        return;
-                    }
-                    
-                    // Check minimum face size
-                    if (faceSize < MIN_FACE_SIZE) {
-                        faceLoginStatusText.textContent = 'Move closer to the camera for better detection.';
-                        faceLoginStatus.className = 'face-status-box error';
-                        faceLoginDetectedStartTime = null;
-                        
-                        if (faceLoginStream && faceLoginVideo.srcObject) {
-                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
-                        }
-                        return;
-                    }
-                    
-                    // Track detection duration
-                    const now = Date.now();
-                    if (!faceLoginDetectedStartTime) {
-                        faceLoginDetectedStartTime = now;
-                    }
-                    
-                    const detectionDuration = now - faceLoginDetectedStartTime;
-                    lastLoginDetectionConfidence = confidence;
-                    
-                    // Require minimum detection duration before authenticating
-                    if (detectionDuration < MIN_DETECTION_DURATION) {
-                        const remainingTime = Math.ceil((MIN_DETECTION_DURATION - detectionDuration) / 1000);
-                        faceLoginStatusText.textContent = `Face detected (${Math.round(confidence * 100)}% confidence). Hold still for ${remainingTime} more second${remainingTime !== 1 ? 's' : ''}...`;
-                        faceLoginStatus.className = 'face-status-box info';
-                        
-                        if (faceLoginStream && faceLoginVideo.srcObject) {
-                            requestAnimationFrame(() => detectAndAuthenticateFace(email));
-                        }
-                        return;
-                    }
-                    
-                    // Face detected with good confidence, size, and duration
-                    if (!isAuthenticating) {
-                        isAuthenticating = true;
-                        faceLoginStatusText.textContent = `Face detected! (${Math.round(confidence * 100)}% confidence) Authenticating...`;
-                        faceLoginStatus.className = 'face-status-box info';
-                        
-                        const descriptor = Array.from(detection.descriptor);
-                        
-                        try {
-                            // Send to server for authentication
-                            const response = await fetch('/api/face-auth/login', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    email: email,
-                                    descriptor: descriptor
-                                })
-                            });
-                            
-                            const data = await response.json();
-                            
+                    } else {
+                        if (!faceLoginDetectedStartTime) faceLoginDetectedStartTime = Date.now();
+                        const remaining = Math.ceil((MIN_DURATION - (Date.now() - faceLoginDetectedStartTime)) / 1000);
+                        if (Date.now() - faceLoginDetectedStartTime < MIN_DURATION) {
+                            status.className = 'face-status-box info';
+                            statusText.textContent = `Face detected (${Math.round(score*100)}%). Hold still${remaining > 0 ? ' for '+remaining+'s' : ''}...`;
+                        } else if (!isAuthenticating) {
+                            isAuthenticating = true;
+                            status.className = 'face-status-box info';
+                            statusText.textContent = 'Authenticating...';
+                            const res = await fetch('/api/face-auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, descriptor: Array.from(det.descriptor)}) });
+                            const data = await res.json();
                             if (data.success) {
-                                showFaceLoginSuccess('Authentication successful! Redirecting...');
+                                status.className = 'face-status-box success';
+                                statusText.textContent = 'Authentication successful! Redirecting...';
                                 stopFaceLoginCamera();
-                                
-                                // Redirect to URL provided by backend
-                                // The backend has already authenticated the user and set the session
-                                setTimeout(() => {
-                                    if (data.redirectUrl) {
-                                        // Use the redirect URL from backend
-                                        window.location.href = data.redirectUrl;
-                                    } else {
-                                        // Fallback to role-based redirect if redirectUrl not provided
-                                        if (data.user.role === 'admin') {
-                                            window.location.href = '/admin';
-                                        } else if (data.user.role === 'coach') {
-                                            window.location.href = '/coach';
-                                        } else {
-                                            window.location.href = '/user';
-                                        }
-                                    }
-                                }, 500);
-                                return; // Stop detection loop
+                                setTimeout(() => { window.location.href = data.redirectUrl || '/user'; }, 500);
+                                return;
                             } else {
-                                if (data.lockoutTime) {
-                                    showFaceLoginError(`Too many failed attempts. Try again in ${data.lockoutTime} minutes.`);
-                                    stopFaceLoginCamera();
-                                    return; // Stop detection loop
-                                } else {
-                                    // If user is not verified, stop retry loop
-                                    if (data.message && data.message.includes('verify your email')) {
-                                        showFaceLoginError(data.message);
-                                        stopFaceLoginCamera();
-                                        isAuthenticating = false;
-                                        return;
-                                    }
-
-                                    faceLoginStatusText.textContent = data.message || 'Face not recognized. Please try again...';
-                                    faceLoginStatus.className = 'face-status-box error';
-                                    isAuthenticating = false;
-                                    // Wait a bit before continuing detection
-                                    setTimeout(() => {
-                                        if (faceLoginStream) {
-                                            detectAndAuthenticateFace(email);
-                                        }
-                                    }, 2000);
-                                    return;
-                                }
+                                status.className = 'face-status-box error';
+                                statusText.textContent = data.message || 'Face not recognized. Retrying...';
+                                isAuthenticating = false;
+                                setTimeout(() => { if (faceLoginStream) detectAndAuthenticateFace(email); }, 2000);
+                                return;
                             }
-                        } catch (fetchError) {
-                            console.error('Authentication request error:', fetchError);
-                            faceLoginStatusText.textContent = 'Network error. Please try again...';
-                            faceLoginStatus.className = 'face-status-box error';
-                            isAuthenticating = false;
-                            setTimeout(() => {
-                                if (faceLoginStream) {
-                                    detectAndAuthenticateFace(email);
-                                }
-                            }, 2000);
-                            return;
                         }
                     }
                 } else {
-                    // No face detected
-                    if (!isAuthenticating) {
-                        faceLoginStatusText.textContent = 'No face detected. Position your face in the frame...';
-                        faceLoginStatus.className = 'face-status-box info';
-                    }
+                    if (!isAuthenticating) { status.className='face-status-box info'; statusText.textContent='No face detected. Position your face...'; }
                     faceLoginDetectedStartTime = null;
-                    // Continue detection loop
-                    if (faceLoginStream && faceLoginVideo.srcObject) {
-                        requestAnimationFrame(() => detectAndAuthenticateFace(email));
-                    }
                 }
-            } catch (error) {
-                console.error('Face detection error:', error);
-                isAuthenticating = false;
-                faceLoginDetectedStartTime = null;
-                // Continue detection loop even on error
-                if (faceLoginStream && faceLoginVideo.srcObject) {
-                    requestAnimationFrame(() => detectAndAuthenticateFace(email));
-                }
-            }
+            } catch(e) { isAuthenticating = false; faceLoginDetectedStartTime = null; }
+            if (faceLoginStream) requestAnimationFrame(() => detectAndAuthenticateFace(email));
         }
-
-        function showFaceLoginSuccess(message) {
-            faceLoginStatusText.textContent = message;
-            faceLoginStatus.className = 'face-status-box success';
-        }
-
-        function showFaceLoginError(message) {
-            faceLoginStatusText.textContent = message;
-            faceLoginStatus.className = 'face-status-box error';
-        }
-
-        // Password visibility toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const togglePassword = document.querySelector('.toggle-password');
-            if (togglePassword) {
-                togglePassword.addEventListener('click', function() {
-                    const input = document.getElementById('password');
-                    const icon = this.querySelector('i');
-                    
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>

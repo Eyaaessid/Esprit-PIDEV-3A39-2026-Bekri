@@ -48,22 +48,22 @@ class WeeklyInsightController extends AbstractController
         $insights = $this->calculateWeeklyInsights($dailies);
         $recommendations = $this->getAIRecommendations($dailies, $insights);
 
-        // Compute global average
+        // ── Compute global average (was missing here!) ──────────────────
         $globalAvg = 0;
         if (!empty($insights['averageScores'])) {
             $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
         }
 
         return $this->render('insight/weekly.html.twig', [
-            'dailies' => $dailies,
-            'insights' => $insights,
+            'dailies'         => $dailies,
+            'insights'        => $insights,
             'recommendations' => $recommendations,
-            'globalAvg' => $globalAvg,
-            'periodStart' => $startDate,
-            'periodEnd' => $today,
+            'periodStart'     => $startDate,
+            'periodEnd'       => $today,
+            'globalAvg'       => $globalAvg,  // ← was missing!
         ]);
     }
-    
+
     #[Route('/weekly/pdf', name: 'insight_weekly_pdf')]
     public function downloadPdf(
         SuiviQuotidienRepository $suiviRepo
@@ -101,18 +101,16 @@ class WeeklyInsightController extends AbstractController
             $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
         }
 
-        // Render the PDF Twig template to HTML
         $html = $this->renderView('insight/weekly_pdf.html.twig', [
-            'user'          => $user,
-            'insights'      => $insights,
+            'user'            => $user,
+            'insights'        => $insights,
             'recommendations' => $recommendations,
-            'globalAvg'     => $globalAvg,
-            'periodStart'   => $startDate,
-            'periodEnd'     => $today,
-            'generatedAt'   => new \DateTime(),
+            'globalAvg'       => $globalAvg,
+            'periodStart'     => $startDate,
+            'periodEnd'       => $today,
+            'generatedAt'     => new \DateTime(),
         ]);
 
-        // Setup Dompdf
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
         $options->set('isHtml5ParserEnabled', true);
@@ -134,14 +132,14 @@ class WeeklyInsightController extends AbstractController
             ]
         );
     }
-    
+
     private function calculateWeeklyInsights(array $dailies): array
     {
         $insights = [
-            'totalDays' => count($dailies),
+            'totalDays'     => count($dailies),
             'averageScores' => [],
-            'trends' => [],
-            'highlights' => [],
+            'trends'        => [],
+            'highlights'    => [],
         ];
 
         if (empty($dailies)) {
@@ -152,7 +150,7 @@ class WeeklyInsightController extends AbstractController
         foreach ($dailies as $daily) {
             foreach ($daily->getReponses() as $response) {
                 $category = $response->getQuestion()->getCategory();
-                $score = $this->convertResponseToScore($response->getValeur());
+                $score    = $this->convertResponseToScore($response->getValeur());
 
                 if (!isset($categoryScores[$category])) {
                     $categoryScores[$category] = [];
@@ -166,19 +164,19 @@ class WeeklyInsightController extends AbstractController
         }
 
         // Trend: first half vs second half
-        $midPoint = (int)(count($dailies) / 2);
-        $firstHalfScores = array_slice($categoryScores['humeur'] ?? [], 0, $midPoint);
+        $midPoint         = (int)(count($dailies) / 2);
+        $firstHalfScores  = array_slice($categoryScores['humeur'] ?? [], 0, $midPoint);
         $secondHalfScores = array_slice($categoryScores['humeur'] ?? [], $midPoint);
 
         if (!empty($firstHalfScores) && !empty($secondHalfScores)) {
-            $firstAvg = array_sum($firstHalfScores) / count($firstHalfScores);
+            $firstAvg  = array_sum($firstHalfScores) / count($firstHalfScores);
             $secondAvg = array_sum($secondHalfScores) / count($secondHalfScores);
             $insights['trends']['humeur'] = $secondAvg > $firstAvg ? 'Improving' : 'Declining';
         }
 
         // Best/worst day
-        $bestDay = null;
-        $worstDay = null;
+        $bestDay   = null;
+        $worstDay  = null;
         $bestScore = -1;
         $worstScore = INF;
 
@@ -191,33 +189,28 @@ class WeeklyInsightController extends AbstractController
 
             if ($avgDayScore > $bestScore) {
                 $bestScore = $avgDayScore;
-                $bestDay = $daily->getDate();
+                $bestDay   = $daily->getDate();
             }
 
             if ($avgDayScore < $worstScore) {
                 $worstScore = $avgDayScore;
-                $worstDay = $daily->getDate();
+                $worstDay   = $daily->getDate();
             }
         }
 
         $insights['highlights'] = [
-            'bestDay' => $bestDay,
-            'worstDay' => $worstDay,
-            'bestScore' => round($bestScore, 1),
+            'bestDay'    => $bestDay,
+            'worstDay'   => $worstDay,
+            'bestScore'  => round($bestScore, 1),
             'worstScore' => round($worstScore, 1),
         ];
 
         return $insights;
     }
 
-    /**
-     * Converts a text response to a percentage score (0–100).
-     * All options from the DB are mapped here.
-     */
     private function convertResponseToScore(string $valeur): float
     {
         $raw = match (strtolower(trim($valeur))) {
-            // ── Positive / best options → 100%
             'positive', 'positif',
             'très bien',
             'oui, plusieurs',
@@ -233,13 +226,12 @@ class WeeklyInsightController extends AbstractController
             'plus de 30 min',
             'énergique',
             'oui',
-            'non',         // e.g. "Avez-vous consommé des aliments transformés ?" → Non = good
+            'non',
             'tous',
             'jamais',
             '0 fois'
                 => 100.0,
 
-            // ── Middle options → 66%
             'neutre',
             'correct', 'correcte',
             'oui, un peu',
@@ -251,21 +243,18 @@ class WeeklyInsightController extends AbstractController
             'moyenne',
             'la plupart',
             'modérée', 'modéré',
-            'moyen', 'moyenne',
+            'moyen',
             '10–30 min', '10-30 min',
             'normal',
             'légers',
             'oui, modérées',
-            '1–2 fois', '1-2 fois',
-            'oui, un peu'
+            '1–2 fois', '1-2 fois'
                 => 66.0,
 
-            // ── Negative / worst options → 33%
             'négative', 'négatif',
             'pas terrible',
             'plutôt pessimiste',
             'mauvaise', 'mauvais',
-            'oui, beaucoup',   // e.g. "Avez-vous eu des difficultés à vous endormir ?" → Oui, beaucoup = bad
             'moins de 6h',
             'démotivé', 'démotivée',
             'peu équilibrée', 'peu équilibré',
@@ -273,7 +262,6 @@ class WeeklyInsightController extends AbstractController
             'faible',
             'moins de 10 min',
             'fatigué', 'fatiguée',
-            'non',             // context-dependent; handled by 100 above for "good non" questions
             'oui, très fortes',
             '3 fois ou plus',
             'souvent', 'toujours'
@@ -289,10 +277,10 @@ class WeeklyInsightController extends AbstractController
     {
         $fallback = [
             [
-                'title' => 'Continuez votre suivi',
-                'description' => 'Maintenez votre routine de suivi quotidien pour de meilleures recommandations personnalisées.',
-                'icon' => 'fa-chart-line',
-                'color' => 'text-teal-600',
+                'title'            => 'Continuez votre suivi',
+                'description'      => 'Maintenez votre routine de suivi quotidien pour de meilleures recommandations personnalisées.',
+                'icon'             => 'fa-chart-line',
+                'color'            => 'text-teal-600',
                 'suggestedObjectif' => 'Remplir le suivi quotidien chaque jour'
             ]
         ];
@@ -349,31 +337,30 @@ Règles :
 - Rédige en français";
 
         try {
-            $client = HttpClient::create();
+            $client   = HttpClient::create();
             $response = $client->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $_ENV['GROQ_API_KEY'],
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.1-8b-instant',
+                    'model'    => 'llama-3.1-8b-instant',
                     'messages' => [
                         [
-                            'role' => 'system',
-                            'content' => 'Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations personnalisées. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.' 
+                            'role'    => 'system',
+                            'content' => 'Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations personnalisées. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.'
                         ],
                         ['role' => 'user', 'content' => $prompt],
                     ],
                     'temperature' => 0.5,
-                    'max_tokens' => 700,
-                    'stream' => false,
+                    'max_tokens'  => 700,
+                    'stream'      => false,
                 ],
             ]);
 
-            $data = $response->toArray();
+            $data    = $response->toArray();
             $content = $data['choices'][0]['message']['content'] ?? '';
 
-            // Strip markdown code fences if present
             $content = preg_replace('/```json\s*/i', '', $content);
             $content = preg_replace('/```\s*/i', '', $content);
             $content = trim($content);
@@ -398,7 +385,7 @@ Règles :
 
     private function getMoodAverageLastDays(array $dailies, int $minDays = 3): ?float
     {
-        $moodScores = [];
+        $moodScores  = [];
         $daysWithMood = 0;
 
         foreach ($dailies as $daily) {

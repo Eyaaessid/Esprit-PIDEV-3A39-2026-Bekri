@@ -1,149 +1,382 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le profil — Bekri</title>
 
-{% block title %}Edit Profile - Bekri Wellbeing{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-{% block body_class %}profile-edit-page{% endblock %}
+    <style>
+        :root {
+            --teal:       #20b2aa;
+            --teal-dark:  #0d9488;
+            --teal-light: #e0f7f6;
+            --purple:     #667eea;
+            --dark:       #1a2332;
+            --gray:       #64748b;
+            --light:      #f8fafc;
+            --white:      #ffffff;
+            --sidebar-w:  260px;
+            --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+            --shadow:     0 8px 30px rgba(0,0,0,0.10);
+            --radius:     16px;
+        }
 
-{% block main %}
-<div class="container" style="margin-top: 100px; margin-bottom: 80px;">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Profile</h5>
-                        <a href="{{ path('user_profile') }}" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Back to Profile
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    {% for message in app.flashes('success') %}
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="bi bi-check-circle me-2"></i>{{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                    
-                    {% for message in app.flashes('error') %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
 
-                    <form method="post" action="{{ path('user_profile_edit') }}" enctype="multipart/form-data" id="profileForm">
-                        {{ form_widget(form._token) }}
-                        
-                        <!-- Profile Picture Section -->
-                        <div class="mb-4 text-center">
-                            <div class="mb-3">
-                                <div id="imagePreview">
-                                    {% if app.user.avatar %}
-                                        <img id="profileImage" src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" 
-                                             alt="{{ app.user.prenom }}" 
-                                             class="rounded-circle"
-                                             style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #667eea;">
-                                    {% else %}
-                                        <div id="profileImage" class="rounded-circle mx-auto d-flex align-items-center justify-content-center" 
-                                             style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                            <i class="bi bi-person-fill text-white" style="font-size: 60px;"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="row justify-content-center">
-                                <div class="col-md-8">
-                                    {{ form_row(form.avatarFile) }}
-                                    <small class="text-muted d-block mt-1">Maximum file size: 2MB. Accepted formats: JPG, PNG, GIF, WebP</small>
-                                </div>
-                            </div>
-                        </div>
+        /* SIDEBAR */
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-logo img { height:36px; }
+        .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg, var(--teal), #a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, var(--teal), var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; }
+        .sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+        .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
+        .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
+        .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
+        .nav-item i { width:20px; text-align:center; font-size:16px; }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
 
-                        <hr class="my-4">
+        .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
 
-                        <!-- Personal Information -->
-                        <h6 class="mb-3"><i class="bi bi-person-badge me-2"></i>Personal Information</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.prenom) }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.nom) }}
-                            </div>
-                        </div>
+        .topbar { background:white; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; }
+        .topbar-title { font-size:18px; font-weight:700; color:var(--dark); }
+        .topbar-sub   { font-size:13px; color:var(--gray); margin-top:2px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .topbar-btn { padding:8px 16px; border-radius:10px; background:var(--light); border:none; cursor:pointer; display:flex; align-items:center; gap:6px; color:var(--gray); font-size:13px; font-weight:500; text-decoration:none; transition:all 0.2s; font-family:'Inter',sans-serif; }
+        .topbar-btn:hover { background:var(--teal-light); color:var(--teal-dark); }
+        .topbar-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--teal), var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px; text-decoration:none; overflow:hidden; }
+        .topbar-avatar img { width:100%; height:100%; object-fit:cover; }
 
-                        <div class="mb-3">
-                            {{ form_row(form.email) }}
-                        </div>
+        .content { padding:32px; flex:1; }
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.telephone) }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.dateNaissance) }}
-                            </div>
-                        </div>
+        /* FORM CARD */
+        .form-card { background:white; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid #f1f5f9; max-width:740px; margin:0 auto; overflow:hidden; }
+        .form-card-header { padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; }
+        .form-card-header h2 { font-size:20px; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:8px; }
+        .form-card-header h2 i { color:var(--teal); }
+        .form-card-body { padding:28px 32px; }
 
-                        <hr class="my-4">
+        .section-title { font-size:14px; font-weight:700; color:var(--dark); display:flex; align-items:center; gap:8px; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #f1f5f9; }
+        .section-title i { color:var(--teal); }
 
-                        <!-- Password Change Section -->
-                        <h6 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Change Password</h6>
-                        <p class="text-muted small mb-3">Leave these fields empty if you don't want to change your password.</p>
-                        
-                        {{ form_row(form.plainPassword.first) }}
-                        {{ form_row(form.plainPassword.second) }}
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .form-group { margin-bottom:16px; }
 
-                        <hr class="my-4">
+        .form-label { display:block; font-size:13px; font-weight:600; color:var(--dark); margin-bottom:6px; }
 
-                        <!-- Submit Buttons -->
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{{ path('user_profile') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-2"></i>Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        .form-control {
+            width:100%; padding:12px 14px;
+            border:2px solid #e2e8f0; border-radius:12px;
+            font-size:14px; color:var(--dark); font-family:'Inter',sans-serif;
+            background:var(--light); outline:none; transition:all 0.25s;
+        }
+
+        .form-control:focus { border-color:var(--teal); background:white; box-shadow:0 0 0 3px rgba(32,178,170,0.1); }
+
+        .pwd-wrap { position:relative; }
+        .pwd-wrap .form-control { padding-right:44px; }
+        .pwd-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; padding:0; transition:color 0.2s; }
+        .pwd-toggle:hover { color:var(--teal); }
+
+        .form-hint { font-size:12px; color:#94a3b8; margin-top:5px; }
+        .form-divider { height:1px; background:#f1f5f9; margin:24px 0; }
+
+        /* Avatar section */
+        .avatar-section {
+            display:flex; flex-direction:column; align-items:center;
+            padding:24px; background:var(--light); border-radius:14px;
+            margin-bottom:24px; border:2px dashed #e2e8f0;
+            transition:border-color 0.25s;
+        }
+
+        .avatar-section:hover { border-color:var(--teal); }
+
+        .avatar-preview {
+            width:100px; height:100px; border-radius:50%;
+            background:linear-gradient(135deg, var(--teal), var(--purple));
+            display:flex; align-items:center; justify-content:center;
+            font-size:36px; font-weight:800; color:white;
+            overflow:hidden; margin-bottom:16px;
+            border:4px solid white; box-shadow:var(--shadow-sm);
+        }
+
+        .avatar-preview img { width:100%; height:100%; object-fit:cover; }
+
+        .avatar-upload-label {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:9px 18px; background:var(--teal-light); color:var(--teal-dark);
+            border-radius:50px; font-size:13px; font-weight:600; cursor:pointer;
+            transition:all 0.25s;
+        }
+
+        .avatar-upload-label:hover { background:var(--teal); color:white; }
+
+        .file-name { font-size:12px; color:var(--teal); margin-top:8px; display:none; }
+
+        /* Alerts */
+        .alert { padding:13px 16px; border-radius:12px; margin-bottom:16px; font-size:14px; display:flex; align-items:center; gap:10px; }
+        .alert-success { background:#f0fdf4; color:#166534; border-left:4px solid #22c55e; }
+        .alert-danger  { background:#fff5f5; color:#dc2626; border-left:4px solid #ef4444; }
+
+        /* Actions */
+        .form-actions { display:flex; justify-content:space-between; gap:12px; padding-top:24px; border-top:1px solid #f1f5f9; margin-top:8px; }
+
+        .btn { padding:11px 22px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; border:none; display:inline-flex; align-items:center; gap:8px; text-decoration:none; transition:all 0.25s; font-family:'Inter',sans-serif; }
+        .btn-teal  { background:linear-gradient(135deg, var(--teal), var(--teal-dark)); color:white; box-shadow:0 3px 10px rgba(32,178,170,0.25); }
+        .btn-teal:hover { transform:translateY(-1px); box-shadow:0 5px 15px rgba(32,178,170,0.35); }
+        .btn-ghost { background:var(--light); color:var(--gray); border:2px solid #e2e8f0; }
+        .btn-ghost:hover { background:#e2e8f0; color:var(--dark); }
+
+        .menu-toggle { display:none; background:none; border:none; font-size:22px; color:var(--dark); cursor:pointer; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
+
+        @media (max-width:768px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .sidebar-overlay.open { display:block; }
+            .main { margin-left:0; }
+            .menu-toggle { display:block; }
+            .content { padding:16px; }
+            .topbar { padding:0 16px; }
+            .form-row { grid-template-columns:1fr; }
+            .form-card-body { padding:20px; }
+            .form-card-header { padding:20px; flex-direction:column; gap:10px; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="Bekri" onerror="this.style.display='none'">
+            <span class="sidebar-logo-text">Bekri</span>
+        </div>
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">
+                {% if app.user.avatar %}<img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                {% else %}{{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}{% endif %}
+            </div>
+            <div>
+                <div class="sidebar-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                <div class="sidebar-user-role">Membre Bekri</div>
             </div>
         </div>
-    </div>
-</div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <a href="{{ path('user_dashboard') }}"  class="nav-item"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+            <a href="{{ path('suivi_today') }}"     class="nav-item"><i class="bi bi-clipboard2-pulse-fill"></i> Check-in quotidien</a>
+            <a href="{{ path('insight_weekly') }}"  class="nav-item"><i class="bi bi-graph-up-arrow"></i> Insights hebdo</a>
+            <a href="{{ path('chat_index') }}"      class="nav-item"><i class="bi bi-robot"></i> Coach Eya IA</a>
+            <div class="nav-section-label">Bien-être</div>
+            <a href="{{ path('objectif_index') }}"  class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
+            <a href="#"                             class="nav-item"><i class="bi bi-brain"></i> Test de santé mentale</a>
+            <div class="nav-section-label">Communauté</div>
+            <a href="{{ path('posts_list') }}"      class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
+            <a href="{{ path('evenements_home') }}" class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>
+            <div class="nav-section-label">Mon compte</div>
+            <a href="{{ path('user_profile') }}"    class="nav-item"><i class="bi bi-person-fill"></i> Mon profil</a>
+            <a href="{{ path('user_profile_edit') }}" class="nav-item active"><i class="bi bi-gear-fill"></i> Paramètres</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;"><i class="bi bi-box-arrow-left"></i> Se déconnecter</a>
+        </div>
+    </aside>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const profileForm = document.getElementById('profileForm');
-    const fileInput = document.querySelector('input[type="file"]');
-    
-    console.log('✅ Form found:', profileForm);
-    console.log('✅ File input found:', fileInput);
-    console.log('📋 Form action:', profileForm?.action);
-    console.log('📋 Form method:', profileForm?.method);
-    console.log('📋 Form enctype:', profileForm?.enctype);
-    
-    if (profileForm) {
-        profileForm.addEventListener('submit', function(e) {
-            console.log('🚀 FORM SUBMITTING...');
-            const formData = new FormData(this);
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log('📎', key, ':', value.name, '-', value.size, 'bytes');
-                } else {
-                    console.log('📝', key, ':', value);
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+                <div>
+                    <div class="topbar-title">Modifier le profil</div>
+                    <div class="topbar-sub">Mettez à jour vos informations</div>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <a href="{{ path('user_profile') }}" class="topbar-btn">
+                    <i class="bi bi-arrow-left"></i> Retour au profil
+                </a>
+                <a href="{{ path('user_profile') }}" class="topbar-avatar">
+                    {% if app.user.avatar %}<img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar">
+                    {% else %}{{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}{% endif %}
+                </a>
+            </div>
+        </header>
+
+        <main class="content">
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success" style="max-width:740px;margin:0 auto 16px;">
+                    <i class="bi bi-check-circle-fill"></i> {{ message }}
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger" style="max-width:740px;margin:0 auto 16px;">
+                    <i class="bi bi-exclamation-circle-fill"></i> {{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2><i class="bi bi-pencil-fill"></i> Modifier le profil</h2>
+                    <a href="{{ path('user_profile') }}" class="btn btn-ghost" style="padding:8px 16px;font-size:13px;">
+                        <i class="bi bi-x"></i> Annuler
+                    </a>
+                </div>
+
+                <div class="form-card-body">
+                    {{ form_start(form) }}
+
+                    <!-- Avatar -->
+                    <div class="section-title"><i class="bi bi-image-fill"></i> Photo de profil</div>
+                    <div class="avatar-section">
+                        <div class="avatar-preview" id="avatarPreview">
+                            {% if app.user.avatar %}
+                                <img src="{{ asset('uploads/avatars/' ~ app.user.avatar) }}" alt="avatar" id="avatarImg">
+                            {% else %}
+                                <span id="avatarInitials">{{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <label class="avatar-upload-label" for="{{ form.avatarFile.vars.id }}">
+                            <i class="bi bi-upload"></i> Changer la photo
+                        </label>
+                        {{ form_widget(form.avatarFile, {'attr': {'class': 'form-control', 'accept': 'image/*', 'style': 'display:none;'}}) }}
+                        <div class="file-name" id="fileName"><i class="bi bi-check-circle-fill"></i> <span id="fileNameText"></span></div>
+                        <p style="font-size:12px;color:#94a3b8;margin-top:8px;">JPG, PNG, GIF, WebP — max 2 Mo</p>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <!-- Personal info -->
+                    <div class="section-title"><i class="bi bi-person-badge-fill"></i> Informations personnelles</div>
+
+                    <div class="form-row">
+                        <div>
+                            <label class="form-label">{{ form_label(form.prenom) }}</label>
+                            {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.prenom) }}
+                        </div>
+                        <div>
+                            <label class="form-label">{{ form_label(form.nom) }}</label>
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form_label(form.email) }}</label>
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label class="form-label">{{ form_label(form.telephone) }}</label>
+                            {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.telephone) }}
+                        </div>
+                        <div>
+                            <label class="form-label">{{ form_label(form.dateNaissance) }}</label>
+                            {{ form_widget(form.dateNaissance, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.dateNaissance) }}
+                        </div>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <!-- Password -->
+                    <div class="section-title"><i class="bi bi-shield-lock-fill"></i> Changer le mot de passe</div>
+                    <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">Laissez vide si vous ne souhaitez pas changer votre mot de passe.</p>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form_label(form.plainPassword.first) }}</label>
+                        <div class="pwd-wrap">
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control', 'id': 'pwd_first'}}) }}
+                            <button type="button" class="pwd-toggle" id="togglePwd1"><i class="bi bi-eye"></i></button>
+                        </div>
+                        {{ form_errors(form.plainPassword.first) }}
+                        <div class="form-hint">Min. 6 caractères avec majuscule, minuscule et chiffre</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ form_label(form.plainPassword.second) }}</label>
+                        <div class="pwd-wrap">
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control', 'id': 'pwd_second'}}) }}
+                            <button type="button" class="pwd-toggle" id="togglePwd2"><i class="bi bi-eye"></i></button>
+                        </div>
+                        {{ form_errors(form.plainPassword.second) }}
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ path('user_profile') }}" class="btn btn-ghost">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-teal">
+                            <i class="bi bi-check-lg"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sidebar
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar    = document.getElementById('sidebar');
+        const overlay    = document.getElementById('sidebarOverlay');
+        if (menuToggle) { menuToggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); }); }
+        if (overlay)    { overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); }); }
+
+        // Avatar preview
+        const fileInput = document.querySelector('input[type="file"][accept="image/*"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                document.getElementById('fileNameText').textContent = file.name;
+                document.getElementById('fileName').style.display = 'block';
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const preview = document.getElementById('avatarPreview');
+                        preview.innerHTML = `<img src="${e.target.result}" alt="preview" style="width:100%;height:100%;object-fit:cover;">`;
+                    };
+                    reader.readAsDataURL(file);
                 }
-            }
-        });
-    }
-    
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            console.log('📸 File selected:', file?.name, file?.size, 'bytes');
-        });
-    }
-});
-</script>
-{% endblock %}
+            });
+        }
+
+        // Password toggles
+        function setupPwdToggle(btnId, inputId) {
+            const btn = document.getElementById(btnId);
+            const inp = document.getElementById(inputId);
+            if (!btn || !inp) return;
+            btn.addEventListener('click', () => {
+                inp.type = inp.type === 'password' ? 'text' : 'password';
+                btn.querySelector('i').className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+            });
+        }
+
+        setupPwdToggle('togglePwd1', 'pwd_first');
+        setupPwdToggle('togglePwd2', 'pwd_second');
+    </script>
+</body>
+</html>

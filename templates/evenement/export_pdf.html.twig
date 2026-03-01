@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche Événement - {{ evenement.titre }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #20b2aa; padding-bottom: 20px; margin-bottom: 30px; }
+        .title { color: #20b2aa; font-size: 28px; margin: 0; }
+        .subtitle { color: #666; font-size: 13px; margin-top: 6px; }
+        .info-section { margin-bottom: 30px; }
+        .info-section h2 { font-size: 16px; color: #20b2aa; border-bottom: 1px solid #e0f7f6; padding-bottom: 6px; margin-bottom: 14px; }
+        .info-label { font-weight: bold; width: 160px; display: inline-block; color: #555; }
+        .description { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 10px; font-size: 13px; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .badge-open     { background: #d1e7dd; color: #0f5132; }
+        .badge-full     { background: #f8d7da; color: #842029; }
+        .badge-finished { background: #e2e3e5; color: #41464b; }
+        .badge-planned  { background: #cfe2ff; color: #084298; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="title">Fiche Résumé — Événement</h1>
+        <p class="subtitle">Généré le {{ "now"|date("d/m/Y à H:i") }}</p>
+    </div>
+
+    <div class="info-section">
+        <h2>Informations Générales</h2>
+        <p><span class="info-label">Titre :</span> {{ evenement.titre }}</p>
+        <p><span class="info-label">Type :</span> {{ evenement.type.value|upper }}</p>
+        <p><span class="info-label">Date de début :</span> {{ evenement.dateDebut|date('d/m/Y à H:i') }}</p>
+        {% if evenement.dateFin %}
+        <p><span class="info-label">Date de fin :</span> {{ evenement.dateFin|date('d/m/Y à H:i') }}</p>
+        {% endif %}
+        {% if evenement.lienSession %}
+        <p><span class="info-label">Lien session :</span> {{ evenement.lienSession }}</p>
+        {% endif %}
+        <p>
+            <span class="info-label">Statut :</span>
+            <span class="badge badge-{{ evenement.statut.value|lower == 'open' ? 'open' : evenement.statut.value|lower == 'full' ? 'full' : evenement.statut.value|lower == 'finished' ? 'finished' : 'planned' }}">
+                {{ evenement.statut.value }}
+            </span>
+        </p>
+        <p><span class="info-label">Capacité :</span> {{ evenement.participations|length }} / {{ evenement.capaciteMax }} participants</p>
+    </div>
+
+    <div class="info-section">
+        <h2>Description</h2>
+        <div class="description">
+            {{ evenement.description|nl2br }}
+        </div>
+    </div>
+
+    <div class="footer">
+        BEKRI Wellbeing Platform — Tous droits réservés &copy; {{ "now"|date("Y") }}
+    </div>
+
+</body>
+</html>

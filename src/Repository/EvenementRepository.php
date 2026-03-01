@@ -16,28 +16,36 @@ class EvenementRepository extends ServiceEntityRepository
         parent::__construct($registry, Evenement::class);
     }
 
-//    /**
-//     * @return Evenement[] Returns an array of Evenement objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function findMostPopular(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.participations', 'p')
+            ->addSelect('COUNT(p.id) as participantCount')
+            ->groupBy('e.id')
+            ->orderBy('participantCount', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findOneBySomeField($value): ?Evenement
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function findCategoryDistribution(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.type as type, COUNT(e.id) as count')
+            ->groupBy('e.type')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findMonthlyTrends(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql  = "SELECT MONTH(created_at) as month, COUNT(id) as count
+                 FROM evenement
+                 WHERE created_at >= :sixMonthsAgo
+                 GROUP BY MONTH(created_at)
+                 ORDER BY month ASC";
+        return $conn->executeQuery($sql, [
+            'sixMonthsAgo' => (new \DateTime('-6 months'))->format('Y-m-d H:i:s'),
+        ])->fetchAllAssociative();
+    }
 }

@@ -14,55 +14,28 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/user', name: 'user_')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 class UserController extends AbstractController
 {
-    #[Route('', name: 'home')]
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        return $this->render('index.html.twig', [
-            'user' => $this->getUser(),
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        return $this->render('user/index.html.twig', [
+            'user' => $user,
         ]);
     }
 
-    #[Route('/regenerate-insight', name: 'regenerate_insight', methods: ['POST'])]
-    public function regenerateInsight(
-        Request $request,
-        AiEmotionalInsightService $aiEmotionalInsightService,
-        EntityManagerInterface $entityManager
-    ): Response {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
-        if (!$user instanceof Utilisateur || $user->getProfilPsychologique() === null) {
-            $this->addFlash('error', 'Profil non trouvé.');
-            return $this->redirectToRoute('user_dashboard');
-        }
-        if (!$this->isCsrfTokenValid('regenerate_insight', $request->request->get('_token', ''))) {
-            $this->addFlash('error', 'Token de sécurité invalide.');
-            return $this->redirectToRoute('user_dashboard');
-        }
-        $profile = $user->getProfilPsychologique();
-        $feedback = $aiEmotionalInsightService->generateFromScoreOnly(
-            $profile->getScoreGlobal(),
-            $profile->getProfilType()
-        );
-        if ($feedback !== null && $feedback !== '') {
-            $profile->setAiFeedback($feedback);
-            $entityManager->flush();
-            $this->addFlash('success', 'Votre analyse bien-être a été générée.');
-        } else {
-            $this->addFlash('error', 'La génération de l’analyse a échoué. Vérifiez que GROQ_API_KEY est configurée ou réessayez plus tard.');
-        }
-        return $this->redirectToRoute('user_dashboard');
-    }
-
-    #[Route('/profile', name: 'profile')]
+    #[Route('/profile', name: 'profile', methods: ['GET'])]
     public function profile(): Response
     {
         $user = $this->getUser();
-        
+
         return $this->render('user/profile.html.twig', [
             'user' => $user,
         ]);
@@ -72,7 +45,8 @@ class UserController extends AbstractController
     public function profileEdit(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        SluggerInterface $slugger
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
@@ -82,7 +56,7 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Check if email changed and is already taken
+
             $newEmail = $form->get('email')->getData();
             if ($newEmail !== $originalEmail) {
                 $existingUser = $entityManager->getRepository(Utilisateur::class)
@@ -97,61 +71,50 @@ class UserController extends AbstractController
                 }
             }
 
-            // Handle avatar upload
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $user->setPassword(
+                    $passwordHasher->hashPassword($user, $plainPassword)
+                );
+            }
+
             $avatarFile = $form->get('avatarFile')->getData();
             if ($avatarFile) {
+                $originalFilename = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $avatarFile->guessExtension();
+
                 try {
-                    $uploadDir = $this->getParameter('avatars_directory');
-                    
-                    // Delete old avatar
+                    $avatarsDirectory = $this->getParameter('avatars_directory');
+                    $avatarFile->move($avatarsDirectory, $newFilename);
+
                     if ($user->getAvatar()) {
-                        $oldFile = $uploadDir . '/' . $user->getAvatar();
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
+                        $oldAvatarPath = $avatarsDirectory . '/' . $user->getAvatar();
+                        if (file_exists($oldAvatarPath)) {
+                            unlink($oldAvatarPath);
                         }
                     }
-                    
-                    // Generate unique filename
-                    $newFilename = 'avatar_' . uniqid() . '.' . $avatarFile->guessExtension();
-                    
-                    // Move file
-                    $avatarFile->move($uploadDir, $newFilename);
-                    
-                    // Set filename
+
                     $user->setAvatar($newFilename);
-                    
+                    $this->addFlash('success', 'Avatar uploaded successfully!');
+
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Failed to upload avatar: ' . $e->getMessage());
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Unexpected error: ' . $e->getMessage());
                 }
             }
 
-            // Handle password change with validation
-            $plainPassword = $form->get('plainPassword')->getData();
-            if (!empty($plainPassword)) {
-                // Validate password strength
-                if (strlen($plainPassword) < 6) {
-                    $this->addFlash('error', 'Password must be at least 6 characters long.');
-                    return $this->render('user/profile_edit.html.twig', [
-                        'user' => $user,
-                        'form' => $form,
-                    ]);
-                }
-                
-                if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', $plainPassword)) {
-                    $this->addFlash('error', 'Password must contain at least one uppercase letter, one lowercase letter, and one number.');
-                    return $this->render('user/profile_edit.html.twig', [
-                        'user' => $user,
-                        'form' => $form,
-                    ]);
-                }
-                
-                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
-            }
-
+            // ✅ FIXED HERE
             $user->setUpdatedAt(new \DateTimeImmutable());
-            $entityManager->flush();
 
-            $this->addFlash('success', 'Your profile has been updated successfully!');
+            try {
+                $entityManager->flush();
+                $this->addFlash('success', 'Your profile has been updated successfully!');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Failed to save profile: ' . $e->getMessage());
+            }
+
             return $this->redirectToRoute('user_profile');
         }
 
@@ -161,17 +124,11 @@ class UserController extends AbstractController
         ]);
     }
 
-    /**
-     * User self-deactivation: set INACTIF, deactivated_by=user, then logout.
-     */
     #[Route('/profile/deactivate', name: 'profile_deactivate', methods: ['POST'])]
     public function deactivateAccount(Request $request, EntityManagerInterface $entityManager): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
-        if (!$user instanceof Utilisateur) {
-            return $this->redirectToRoute('user_profile');
-        }
 
         if (!$this->isCsrfTokenValid('deactivate-account', $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de sécurité invalide.');
@@ -182,9 +139,63 @@ class UserController extends AbstractController
         $user->setDeactivatedAt(new \DateTimeImmutable());
         $user->setDeactivatedBy('user');
         $user->setUpdatedAt(new \DateTimeImmutable());
+
         $entityManager->flush();
 
-        $this->addFlash('success', 'Votre compte a été désactivé. Vous pouvez le réactiver à tout moment en vous connectant et en suivant le lien envoyé par email.');
+        $this->addFlash('success', 'Votre compte a été désactivé.');
         return $this->redirectToRoute('app_logout');
+    }
+
+    #[Route('/analyse', name: 'analyse', methods: ['GET'])]
+    public function analyse(): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if ($user->getProfilPsychologique() === null) {
+            $this->addFlash('warning', 'Vous devez d\'abord compléter le test initial.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        return $this->render('user/analyse.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
+    #[Route('/regenerate-insight', name: 'regenerate_insight', methods: ['POST'])]
+    public function regenerateInsight(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        AiEmotionalInsightService $aiService
+    ): Response {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('regenerate_insight', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('user_analyse');
+        }
+
+        $profil = $user->getProfilPsychologique();
+        if ($profil === null) {
+            $this->addFlash('warning', 'Aucun profil trouvé.');
+            return $this->redirectToRoute('user_dashboard');
+        }
+
+        try {
+            $aiFeedback = $aiService->generateFromAssessment(
+                $profil->getScoreGlobal(),
+                $profil->getProfilType()
+            );
+
+            $profil->setAiFeedback($aiFeedback);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre analyse a été générée avec succès ! ✨');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Impossible de générer l\'analyse pour le moment.');
+        }
+
+        return $this->redirectToRoute('user_analyse');
     }
 }
