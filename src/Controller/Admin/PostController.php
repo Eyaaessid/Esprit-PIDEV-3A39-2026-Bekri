@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Post;
+use App\Entity\Utilisateur;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -108,6 +109,7 @@ class PostController extends AbstractController
         }
 
         // Get current user (you'll need to implement authentication)
+        /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
         if (!$user) {
             throw $this->createAccessDeniedException('You must be logged in to create a post.');

@@ -217,10 +217,9 @@ class SecurityController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_COACH')) {
-            return 'home';
+            return 'evenements_coach_dashboard';
         }
 
-        // Normal users (role USER) go to the public homepage
-        return 'home';
+        return 'user_dashboard';
     }
 }

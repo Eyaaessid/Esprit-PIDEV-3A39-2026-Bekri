@@ -72,7 +72,7 @@ class PostController extends AbstractController
         PostNotificationRepository $postNotificationRepository,
         PaginatorInterface $paginator
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur || $authUser->getId() === null) {
             $this->addFlash('error', 'You must be logged in to view notifications.');
@@ -95,7 +95,7 @@ class PostController extends AbstractController
     #[Route('/notifications/read-all', name: 'posts_notifications_read_all', methods: ['POST'])]
     public function markAllNotificationsRead(PostNotificationRepository $postNotificationRepository): Response
     {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur || $authUser->getId() === null) {
             $this->addFlash('error', 'You must be logged in.');
@@ -116,7 +116,7 @@ class PostController extends AbstractController
         EmotionalAnalysisService $emotionalAnalysisService,
         PostRiskAlertNotifier $postRiskAlertNotifier
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to create a post.');
@@ -192,7 +192,7 @@ class PostController extends AbstractController
         SavedPostRepository $savedPostRepository,
         PostRecommendationService $recommendationService
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur || $authUser->getId() === null) {
             $this->addFlash('error', 'You must be logged in to view saved posts.');
@@ -232,7 +232,7 @@ class PostController extends AbstractController
         $userHasLiked = false;
         $userHasSaved = false;
 
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if ($authUser instanceof Utilisateur) {
             $like = $entityManager->getRepository(Like::class)->findOneBy([
@@ -267,7 +267,7 @@ class PostController extends AbstractController
         EmotionalAnalysisService $emotionalAnalysisService,
         PostRiskAlertNotifier $postRiskAlertNotifier
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to edit a post.');
@@ -349,7 +349,7 @@ class PostController extends AbstractController
         Post $post,
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to delete a post.');
@@ -389,7 +389,7 @@ class PostController extends AbstractController
             return $this->json(['error' => 'Post not found'], 404);
         }
 
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             return $this->json(['error' => 'Authentication required'], 401);
@@ -445,7 +445,7 @@ class PostController extends AbstractController
             return $this->json(['error' => 'Post not found'], 404);
         }
 
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             return $this->json(['error' => 'Authentication required'], 401);

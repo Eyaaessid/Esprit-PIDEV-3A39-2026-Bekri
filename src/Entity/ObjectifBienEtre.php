@@ -23,13 +23,14 @@ class ObjectifBienEtre
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
 
-    /**
-     * Sluggable: automatically generates a unique URL-friendly slug from the titre.
-     * Example: "Boire plus d'eau" → "boire-plus-deau"
-     * The slug updates automatically when the titre changes.
-     */
+     /**
+      * Sluggable: automatically generates a unique URL-friendly slug from the titre.
+      * Example: "Boire plus d'eau" → "boire-plus-deau"
+      * The slug updates automatically when the titre changes.
+      */
     #[Gedmo\Slug(fields: ['titre'])]
     #[ORM\Column(length: 255, unique: true, nullable: true)]
+     // @phpstan-ignore-next-line
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

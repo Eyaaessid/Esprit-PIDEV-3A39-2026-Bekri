@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/comments')]
 class CommentController extends AbstractController
@@ -22,7 +22,7 @@ class CommentController extends AbstractController
         EntityManagerInterface $entityManager,
         PostInteractionNotifier $postInteractionNotifier
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to comment.');
@@ -70,7 +70,7 @@ class CommentController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to delete comments.');
@@ -106,7 +106,7 @@ class CommentController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var mixed $authUser */
+        /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if (!$authUser instanceof Utilisateur) {
             $this->addFlash('error', 'You must be logged in to edit comments.');

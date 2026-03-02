@@ -31,7 +31,7 @@ class ProfilPsychologique
     private ?string $aiFeedback = null;
 
     #[ORM\OneToOne(targetEntity: Utilisateur::class, inversedBy: 'profilPsychologique')]
-    #[ORM\JoinColumn(nullable: false, unique: true)]
+    #[ORM\JoinColumn(nullable: true, unique: true)]
     private ?Utilisateur $utilisateur = null;
 
     public function getId(): ?int

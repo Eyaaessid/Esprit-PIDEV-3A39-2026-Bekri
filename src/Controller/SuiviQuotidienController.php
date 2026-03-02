@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ReponseSuivi;
 use App\Entity\SuiviQuotidien;
+use App\Entity\Utilisateur;
 use App\Repository\ObjectifBienEtreRepository;
 use App\Repository\QuestionEvaluationRepository;
 use App\Repository\SuiviQuotidienRepository;
@@ -29,6 +30,7 @@ class SuiviQuotidienController extends AbstractController
     ): Response {
 
         // ── 1. Get real logged-in user ────────────────────────────
+        /** @var \App\Entity\Utilisateur $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');

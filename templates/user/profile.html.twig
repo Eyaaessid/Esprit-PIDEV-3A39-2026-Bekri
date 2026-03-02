@@ -39,8 +39,8 @@
         }
 
         /* ── SIDEBAR ─────────────────────────────────────────────── */
-        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; }
-        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; max-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease; overflow:hidden; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
         .sidebar-logo img { height:36px; width:auto; }
         .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg, var(--teal), #a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
@@ -241,7 +241,8 @@
             <div class="nav-section-label">Bien-être</div>
             <a href="{{ path('user_analyse') }}"      class="nav-item"><i class="bi bi-heart-pulse-fill"></i> Mon analyse bien-être</a>
             <a href="{{ path('objectif_index') }}"    class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
-             <a href="{{ path('plan_index') }}" class="nav-item"><i class="bi bi-trophy-fill"></i> Plan hebdomadaire</a>
+            <a href="{{ path('plan_index') }}" class="nav-item"><i class="bi bi-calendar2-week-fill"></i> Plan hebdomadaire</a>
+            <a href="{{ path('food_analyzer_index') }}" class="nav-item"><i class="bi bi-egg-fried"></i> Analyseur Alimentaire</a>
             <div class="nav-section-label">Communauté</div>
             <a href="{{ path('posts_list') }}"        class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>
             <a href="{{ path('evenements_home') }}"   class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>

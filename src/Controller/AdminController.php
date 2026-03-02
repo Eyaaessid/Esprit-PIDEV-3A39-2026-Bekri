@@ -18,6 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use App\Form\UserFormType;
 use App\Form\AdminUserEditFormType;
+use App\Repository\ReactivationRequestRepository;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -426,10 +427,9 @@ class AdminController extends AbstractController
     // ==================== REACTIVATION REQUESTS ====================
 
     #[Route('/reactivation-requests', name: 'reactivation_requests')]
-    public function reactivationRequests(EntityManagerInterface $entityManager): Response
+    public function reactivationRequests(ReactivationRequestRepository $reactivationRequestRepository): Response
     {
-        $pending = $entityManager->getRepository(ReactivationRequest::class)
-            ->findPendingOrderByRequestedAt();
+        $pending = $reactivationRequestRepository->findPendingOrderByRequestedAt();
 
         return $this->render('admin/reactivation_requests.html.twig', [
             'requests' => $pending,

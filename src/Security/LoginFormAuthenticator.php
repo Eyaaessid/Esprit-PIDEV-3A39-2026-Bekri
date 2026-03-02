@@ -172,7 +172,28 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $request->getSession()->remove('login_attempts');
-        return $this->successHandler->onAuthenticationSuccess($request, $token);
+        $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
+        if ($targetPath) {
+            return new \Symfony\Component\HttpFoundation\RedirectResponse($targetPath);
+        }
+
+        $roles = $token->getRoleNames();
+
+        if (in_array('ROLE_ADMIN', $roles, true)) {
+            return new \Symfony\Component\HttpFoundation\RedirectResponse(
+                $this->urlGenerator->generate('admin_dashboard')
+            );
+        }
+
+        if (in_array('ROLE_COACH', $roles, true)) {
+            return new \Symfony\Component\HttpFoundation\RedirectResponse(
+                $this->urlGenerator->generate('coach_dashboard')
+            );
+        }
+
+        return new \Symfony\Component\HttpFoundation\RedirectResponse(
+            $this->urlGenerator->generate('user_dashboard')
+        );
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response

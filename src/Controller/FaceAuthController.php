@@ -67,9 +67,11 @@ class FaceAuthController extends AbstractController
             }
             
         } catch (\Exception $e) {
+            /** @var \App\Entity\Utilisateur|null $user */
+            $user = $this->getUser();
             $this->logger->error('Face registration error', [
                 'error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getId()
+                'user_id' => $user?->getId()
             ]);
             
             return $this->json([
@@ -105,9 +107,11 @@ class FaceAuthController extends AbstractController
             }
             
         } catch (\Exception $e) {
+            /** @var \App\Entity\Utilisateur|null $user */
+            $user = $this->getUser();
             $this->logger->error('Face disable error', [
                 'error' => $e->getMessage(),
-                'user_id' => $this->getUser()?->getId()
+                'user_id' => $user?->getId()
             ]);
             
             return $this->json([
@@ -181,6 +185,7 @@ class FaceAuthController extends AbstractController
             if ($isValid) {
                 // Face authentication successful
                 // Reload user to ensure we have the latest data
+                /** @var \App\Entity\Utilisateur $user */
                 $user = $this->userProvider->loadUserByIdentifier($user->getUserIdentifier());
                 
                 // Update last login

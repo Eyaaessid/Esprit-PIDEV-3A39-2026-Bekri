@@ -29,8 +29,8 @@
         body { font-family:'Inter',sans-serif; background:var(--light); color:var(--dark); display:flex; min-height:100vh; }
 
         /* ── SIDEBAR ── */
-        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; }
-        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .sidebar { width:var(--sidebar-w); background:var(--dark); min-height:100vh; max-height:100vh; position:fixed; top:0; left:0; display:flex; flex-direction:column; z-index:100; overflow:hidden; }
+        .sidebar-logo { padding:28px 24px 20px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
         .sidebar-logo-text { font-size:20px; font-weight:800; background:linear-gradient(135deg,var(--teal),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
         .sidebar-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--purple)); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0; overflow:hidden; position:relative; }
@@ -38,13 +38,16 @@
         .avatar-dot { width:10px; height:10px; background:#22c55e; border-radius:50%; border:2px solid var(--dark); position:absolute; bottom:1px; right:1px; }
         .sidebar-user-name { font-size:14px; font-weight:600; color:white; }
         .sidebar-user-role { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
-        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; min-height:0; }
+        .sidebar-nav::-webkit-scrollbar { width:5px; }
+        .sidebar-nav::-webkit-scrollbar-track { background:transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.3); border-radius:10px; }
         .nav-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); padding:12px 24px 6px; }
         .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; border-left:3px solid transparent; }
         .nav-item:hover { color:white; background:rgba(255,255,255,0.05); }
         .nav-item.active { color:var(--teal); background:rgba(32,178,170,0.1); border-left-color:var(--teal); }
         .nav-item i { width:20px; text-align:center; font-size:16px; }
-        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); }
+        .sidebar-footer { padding:16px 0; border-top:1px solid rgba(255,255,255,0.07); flex-shrink:0; margin-top:auto; }
 
         /* ── MAIN ── */
         .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
@@ -191,12 +194,10 @@
         <a href="{{ path('evenements_admin_supervision') }}" class="nav-item"><i class="bi bi-calendar-event-fill"></i> Événements</a>
 
         <div class="nav-section-label">Compte</div>
-        <a href="{{ path('app_login') }}" class="nav-item"><i class="bi bi-box-arrow-in-right"></i> Connexion</a>
-        <a href="{{ path('app_register') }}" class="nav-item"><i class="bi bi-person-plus-fill"></i> Inscription</a>
     </nav>
     <div class="sidebar-footer">
         <a href="{{ path('app_logout') }}" class="nav-item" style="color:#f87171;">
-            <i class="bi bi-box-arrow-left"></i> Se déconnecter
+            <i class="bi bi-box-arrow-left"></i> Déconnexion
         </a>
     </div>
 </aside>

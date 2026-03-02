@@ -55,6 +55,16 @@ class EmotionalAnalysisService
         return $this->analyzeWithHeuristics($content);
     }
 
+    public function testOpenAIConnection(): EmotionAnalysisResult
+    {
+        $openAiKey = trim($this->aiApiKey);
+        if ($openAiKey === '') {
+            throw new \RuntimeException('AI_API_KEY is empty.');
+        }
+
+        return $this->analyzeWithOpenAi('I feel okay today and hopeful for tomorrow.', $openAiKey);
+    }
+
     // ─── Groq (primary AI — free) ────────────────────────────────────────────
 
     private function analyzeWithGroq(string $content, string $apiKey): EmotionAnalysisResult

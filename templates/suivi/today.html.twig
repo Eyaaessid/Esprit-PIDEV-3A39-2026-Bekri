@@ -43,12 +43,14 @@
             width: var(--sidebar-w);
             background: var(--dark);
             min-height: 100vh;
+            max-height: 100vh;
             position: fixed;
             top: 0; left: 0;
             display: flex;
             flex-direction: column;
             z-index: 100;
             transition: transform 0.3s ease;
+            overflow: hidden;
         }
 
         .sidebar-logo {
@@ -459,7 +461,9 @@
 
             <div class="nav-section-label">Bien-être</div>
             <a href="{{ path('objectif_index') }}" class="nav-item"><i class="bi bi-trophy-fill"></i> Mes objectifs</a>
-            <a href="#"                            class="nav-item"><i class="bi bi-brain"></i> Test de santé mentale</a>
+            <a href="{{ path('plan_index') }}" class="nav-item"><i class="bi bi-calendar2-week-fill"></i> Plan hebdomadaire</a>
+            <a href="{{ path('food_analyzer_index') }}" class="nav-item"><i class="bi bi-egg-fried"></i> Analyseur Alimentaire</a>
+            <a href="#" class="nav-item"><i class="bi bi-brain"></i> Test de santé mentale</a>
 
             <div class="nav-section-label">Communauté</div>
             <a href="{{ path('posts_list') }}"      class="nav-item"><i class="bi bi-newspaper"></i> Publications</a>

@@ -18,11 +18,9 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all active objectives for a specific user, ordered by creation date (newest first)
-     *
-     * @return ObjectifBienEtre[]
+     * Find active objectives for a user (paginated & optimized)
      */
-    public function findActiveByUser(Utilisateur $user): array
+    public function findActiveByUser(Utilisateur $user, int $limit = 20): array
     {
         return $this->createQueryBuilder('o')
             ->andWhere('o.utilisateur = :user')
@@ -30,29 +28,27 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('statut', 'en cours')
             ->orderBy('o.createdAt', 'DESC')
+            ->setMaxResults($limit) // ✅ LIMIT added
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Find all objectives for a specific user, regardless of status
-     * Useful for index page, history, etc.
-     *
-     * @return ObjectifBienEtre[]
+     * Find objectives for user (with pagination support)
      */
-    public function findByUser(Utilisateur $user, array $orderBy = ['createdAt' => 'DESC']): array
+    public function findByUser(Utilisateur $user, int $limit = 20): array
     {
-        return $this->findBy(
-            ['utilisateur' => $user],
-            $orderBy
-        );
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('o.createdAt', 'DESC')
+            ->setMaxResults($limit) // ✅ LIMIT added
+            ->getQuery()
+            ->getResult();
     }
 
     /**
-     * Find all distinct types of active objectives for a user
-     * Very useful for dynamic daily follow-up questions filtering
-     *
-     * @return string[] Array of unique types (e.g. ['nutrition', 'sommeil', 'humeur'])
+     * Get distinct active objective types
      */
     public function findActiveTypesByUser(Utilisateur $user): array
     {
@@ -63,17 +59,17 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('statut', 'en cours')
             ->getQuery()
-            ->getResult();
+            ->getArrayResult();
 
         return array_column($result, 'type');
     }
 
     /**
-     * Count the number of active objectives for a user
+     * Count active objectives
      */
     public function countActiveByUser(Utilisateur $user): int
     {
-        return $this->createQueryBuilder('o')
+        return (int) $this->createQueryBuilder('o')
             ->select('COUNT(o.id)')
             ->andWhere('o.utilisateur = :user')
             ->andWhere('o.statut = :statut')
@@ -84,11 +80,9 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find objectives by type and user (useful for filtering or stats)
-     *
-     * @return ObjectifBienEtre[]
+     * Find objectives by type (optimized + limited)
      */
-    public function findByUserAndType(Utilisateur $user, string $type): array
+    public function findByUserAndType(Utilisateur $user, string $type, int $limit = 20): array
     {
         return $this->createQueryBuilder('o')
             ->andWhere('o.utilisateur = :user')
@@ -96,14 +90,15 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('type', $type)
             ->orderBy('o.createdAt', 'DESC')
+            ->setMaxResults($limit) // ✅ LIMIT added
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Optional: Find recently created objectives (last 7 days for example)
+     * Find recent objectives (optimized + limited)
      */
-    public function findRecentByUser(Utilisateur $user, int $days = 7): array
+    public function findRecentByUser(Utilisateur $user, int $days = 7, int $limit = 20): array
     {
         $dateLimit = (new \DateTime())->modify("-$days days");
 
@@ -113,6 +108,7 @@ class ObjectifBienEtreRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('dateLimit', $dateLimit)
             ->orderBy('o.createdAt', 'DESC')
+            ->setMaxResults($limit) // ✅ LIMIT added
             ->getQuery()
             ->getResult();
     }

@@ -37,12 +37,13 @@ class SuiviQuotidien
     )]
     private ?string $commentaire = null;
 
-    /**
-     * Timestampable: automatically records the exact datetime the check-in was submitted.
-     * Useful for weekly insights to know precisely when data was entered.
-     */
+     /**
+      * Timestampable: automatically records the exact datetime the check-in was submitted.
+      * Useful for weekly insights to know precisely when data was entered.
+      */
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(nullable: true)]
+     // @phpstan-ignore-next-line
     private ?\DateTimeImmutable $soumisAt = null;
 
     #[ORM\OneToMany(

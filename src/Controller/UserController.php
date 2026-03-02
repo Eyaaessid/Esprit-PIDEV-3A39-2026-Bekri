@@ -183,7 +183,7 @@ class UserController extends AbstractController
         }
 
         try {
-            $aiFeedback = $aiService->generateFromAssessment(
+            $aiFeedback = $aiService->generateFromScoreOnly(
                 $profil->getScoreGlobal(),
                 $profil->getProfilType()
             );

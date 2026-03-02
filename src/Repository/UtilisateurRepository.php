@@ -16,28 +16,30 @@ class UtilisateurRepository extends ServiceEntityRepository
         parent::__construct($registry, Utilisateur::class);
     }
 
-    //    /**
-    //     * @return Utilisateur[] Returns an array of Utilisateur objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Optimized: Load all users with ProfilPsychologique
+     * Uses INNER JOIN because FK is NOT NULL.
+     */
+    public function findAllWithProfil(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->innerJoin('u.profilPsychologique', 'p')
+            ->addSelect('p')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Utilisateur
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Optimized: Load one user with ProfilPsychologique
+     */
+    public function findOneWithProfil(int $id): ?Utilisateur
+    {
+        return $this->createQueryBuilder('u')
+            ->innerJoin('u.profilPsychologique', 'p')
+            ->addSelect('p')
+            ->where('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

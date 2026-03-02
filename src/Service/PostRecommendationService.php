@@ -77,7 +77,8 @@ class PostRecommendationService
         $push($scored, $seen, $coSaved, 40, 'co-saved');
 
         // 3) Same category as posts created by current user
-        $interestCategories = $this->postRepository->findDistinctCategoriesByAuthorIds([$userId]);
+        $userIds = array_map('strval', [$userId]);
+        $interestCategories = $this->postRepository->findDistinctCategoriesByAuthorIds($userIds);
         $interestCategories = array_values(array_unique(array_filter($interestCategories)));
         $byCategory = $this->postRepository->findByCategoriesOrderedByComments($interestCategories, $excludeIds, $limit * 2, $userId);
         $push($scored, $seen, $byCategory, 30, 'same-category');
