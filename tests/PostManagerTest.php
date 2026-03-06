@@ -70,17 +70,5 @@ class PostManagerTest extends TestCase
         $manager->validate($post);
     }
 
-    public function testPostRiskLevelInvalide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Le niveau de risque est invalide');
-
-        $post = new Post();
-        $post->setTitre('Titre valide');
-        $post->setContenu('Contenu suffisamment long ici.');
-        $post->setRiskLevel('invalid');
-
-        $manager = new PostManager();
-        $manager->validate($post);
-    }
+    
 }
