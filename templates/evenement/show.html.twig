@@ -271,7 +271,7 @@
                                 <i class="bi bi-heart-pulse"></i> Session
                             {% endif %}
                         </div>
-                        {% set count = evenement.participations.count %}
+                        {% set count = participationsActives %}
                         {% set max   = evenement.capaciteMax %}
                         {% if count >= max %}
                             <div class="hero-status-badge complet"><i class="bi bi-x-circle-fill"></i> Complet</div>
@@ -297,7 +297,7 @@
                         {% endif %}
                         <div class="hero-meta-item">
                             <i class="bi bi-people-fill"></i>
-                            <span><strong>{{ evenement.participations.count }}</strong> / {{ evenement.capaciteMax }} participants</span>
+                            <span><strong>{{ participationsActives }}</strong> / {{ evenement.capaciteMax }} participants</span>
                         </div>
                         {% if evenement.lienSession %}
                         <div class="hero-meta-item">
@@ -318,11 +318,11 @@
                         <p class="description-text">{{ evenement.description }}</p>
                     </div>
 
-                    {% if evenement.participations.count > 0 %}
+                    {% if activeParticipations|length > 0 %}
                     <div class="card">
-                        <div class="card-title"><i class="bi bi-people-fill"></i> Participants ({{ evenement.participations.count }})</div>
+                        <div class="card-title"><i class="bi bi-people-fill"></i> Participants ({{ participationsActives }})</div>
                         <div class="participant-list">
-                            {% for participation in evenement.participations %}
+                            {% for participation in activeParticipations %}
                                 <div class="participant-chip">
                                     <div class="participant-chip-avatar">
                                         {{ participation.utilisateur.prenom|first|upper }}{{ participation.utilisateur.nom|first|upper }}
@@ -361,32 +361,25 @@
                         </div>
                         <div class="info-row">
                             <span class="info-label"><i class="bi bi-door-open"></i> Places restantes</span>
-                            <span class="info-value" style="color:{{ (evenement.capaciteMax - evenement.participations.count) <= 3 ? '#dc2626' : 'var(--teal-dark)' }};">
-                                {{ evenement.capaciteMax - evenement.participations.count }}
+                            <span class="info-value" style="color:{{ placesRestantes <= 3 ? '#dc2626' : 'var(--teal-dark)' }};">
+                                {{ placesRestantes }}
                             </span>
                         </div>
 
                         <!-- Progress -->
                         <div class="progress-wrap">
                             <div class="progress-label">
-                                <span>{{ evenement.participations.count }} inscrits</span>
+                                <span>{{ participationsActives }} inscrits</span>
                                 <span>{{ evenement.capaciteMax }} max</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width:{{ (evenement.participations.count / evenement.capaciteMax * 100)|round }}%"></div>
+                                <div class="progress-fill" style="width:{{ evenement.capaciteMax > 0 ? ((participationsActives / evenement.capaciteMax) * 100)|round : 0 }}%"></div>
                             </div>
                         </div>
 
                         <!-- Actions -->
                         <div class="action-wrap">
                             {% if app.user %}
-                                {% set isInscrit = false %}
-                                {% for p in evenement.participations %}
-                                    {% if p.utilisateur.id == app.user.id %}
-                                        {% set isInscrit = true %}
-                                    {% endif %}
-                                {% endfor %}
-
                                 {% if isInscrit %}
                                     <form method="post" action="{{ path('evenements_annuler', {id: evenement.id}) }}">
                                         <button type="submit" class="btn-cancel"
@@ -394,13 +387,13 @@
                                             <i class="bi bi-x-circle"></i> Annuler ma participation
                                         </button>
                                     </form>
-                                {% elseif evenement.participations.count < evenement.capaciteMax and evenement.statut.value == 'OPEN' %}
+                                {% elseif participationsActives < evenement.capaciteMax and evenement.statut.value == 'OPEN' %}
                                     <form method="post" action="{{ path('evenements_participer', {id: evenement.id}) }}">
                                         <button type="submit" class="btn-participate">
                                             <i class="bi bi-calendar-check"></i> Participer à cet événement
                                         </button>
                                     </form>
-                                {% elseif evenement.participations.count >= evenement.capaciteMax %}
+                                {% elseif participationsActives >= evenement.capaciteMax %}
                                     <button class="btn-participate" disabled style="opacity:0.5;cursor:not-allowed;">
                                         <i class="bi bi-x-circle"></i> Événement complet
                                     </button>

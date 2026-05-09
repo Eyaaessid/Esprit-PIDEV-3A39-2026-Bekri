@@ -8,6 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ObjectifBienEtreRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_objectif_user_status_created', columns: ['utilisateur_id', 'statut', 'created_at']),
+    new ORM\Index(name: 'idx_objectif_type', columns: ['type']),
+    new ORM\Index(name: 'idx_objectif_date_fin', columns: ['date_fin']),
+])]
 #[ORM\HasLifecycleCallbacks]
 class ObjectifBienEtre
 {

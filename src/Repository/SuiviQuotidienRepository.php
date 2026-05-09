@@ -31,6 +31,19 @@ class SuiviQuotidienRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findOneByUserAndDateWithResponses(Utilisateur $user, \DateTimeInterface $date): ?SuiviQuotidien
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.reponses', 'r')->addSelect('r')
+            ->leftJoin('r.question', 'q')->addSelect('q')
+            ->andWhere('s.utilisateur = :user')
+            ->andWhere('s.date = :date')
+            ->setParameter('user', $user)
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * Get all follow-ups for a user in a date range (useful for history or charts)
      *
@@ -53,6 +66,30 @@ class SuiviQuotidienRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return SuiviQuotidien[]
+     */
+    public function findByUserAndDateRangeWithResponsesAndQuestions(
+        Utilisateur $user,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        string $order = 'ASC'
+    ): array {
+        $direction = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.reponses', 'r')->addSelect('r')
+            ->leftJoin('r.question', 'q')->addSelect('q')
+            ->andWhere('s.utilisateur = :user')
+            ->andWhere('s.date BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('s.date', $direction)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Get the most recent follow-up for a user
      */
     public function findMostRecentForUser(Utilisateur $user): ?SuiviQuotidien
@@ -64,5 +101,16 @@ class SuiviQuotidienRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return SuiviQuotidien[]
+     */
+    public function findWeeklyForUserWithResponsesAndQuestions(
+        Utilisateur $user,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end
+    ): array {
+        return $this->findByUserAndDateRangeWithResponsesAndQuestions($user, $start, $end, 'ASC');
     }
 }

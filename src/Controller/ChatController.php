@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\Utilisateur;
 use App\Entity\ObjectifBienEtre;
+use App\Entity\Utilisateur;
+use App\Repository\ObjectifBienEtreRepository;
 use App\Repository\SuiviQuotidienRepository;
-use Doctrine\Common\Collections\Collection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +19,8 @@ class ChatController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
-        SuiviQuotidienRepository $suiviRepo
+        SuiviQuotidienRepository $suiviRepo,
+        ObjectifBienEtreRepository $objectifRepo
     ): Response
     {
         /** @var Utilisateur $user */
@@ -33,19 +34,10 @@ class ChatController extends AbstractController
         $startDate = clone $today;
         $startDate->modify('-6 days');
 
-        $dailies = $suiviRepo->createQueryBuilder('s')
-            ->where('s.utilisateur = :user')
-            ->andWhere('s.date BETWEEN :start AND :end')
-            ->setParameter('user', $user)
-            ->setParameter('start', $startDate)
-            ->setParameter('end', $today)
-            ->getQuery()
-            ->getResult();
+        $dailies = $suiviRepo->findByUserAndDateRangeWithResponsesAndQuestions($user, $startDate, $today);
 
         $moodAvg = $this->getMoodAverage($dailies);
-
-        /** @var Collection<int, ObjectifBienEtre> $goals */
-        $goals = $user->getObjectifBienEtres();
+        $goals = $objectifRepo->findActiveByUser($user, 10);
 
         return $this->render('chat/index.html.twig', [
             'moodAvg' => $moodAvg,
@@ -56,7 +48,8 @@ class ChatController extends AbstractController
     #[Route('/message', name: 'send', methods: ['POST'])]
 public function sendMessage(
     Request $request,
-    SuiviQuotidienRepository $suiviRepo
+    SuiviQuotidienRepository $suiviRepo,
+    ObjectifBienEtreRepository $objectifRepo
 ): Response
 {
     /** @var Utilisateur $user */
@@ -75,17 +68,10 @@ public function sendMessage(
     $startDate = clone $today;
     $startDate->modify('-6 days');
 
-    $dailies = $suiviRepo->createQueryBuilder('s')
-        ->where('s.utilisateur = :user')
-        ->andWhere('s.date BETWEEN :start AND :end')
-        ->setParameter('user', $user)
-        ->setParameter('start', $startDate)
-        ->setParameter('end', $today)
-        ->getQuery()
-        ->getResult();
+    $dailies = $suiviRepo->findByUserAndDateRangeWithResponsesAndQuestions($user, $startDate, $today);
 
     $moodAvg      = $this->getMoodAverage($dailies);
-    $goals        = $user->getObjectifBienEtres();
+    $goals        = $objectifRepo->findActiveByUser($user, 10);
     $systemPrompt = $this->buildSystemPrompt($moodAvg, $goals);
 
     // ── safely get API key ───────────────────────────────────────────
@@ -159,11 +145,17 @@ public function sendMessage(
         };
     }
 
-    private function buildSystemPrompt(float $moodAvg, Collection $goals): string
+    /**
+     * @param ObjectifBienEtre[] $goals
+     */
+    private function buildSystemPrompt(float $moodAvg, array $goals): string
     {
-        $goalsText = $goals->isEmpty()
+        $goalsText = $goals === []
             ? 'No active goals'
-            : 'Current goals: ' . implode(', ', $goals->map(fn($g) => $g->getTitre())->toArray());
+            : 'Current goals: ' . implode(', ', array_map(
+                static fn (ObjectifBienEtre $goal): string => $goal->getTitre(),
+                $goals
+            ));
     
         return "You are an assistant, a caring and encouraging wellness coach on the Bekri platform.
     

@@ -23,6 +23,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/evenements')]
 class EvenementController extends AbstractController
@@ -30,9 +33,13 @@ class EvenementController extends AbstractController
     // ========== Page d'accueil du module ==========
 
     #[Route('/home', name: 'evenements_home')]
-    public function home(EvenementRepository $evenementRepository): Response
+    public function home(EvenementRepository $evenementRepository, CacheInterface $cache): Response
     {
-        $totalEvenements = $evenementRepository->count([]);
+        $totalEvenements = $cache->get('evenements_home_total', function (ItemInterface $item) use ($evenementRepository) {
+            $item->expiresAfter(300);
+
+            return $evenementRepository->count([]);
+        });
 
         return $this->render('evenement/evenements_home.html.twig', [
             'totalEvenements' => $totalEvenements,
@@ -50,43 +57,80 @@ class EvenementController extends AbstractController
     // ========== US 5.2 - Utilisateur: Consulter les événements ==========
 
     #[Route('/', name: 'evenements_list')]
-    public function list(EvenementRepository $evenementRepository): Response
-    {
-        $evenements = $evenementRepository->findBy(
-            ['statut' => [EvenementStatut::OPEN, EvenementStatut::PLANNED, EvenementStatut::FULL]],
-            ['dateDebut' => 'ASC']
+    public function list(
+        Request $request,
+        EvenementRepository $evenementRepository,
+        ParticipationEvenementRepository $participationRepo,
+        PaginatorInterface $paginator
+    ): Response|JsonResponse {
+        $search = trim((string) $request->query->get('q', ''));
+        $queryBuilder = $evenementRepository->createPublicListQueryBuilder($search !== '' ? $search : null);
+
+        if ($search !== '') {
+            $events = $queryBuilder
+                ->setMaxResults(30)
+                ->getQuery()
+                ->getResult();
+
+            return new JsonResponse(array_map(function (Evenement $event) {
+                return [
+                    'id' => $event->getId(),
+                    'titre' => $event->getTitre(),
+                    'type' => $event->getType()?->value,
+                    'dateDebut' => $event->getDateDebut()?->format('d/m/Y H:i'),
+                    'url' => $this->generateUrl('evenements_show', ['id' => $event->getId()]),
+                ];
+            }, $events));
+        }
+
+        $evenements = $paginator->paginate(
+            $queryBuilder,
+            max(1, $request->query->getInt('page', 1)),
+            9
         );
 
         return $this->render('evenement/list.html.twig', [
             'evenements' => $evenements,
+            'totalEvenements' => $evenements->getTotalItemCount(),
+            'eventParticipationCounts' => $participationRepo->getActiveCountsByEventIds(
+                $this->extractEventIds($this->normalizeEvents($evenements->getItems()))
+            ),
         ]);
     }
 
     #[Route('/{id}', name: 'evenements_show', requirements: ['id' => '\d+'])]
     public function show(
-        Evenement $evenement,
-        ParticipationEvenementRepository $participationRepo
+        int $id,
+        EvenementRepository $evenementRepository
     ): Response {
-        /** @var Utilisateur $user */
+        $evenement = $evenementRepository->findOneDetailed($id);
+        if ($evenement === null) {
+            throw $this->createNotFoundException('Événement introuvable.');
+        }
+
+        /** @var Utilisateur|null $user */
         $user = $this->getUser();
+        $allParticipations = $evenement->getParticipations()->toArray();
+        $activeParticipations = array_values(array_filter(
+            $allParticipations,
+            static fn (ParticipationEvenement $participation): bool => $participation->getStatut() === ParticipationStatut::INSCRIT
+        ));
 
         $participation = null;
         $isInscrit     = false;
 
-        if ($user) {
-            $participation = $participationRepo->findOneBy([
-                'evenement'   => $evenement,
-                'utilisateur' => $user,
-            ]);
-            $isInscrit = $participation && $participation->getStatut() === ParticipationStatut::INSCRIT;
+        if ($user instanceof Utilisateur) {
+            foreach ($allParticipations as $existingParticipation) {
+                if ($existingParticipation->getUtilisateur()?->getId() === $user->getId()) {
+                    $participation = $existingParticipation;
+                    $isInscrit = $existingParticipation->getStatut() === ParticipationStatut::INSCRIT;
+                    break;
+                }
+            }
         }
 
-        $participationsActives = $participationRepo->count([
-            'evenement' => $evenement,
-            'statut'    => ParticipationStatut::INSCRIT,
-        ]);
-
-        $placesRestantes = $evenement->getCapaciteMax() - $participationsActives;
+        $participationsActives = count($activeParticipations);
+        $placesRestantes = max(0, $evenement->getCapaciteMax() - $participationsActives);
 
         return $this->render('evenement/show.html.twig', [
             'evenement'             => $evenement,
@@ -94,16 +138,23 @@ class EvenementController extends AbstractController
             'participation'         => $participation,
             'placesRestantes'       => $placesRestantes,
             'participationsActives' => $participationsActives,
+            'activeParticipations'  => $activeParticipations,
         ]);
     }
 
     // ========== Export PDF - Un seul événement ==========
 
     #[Route('/{id}/export-pdf', name: 'evenements_export_pdf', requirements: ['id' => '\d+'], priority: 10)]
-    public function exportPdf(Evenement $evenement): Response
+    public function exportPdf(int $id, EvenementRepository $evenementRepository, ParticipationEvenementRepository $participationRepo): Response
     {
+        $evenement = $evenementRepository->find($id);
+        if ($evenement === null) {
+            throw $this->createNotFoundException('Événement introuvable.');
+        }
+
         $html = $this->renderView('evenement/export_pdf.html.twig', [
             'evenement' => $evenement,
+            'participantCount' => $participationRepo->countActiveByEvenement($evenement),
         ]);
 
         $options = new Options();
@@ -130,12 +181,18 @@ class EvenementController extends AbstractController
     // ========== Export PDF - Tous les événements ==========
 
     #[Route('/export-all-pdf', name: 'evenements_export_all_pdf', priority: 10)]
-    public function exportAllPdf(EvenementRepository $evenementRepository): Response
+    public function exportAllPdf(EvenementRepository $evenementRepository, ParticipationEvenementRepository $participationRepo): Response
     {
-        $evenements = $evenementRepository->findBy([], ['dateDebut' => 'ASC']);
+        $evenements = $evenementRepository->createQueryBuilder('e')
+            ->orderBy('e.dateDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
 
         $html = $this->renderView('evenement/export_all_pdf.html.twig', [
             'evenements' => $evenements,
+            'participationCounts' => $participationRepo->getActiveCountsByEventIds(
+                $this->extractEventIds($evenements)
+            ),
         ]);
 
         $options = new Options();
@@ -185,10 +242,7 @@ class EvenementController extends AbstractController
             return $this->redirectToRoute('evenements_show', ['id' => $evenement->getId()]);
         }
 
-        $participationsActives = $participationRepo->count([
-            'evenement' => $evenement,
-            'statut'    => ParticipationStatut::INSCRIT,
-        ]);
+        $participationsActives = $participationRepo->countActiveByEvenement($evenement);
 
         if ($participationsActives >= $evenement->getCapaciteMax()) {
             $this->addFlash('error', 'Désolé, cet événement est complet.');
@@ -268,10 +322,7 @@ class EvenementController extends AbstractController
             return $this->redirectToRoute('evenements_list');
         }
 
-        $participations = $participationRepo->findBy(
-            ['utilisateur' => $utilisateur],
-            ['dateInscription' => 'DESC']
-        );
+        $participations = $participationRepo->findByUtilisateurWithEvenements($utilisateur);
 
         return $this->render('evenement/mes_participations.html.twig', [
             'participations' => $participations,
@@ -284,43 +335,23 @@ class EvenementController extends AbstractController
     #[Route('/coach/dashboard', name: 'evenements_coach_dashboard', priority: 10)]
     public function coachDashboard(
         EvenementRepository $evenementRepo,
-        ParticipationEvenementRepository $participationRepo
+        CacheInterface $cache
     ): Response {
         /** @var Utilisateur $coach */
         $coach = $this->getUser();
 
-        $mesEvenements   = $evenementRepo->findBy(['coach' => $coach]);
-        $totalEvenements = count($mesEvenements);
+        $stats = $cache->get(sprintf('coach_dashboard_stats_%d', $coach->getId()), function (ItemInterface $item) use ($evenementRepo, $coach) {
+            $item->expiresAfter(300);
 
-        $totalParticipations = 0;
-        $evenementsAVenir    = 0;
-        $evenementsTermines  = 0;
-
-        foreach ($mesEvenements as $evenement) {
-            $participations = $participationRepo->count([
-                'evenement' => $evenement,
-                'statut'    => ParticipationStatut::INSCRIT,
-            ]);
-            $totalParticipations += $participations;
-
-            if ($evenement->getDateDebut() > new \DateTime()) {
-                $evenementsAVenir++;
-            } elseif ($evenement->getStatut() === EvenementStatut::FINISHED) {
-                $evenementsTermines++;
-            }
-        }
-
-        $evenementsRecents = $evenementRepo->findBy(
-            ['coach' => $coach],
-            ['createdAt' => 'DESC'],
-            5
-        );
+            return $evenementRepo->getCoachDashboardStats($coach);
+        });
+        $evenementsRecents = $evenementRepo->findRecentForCoach($coach, 5);
 
         return $this->render('evenement/coach/dashboard.html.twig', [
-            'totalEvenements'     => $totalEvenements,
-            'totalParticipations' => $totalParticipations,
-            'evenementsAVenir'    => $evenementsAVenir,
-            'evenementsTermines'  => $evenementsTermines,
+            'totalEvenements'     => $stats['totalEvenements'],
+            'totalParticipations' => $stats['totalParticipations'],
+            'evenementsAVenir'    => $stats['evenementsAVenir'],
+            'evenementsTermines'  => $stats['evenementsTermines'],
             'evenementsRecents'   => $evenementsRecents,
             'coach'               => $coach,
         ]);
@@ -330,18 +361,26 @@ class EvenementController extends AbstractController
 
     #[Route('/coach/mes-evenements', name: 'evenements_coach_list', priority: 10)]
     public function coachList(
-        EvenementRepository $evenementRepo
+        Request $request,
+        EvenementRepository $evenementRepo,
+        ParticipationEvenementRepository $participationRepo,
+        PaginatorInterface $paginator
     ): Response {
         /** @var Utilisateur $coach */
         $coach = $this->getUser();
 
-        $evenements = $evenementRepo->findBy(
-            ['coach' => $coach],
-            ['dateDebut' => 'DESC']
+        $evenements = $paginator->paginate(
+            $evenementRepo->createCoachListQueryBuilder($coach),
+            max(1, $request->query->getInt('page', 1)),
+            10
         );
 
         return $this->render('evenement/coach/list.html.twig', [
             'evenements' => $evenements,
+            'totalEvenements' => $evenements->getTotalItemCount(),
+            'eventParticipationCounts' => $participationRepo->getActiveCountsByEventIds(
+                $this->extractEventIds($this->normalizeEvents($evenements->getItems()))
+            ),
             'coach'      => $coach,
         ]);
     }
@@ -452,29 +491,24 @@ class EvenementController extends AbstractController
 
     #[Route('/coach/{id}/participants', name: 'evenements_coach_participants', requirements: ['id' => '\d+'], priority: 10)]
     public function coachParticipants(
-        Evenement $evenement,
+        int $id,
+        EvenementRepository $evenementRepository,
         ParticipationEvenementRepository $participationRepo
     ): Response {
+        $evenement = $evenementRepository->findOneDetailed($id);
+        if ($evenement === null) {
+            throw $this->createNotFoundException('Événement introuvable.');
+        }
+
         /** @var Utilisateur $coach */
         $coach = $this->getUser();
-
-        // TEMPORARY DEBUG - remove after fixing
-        dump([
-            'coach_id'        => $coach->getId(),
-            'evenement_coach' => $evenement->getCoach()?->getId(),
-            'evenement_id'    => $evenement->getId(),
-            'participations'  => count($participationRepo->findBy(['evenement' => $evenement])),
-        ]);
 
         if ($evenement->getCoach()->getId() !== $coach->getId()) {
             $this->addFlash('error', 'Accès refusé.');
             return $this->redirectToRoute('evenements_coach_list');
         }
 
-        $participations = $participationRepo->findBy(
-            ['evenement' => $evenement],
-            ['dateInscription' => 'DESC']
-        );
+        $participations = $participationRepo->findByEvenementWithUtilisateurs($evenement);
 
         return $this->render('evenement/coach/participants.html.twig', [
             'evenement'      => $evenement,
@@ -488,21 +522,32 @@ class EvenementController extends AbstractController
     #[Route('/admin/supervision', name: 'evenements_admin_supervision', priority: 10)]
     public function adminSupervision(
         EvenementRepository $evenementRepo,
-        ParticipationEvenementRepository $participationRepo
+        ParticipationEvenementRepository $participationRepo,
+        Request $request,
+        PaginatorInterface $paginator,
+        CacheInterface $cache
     ): Response {
-        $evenements = $evenementRepo->findBy([], ['createdAt' => 'DESC']);
+        $evenements = $paginator->paginate(
+            $evenementRepo->createAdminSupervisionQueryBuilder(),
+            max(1, $request->query->getInt('page', 1)),
+            15
+        );
+        $stats = $cache->get('admin_evenements_supervision_stats', function (ItemInterface $item) use ($evenementRepo, $participationRepo) {
+            $item->expiresAfter(300);
 
-        $stats = [
-            'total'               => count($evenements),
-            'ouverts'             => $evenementRepo->count(['statut' => EvenementStatut::OPEN]),
-            'complets'            => $evenementRepo->count(['statut' => EvenementStatut::FULL]),
-            'termines'            => $evenementRepo->count(['statut' => EvenementStatut::FINISHED]),
-            'totalParticipations' => $participationRepo->count(['statut' => ParticipationStatut::INSCRIT]),
-        ];
+            return [
+                'total'               => $evenementRepo->count([]),
+                'ouverts'             => $evenementRepo->count(['statut' => EvenementStatut::OPEN]),
+                'complets'            => $evenementRepo->count(['statut' => EvenementStatut::FULL]),
+                'termines'            => $evenementRepo->count(['statut' => EvenementStatut::FINISHED]),
+                'totalParticipations' => $participationRepo->count(['statut' => ParticipationStatut::INSCRIT]),
+            ];
+        });
 
         return $this->render('evenement/admin/supervision.html.twig', [
             'evenements' => $evenements,
             'stats'      => $stats,
+            'totalEvenements' => $evenements->getTotalItemCount(),
         ]);
     }
 
@@ -515,27 +560,28 @@ class EvenementController extends AbstractController
     }
 
     #[Route('/calendar-data', name: 'evenement_calendar_data', priority: 10)]
-    public function calendarData(EvenementRepository $evenementRepo): JsonResponse
+    public function calendarData(EvenementRepository $evenementRepo, CacheInterface $cache): JsonResponse
     {
-        $evenements = $evenementRepo->findAll();
-        $events     = [];
+        $events = $cache->get('calendar_event_data', function (ItemInterface $item) use ($evenementRepo) {
+            $item->expiresAfter(300);
 
-        foreach ($evenements as $ev) {
-            $color = match ($ev->getType()->value) {
-                'EVENT'   => '#4e73df',
-                'SESSION' => '#1cc88a',
-                default   => '#36b9cc',
-            };
+            return array_map(function (array $event) {
+                $color = match ($event['type']->value) {
+                    'EVENT'   => '#4e73df',
+                    'SESSION' => '#1cc88a',
+                    default   => '#36b9cc',
+                };
 
-            $events[] = [
-                'id'    => $ev->getId(),
-                'title' => $ev->getTitre(),
-                'start' => $ev->getDateDebut()->format('Y-m-d\TH:i:s'),
-                'end'   => $ev->getDateFin()?->format('Y-m-d\TH:i:s'),
-                'color' => $color,
-                'url'   => '/evenements/' . $ev->getId(),
-            ];
-        }
+                return [
+                    'id'    => $event['id'],
+                    'title' => $event['titre'],
+                    'start' => $event['dateDebut']->format('Y-m-d\TH:i:s'),
+                    'end'   => $event['dateFin']?->format('Y-m-d\TH:i:s'),
+                    'color' => $color,
+                    'url'   => '/evenements/' . $event['id'],
+                ];
+            }, $evenementRepo->findCalendarEventsData());
+        });
 
         return new JsonResponse($events);
     }
@@ -543,39 +589,54 @@ class EvenementController extends AbstractController
     // ========== Statistiques ==========
 
     #[Route('/statistiques', name: 'evenements_stats', priority: 10)]
-    public function stats(EvenementRepository $evenementRepo): Response
+    public function stats(EvenementRepository $evenementRepo, CacheInterface $cache): Response
     {
-        $mostPopularRaw  = $evenementRepo->findMostPopular();
-        $mostPopularData = array_map(fn($row) => [
-            'evenement'        => $row[0],
-            'participantCount' => $row['participantCount'],
-        ], $mostPopularRaw);
+        $payload = $cache->get('evenement_stats_payload', function (ItemInterface $item) use ($evenementRepo) {
+            $item->expiresAfter(600);
 
-        $categoryRaw  = $evenementRepo->findCategoryDistribution();
-        $categoryData = array_map(fn($row) => [
-            'type'  => $row['type']->value,
-            'count' => $row['count'],
-        ], $categoryRaw);
+            $mostPopularRaw = $evenementRepo->findMostPopularData();
+            $categoryRaw = $evenementRepo->findCategoryDistributionData();
 
-        $monthlyData = $evenementRepo->findMonthlyTrends();
+            return [
+                'mostPopularData' => array_map(fn ($row) => [
+                    'id' => (int) $row['id'],
+                    'title' => $row['titre'],
+                    'participantCount' => (int) $row['participantCount'],
+                ], $mostPopularRaw),
+                'categoryData' => array_map(fn ($row) => [
+                    'type' => $row['type'],
+                    'count' => (int) $row['count'],
+                ], $categoryRaw),
+                'monthlyData' => $evenementRepo->findMonthlyTrends(),
+            ];
+        });
 
         return $this->render('evenement/stats.html.twig', [
-            'mostPopularData' => $mostPopularData,
-            'categoryData'    => $categoryData,
-            'monthlyData'     => $monthlyData,
+            'mostPopularData' => $payload['mostPopularData'],
+            'categoryData'    => $payload['categoryData'],
+            'monthlyData'     => $payload['monthlyData'],
         ]);
     }
 
     // ========== Scan QR Code Summary ==========
 
     #[Route('/{id}/scan', name: 'evenements_scan_summary', requirements: ['id' => '\d+'], priority: 10)]
-    public function scanSummary(Evenement $evenement, ParticipationEvenementRepository $participationRepo): Response
+    public function scanSummary(
+        int $id,
+        EvenementRepository $evenementRepository,
+        ParticipationEvenementRepository $participationRepo
+    ): Response
     {
-        /** @var Utilisateur $user */
+        $evenement = $evenementRepository->find($id);
+        if ($evenement === null) {
+            throw $this->createNotFoundException('Événement introuvable.');
+        }
+
+        /** @var Utilisateur|null $user */
         $user = $this->getUser();
 
         $isParticipant = false;
-        if ($user) {
+        if ($user instanceof Utilisateur) {
             $participation = $participationRepo->findOneBy([
                 'evenement'   => $evenement,
                 'utilisateur' => $user,
@@ -584,14 +645,12 @@ class EvenementController extends AbstractController
             $isParticipant = $participation !== null;
         }
 
-        $participationsActives = $participationRepo->count([
-            'evenement' => $evenement,
-            'statut'    => ParticipationStatut::INSCRIT,
-        ]);
+        $participationsActives = $participationRepo->countActiveByEvenement($evenement);
 
         // Generate PDF and encode it as base64
         $html = $this->renderView('evenement/export_pdf.html.twig', [
             'evenement' => $evenement,
+            'participantCount' => $participationsActives,
         ]);
 
         $options = new Options();
@@ -633,5 +692,31 @@ class EvenementController extends AbstractController
             'pdfDataUri'            => $pdfDataUri,
             'pdfFilename'           => $pdfFilename,
         ]);
+    }
+
+    /**
+     * @param iterable<Evenement> $events
+     * @return Evenement[]
+     */
+    private function normalizeEvents(iterable $events): array
+    {
+        return is_array($events) ? $events : iterator_to_array($events, false);
+    }
+
+    /**
+     * @param iterable<Evenement> $events
+     * @return int[]
+     */
+    private function extractEventIds(iterable $events): array
+    {
+        $ids = [];
+        foreach ($events as $event) {
+            $id = $event->getId();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

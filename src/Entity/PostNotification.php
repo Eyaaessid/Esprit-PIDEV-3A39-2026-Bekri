@@ -7,6 +7,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PostNotificationRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_post_notification_recipient_read_created', columns: ['recipient_id', 'is_read', 'created_at']),
+    new ORM\Index(name: 'idx_post_notification_actor', columns: ['actor_id']),
+    new ORM\Index(name: 'idx_post_notification_post', columns: ['post_id']),
+])]
 class PostNotification
 {
     #[ORM\Id]

@@ -3,9 +3,10 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Post;
-use App\Entity\Commentaire;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\CommentaireRepository;
+use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -14,28 +15,17 @@ class AdminController extends AbstractController
 {
     // Tables page - Posts & Comments Management
     #[Route('/tables', name: 'tables', methods: ['GET'])]
-    public function tables(EntityManagerInterface $em): Response
+    public function tables(
+        Request $request,
+        PostRepository $postRepository,
+        CommentaireRepository $commentaireRepository
+    ): Response
     {
-        // Get all posts (non-deleted)
-        $posts = $em->getRepository(Post::class)
-            ->createQueryBuilder('p')
-            ->where('p.deletedAt IS NULL')
-            ->orderBy('p.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-        
-        // Get all comments (non-deleted)
-        $comments = $em->getRepository(Commentaire::class)
-            ->createQueryBuilder('c')
-            ->where('c.deletedAt IS NULL')
-            ->orderBy('c.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-        
-        return $this->render('admin/table.html.twig', [
-            'posts' => $posts,
-            'comments' => $comments,
-        ]);
+        return $this->render('admin/table.html.twig', $this->buildContentManagementPayload(
+            $request,
+            $postRepository,
+            $commentaireRepository
+        ));
     }
 
     // Typography page
@@ -75,9 +65,17 @@ class AdminController extends AbstractController
 
     // Charts page
     #[Route('/charts', name: 'charts', methods: ['GET'])]
-    public function charts(): Response
+    public function charts(
+        Request $request,
+        PostRepository $postRepository,
+        CommentaireRepository $commentaireRepository
+    ): Response
     {
-        return $this->render('admin/chart.html.twig');
+        return $this->render('admin/chart.html.twig', $this->buildContentManagementPayload(
+            $request,
+            $postRepository,
+            $commentaireRepository
+        ));
     }
 
     // Blank page
@@ -92,5 +90,56 @@ class AdminController extends AbstractController
     public function notFound(): Response
     {
         return $this->render('admin/404.html.twig');
+    }
+
+    private function buildContentManagementPayload(
+        Request $request,
+        PostRepository $postRepository,
+        CommentaireRepository $commentaireRepository
+    ): array {
+        $limit = 20;
+        $postsPage = max(1, $request->query->getInt('postsPage', 1));
+        $commentsPage = max(1, $request->query->getInt('commentsPage', 1));
+
+        $postsQueryBuilder = $postRepository->createAdminListQueryBuilder();
+        $totalPosts = (int) (clone $postsQueryBuilder)
+            ->select('COUNT(DISTINCT p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $posts = $postsQueryBuilder
+            ->setFirstResult(($postsPage - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $commentsQueryBuilder = $commentaireRepository->createAdminListQueryBuilder();
+        $totalComments = (int) (clone $commentsQueryBuilder)
+            ->select('COUNT(DISTINCT c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $comments = $commentsQueryBuilder
+            ->setFirstResult(($commentsPage - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $postIds = array_values(array_filter(array_map(
+            static fn (Post $post): ?int => $post->getId(),
+            $posts
+        )));
+
+        return [
+            'posts' => $posts,
+            'comments' => $comments,
+            'postMetrics' => $postRepository->getInteractionMetrics($postIds),
+            'totalPosts' => $totalPosts,
+            'totalComments' => $totalComments,
+            'recentPostCount' => $postRepository->countVisibleCreatedSince(new \DateTimeImmutable('-7 days')),
+            'totalLikes' => $postRepository->countTotalLikes(),
+            'currentPostsPage' => $postsPage,
+            'currentCommentsPage' => $commentsPage,
+            'totalPostsPages' => max(1, (int) ceil($totalPosts / $limit)),
+            'totalCommentsPages' => max(1, (int) ceil($totalComments / $limit)),
+        ];
     }
 }

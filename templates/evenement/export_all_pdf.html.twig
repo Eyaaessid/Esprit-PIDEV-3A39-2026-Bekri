@@ -41,12 +41,13 @@
         </thead>
         <tbody>
             {% for event in evenements %}
+            {% set participantCount = participationCounts[event.id]|default(0) %}
             <tr>
                 <td>#{{ event.id }}</td>
                 <td><strong>{{ event.titre }}</strong></td>
                 <td><span class="badge badge-type">{{ event.type.value }}</span></td>
                 <td>{{ event.dateDebut|date('d/m/Y H:i') }}</td>
-                <td>{{ event.participations|length }} / {{ event.capaciteMax }}</td>
+                <td>{{ participantCount }} / {{ event.capaciteMax }}</td>
                 <td>
                     {% set s = event.statut.value %}
                     <span class="badge badge-{{ s == 'OPEN' ? 'open' : s == 'FULL' ? 'full' : s == 'FINISHED' ? 'finished' : 'planned' }}">

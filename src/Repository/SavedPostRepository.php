@@ -34,8 +34,6 @@ class SavedPostRepository extends ServiceEntityRepository
         $rows = $this->createQueryBuilder('sp')
             ->leftJoin('sp.post', 'p')->addSelect('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
             ->where('sp.utilisateur = :userId')
             ->andWhere('p.deletedAt IS NULL')
             ->setParameter('userId', $userId)

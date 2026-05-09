@@ -6,6 +6,9 @@ use App\Repository\ReponseSuiviRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReponseSuiviRepository::class)]
+#[ORM\Table(uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'uq_reponse_suivi', columns: ['suivi_id', 'question_id']),
+])]
 class ReponseSuivi
 {
     #[ORM\Id]

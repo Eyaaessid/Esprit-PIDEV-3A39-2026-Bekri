@@ -3,13 +3,14 @@
 namespace App\Controller;
 
 use App\Repository\SuiviQuotidienRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/insight')]
 class WeeklyInsightController extends AbstractController
@@ -17,7 +18,7 @@ class WeeklyInsightController extends AbstractController
     #[Route('/weekly', name: 'insight_weekly')]
     public function weekly(
         SuiviQuotidienRepository $suiviRepo,
-        EntityManagerInterface $em
+        CacheInterface $cache
     ): Response
     {
         $user = $this->getUser();
@@ -35,38 +36,25 @@ class WeeklyInsightController extends AbstractController
         $endDate = clone $today;
         $endDate->modify('+1 day');
 
-        $dailies = $suiviRepo->createQueryBuilder('s')
-            ->where('s.utilisateur = :user')
-            ->andWhere('s.date BETWEEN :start AND :end')
-            ->setParameter('user', $user)
-            ->setParameter('start', $startDate)
-            ->setParameter('end', $endDate)
-            ->orderBy('s.date', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $dailies = $suiviRepo->findWeeklyForUserWithResponsesAndQuestions($user, $startDate, $endDate);
 
-        $insights = $this->calculateWeeklyInsights($dailies);
-        $recommendations = $this->getAIRecommendations($dailies, $insights);
+        $payload = $this->getWeeklyPayload($cache, $user->getId(), $startDate, $dailies);
 
         // ── Compute global average (was missing here!) ──────────────────
-        $globalAvg = 0;
-        if (!empty($insights['averageScores'])) {
-            $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
-        }
-
         return $this->render('insight/weekly.html.twig', [
             'dailies'         => $dailies,
-            'insights'        => $insights,
-            'recommendations' => $recommendations,
+            'insights'        => $payload['insights'],
+            'recommendations' => $payload['recommendations'],
             'periodStart'     => $startDate,
             'periodEnd'       => $today,
-            'globalAvg'       => $globalAvg,  // ← was missing!
+            'globalAvg'       => $payload['globalAvg'],
         ]);
     }
 
     #[Route('/weekly/pdf', name: 'insight_weekly_pdf')]
     public function downloadPdf(
-        SuiviQuotidienRepository $suiviRepo
+        SuiviQuotidienRepository $suiviRepo,
+        CacheInterface $cache
     ): Response
     {
         $user = $this->getUser();
@@ -82,30 +70,14 @@ class WeeklyInsightController extends AbstractController
         $endDate = clone $today;
         $endDate->modify('+1 day');
 
-        $dailies = $suiviRepo->createQueryBuilder('s')
-            ->where('s.utilisateur = :user')
-            ->andWhere('s.date BETWEEN :start AND :end')
-            ->setParameter('user', $user)
-            ->setParameter('start', $startDate)
-            ->setParameter('end', $endDate)
-            ->orderBy('s.date', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        $insights = $this->calculateWeeklyInsights($dailies);
-        $recommendations = $this->getAIRecommendations($dailies, $insights);
-
-        // Compute global average
-        $globalAvg = 0;
-        if (!empty($insights['averageScores'])) {
-            $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
-        }
+        $dailies = $suiviRepo->findWeeklyForUserWithResponsesAndQuestions($user, $startDate, $endDate);
+        $payload = $this->getWeeklyPayload($cache, $user->getId(), $startDate, $dailies);
 
         $html = $this->renderView('insight/weekly_pdf.html.twig', [
             'user'            => $user,
-            'insights'        => $insights,
-            'recommendations' => $recommendations,
-            'globalAvg'       => $globalAvg,
+            'insights'        => $payload['insights'],
+            'recommendations' => $payload['recommendations'],
+            'globalAvg'       => $payload['globalAvg'],
             'periodStart'     => $startDate,
             'periodEnd'       => $today,
             'generatedAt'     => new \DateTime(),
@@ -406,5 +378,31 @@ Règles :
         }
 
         return array_sum($moodScores) / count($moodScores);
+    }
+
+    private function getWeeklyPayload(
+        CacheInterface $cache,
+        int $userId,
+        \DateTimeInterface $startDate,
+        array $dailies
+    ): array {
+        return $cache->get(
+            sprintf('weekly_insight_%d_%s', $userId, $startDate->format('Ymd')),
+            function (ItemInterface $item) use ($dailies) {
+                $item->expiresAfter(900);
+
+                $insights = $this->calculateWeeklyInsights($dailies);
+                $globalAvg = 0;
+                if (!empty($insights['averageScores'])) {
+                    $globalAvg = round(array_sum($insights['averageScores']) / count($insights['averageScores']), 1);
+                }
+
+                return [
+                    'insights' => $insights,
+                    'recommendations' => $this->getAIRecommendations($dailies, $insights),
+                    'globalAvg' => $globalAvg,
+                ];
+            }
+        );
     }
 }

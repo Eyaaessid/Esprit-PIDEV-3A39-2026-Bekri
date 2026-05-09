@@ -8,6 +8,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_question_test_mental', columns: ['test_mental_id']),
+])]
+#[ORM\Cache(region: 'reference_data')]
 class Question
 {
     #[ORM\Id]

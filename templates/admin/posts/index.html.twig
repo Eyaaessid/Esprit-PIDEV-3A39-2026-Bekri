@@ -309,11 +309,11 @@
                                 <span class="badge badge-category">{{ post.categorie ?? 'Non catégorisé' }}</span>
                             </td>
                             <td>
-                                <span class="badge badge-comments"><i class="bi bi-chat" style="font-size:10px;"></i> {{ post.commentaires|length }}</span>
+                                <span class="badge badge-comments"><i class="bi bi-chat" style="font-size:10px;"></i> {{ postMetrics[post.id].comments ?? 0 }}</span>
                             </td>
                             <td style="font-size:13px;color:var(--gray);white-space:nowrap;">{{ post.createdAt|date('d/m/Y') }}</td>
                             <td>
-                                <span class="badge badge-likes"><i class="bi bi-heart" style="font-size:10px;"></i> {{ post.likes|length }}</span>
+                                <span class="badge badge-likes"><i class="bi bi-heart" style="font-size:10px;"></i> {{ postMetrics[post.id].likes ?? 0 }}</span>
                             </td>
                             <td>
                                 <div class="action-group">

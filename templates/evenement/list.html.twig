@@ -228,7 +228,7 @@
             <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
             <div>
                 <div class="topbar-title">Événements Bien-être</div>
-                <div class="topbar-sub">{{ evenements|length }} événement(s) disponible(s)</div>
+                <div class="topbar-sub">{{ totalEvenements }} événement(s) disponible(s)</div>
             </div>
         </div>
         <div class="topbar-right">
@@ -266,7 +266,7 @@
                 <div class="page-header-sub">Ateliers, séances de méditation et défis santé pour votre communauté</div>
             </div>
             <div class="page-header-count">
-                <div class="page-header-count-num">{{ evenements|length }}</div>
+                <div class="page-header-count-num">{{ totalEvenements }}</div>
                 <div class="page-header-count-label">Événements disponibles</div>
             </div>
         </div>
@@ -310,6 +310,8 @@
             <!-- EVENTS GRID -->
             <div class="events-grid" id="events-container">
                 {% for evenement in evenements %}
+                    {% set participationCount = eventParticipationCounts[evenement.id]|default(0) %}
+                    {% set participationRate = evenement.capaciteMax > 0 ? ((participationCount / evenement.capaciteMax) * 100)|round : 0 %}
                     <div class="event-card" data-type="{{ evenement.type.value }}">
                         <div class="event-img">
                             <img src="{{ asset(evenement.image ?? 'assets/img/health/consultation-3.webp') }}"
@@ -324,7 +326,7 @@
                                     <i class="bi bi-calendar-event"></i> {{ evenement.type.value }}
                                 {% endif %}
                             </div>
-                            {% if evenement.participations.count >= evenement.capaciteMax %}
+                            {% if participationCount >= evenement.capaciteMax %}
                                 <div class="event-status-badge complet"><i class="bi bi-x-circle-fill"></i> Complet</div>
                             {% elseif evenement.statut.value == 'FINISHED' %}
                                 <div class="event-status-badge termine"><i class="bi bi-check-circle-fill"></i> Terminé</div>
@@ -343,19 +345,19 @@
                             <div class="event-desc">{{ evenement.description|slice(0,120) }}…</div>
                             <div class="event-meta">
                                 <div class="meta-item"><i class="bi bi-link-45deg"></i> {{ evenement.lienSession ?? 'En ligne' }}</div>
-                                <div class="meta-item"><i class="bi bi-people-fill"></i> {{ evenement.participations.count }}/{{ evenement.capaciteMax }}</div>
+                                <div class="meta-item"><i class="bi bi-people-fill"></i> {{ participationCount }}/{{ evenement.capaciteMax }}</div>
                             </div>
                             <div class="event-progress-wrap">
                                 <div class="event-progress-bar">
-                                    <div class="event-progress-fill" style="width:{{ (evenement.participations.count / evenement.capaciteMax * 100)|round }}%"></div>
+                                    <div class="event-progress-fill" style="width:{{ participationRate }}%"></div>
                                 </div>
-                                <div class="event-progress-label">{{ (evenement.capaciteMax - evenement.participations.count) }} place(s) restante(s)</div>
+                                <div class="event-progress-label">{{ evenement.capaciteMax - participationCount }} place(s) restante(s)</div>
                             </div>
                             <div class="event-actions">
                                 <a href="{{ path('evenements_show', {id: evenement.id}) }}" class="btn-details">
                                     Voir détails <i class="bi bi-arrow-right"></i>
                                 </a>
-                                {% if evenement.participations.count < evenement.capaciteMax and evenement.statut.value == 'OPEN' %}
+                                {% if participationCount < evenement.capaciteMax and evenement.statut.value == 'OPEN' %}
                                     <form method="post" action="{{ path('evenements_participer', {id: evenement.id}) }}">
                                         <button type="submit" class="btn-participate">
                                             <i class="bi bi-calendar-check"></i> Participer

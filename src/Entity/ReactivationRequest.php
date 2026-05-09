@@ -7,6 +7,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReactivationRequestRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_reactivation_user_status_requested', columns: ['utilisateur_id', 'status', 'requested_at']),
+])]
 class ReactivationRequest
 {
     public const STATUS_PENDING = 'pending';

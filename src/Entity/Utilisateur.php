@@ -18,6 +18,13 @@ use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_user_role_status', columns: ['role', 'statut']),
+    new ORM\Index(name: 'idx_user_created_at', columns: ['created_at']),
+    new ORM\Index(name: 'idx_user_reset_token', columns: ['reset_token']),
+    new ORM\Index(name: 'idx_user_reactivation_token', columns: ['reactivation_token']),
+    new ORM\Index(name: 'idx_user_verified', columns: ['is_verified']),
+])]
 #[UniqueEntity(
     fields: ['email'],
     message: 'Cet email est déjà utilisé par un autre compte.'
@@ -244,6 +251,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
     private Collection $participationsEvenements;
 
     /**
+     * @var Collection<int, SuiviQuotidien>
+     */
+    #[ORM\OneToMany(targetEntity: SuiviQuotidien::class, mappedBy: 'utilisateur')]
+    private Collection $suivisQuotidiens;
+
+    /**
      * @var Collection<int, ResultatTest>
      */
     #[ORM\OneToMany(targetEntity: ResultatTest::class, mappedBy: 'utilisateur')]
@@ -261,6 +274,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
         $this->objectifBienEtres = new ArrayCollection();
         $this->evenements = new ArrayCollection();
         $this->participationsEvenements = new ArrayCollection();
+        $this->suivisQuotidiens = new ArrayCollection();
         $this->resultatsTests = new ArrayCollection();
     }
 
@@ -804,6 +818,35 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface, 
                 $participationEvenement->setUtilisateur(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SuiviQuotidien>
+     */
+    public function getSuivisQuotidiens(): Collection
+    {
+        return $this->suivisQuotidiens;
+    }
+
+    public function addSuivisQuotidien(SuiviQuotidien $suiviQuotidien): static
+    {
+        if (!$this->suivisQuotidiens->contains($suiviQuotidien)) {
+            $this->suivisQuotidiens->add($suiviQuotidien);
+            $suiviQuotidien->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuivisQuotidien(SuiviQuotidien $suiviQuotidien): static
+    {
+        if ($this->suivisQuotidiens->removeElement($suiviQuotidien)) {
+            if ($suiviQuotidien->getUtilisateur() === $this) {
+                $suiviQuotidien->setUtilisateur(null);
+            }
+        }
+
         return $this;
     }
 

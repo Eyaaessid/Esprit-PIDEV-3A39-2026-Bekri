@@ -116,8 +116,6 @@
         .btn-danger-outline:hover { background:#fee2e2; border-color:#ef4444; }
         .btn-success { background:#16a34a; color:white; border:none; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; }
         .btn-success:hover { background:#15803d; color:white; transform:translateY(-1px); }
-        .btn-purple { background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:all 0.2s; }
-        .btn-purple:hover { opacity:0.9; color:white; transform:translateY(-1px); box-shadow:0 4px 12px rgba(102,126,234,0.4); }
         .btn-block { width:100%; justify-content:center; }
 
         /* ── ALERTS ── */
@@ -251,9 +249,6 @@
                         <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
                             <a href="{{ path('admin_profile_edit') }}" class="btn-primary-teal btn-block">
                                 <i class="bi bi-pencil-square"></i> Modifier le profil
-                            </a>
-                            <a href="{{ path('avatar_generator') }}" class="btn-purple btn-block">
-                                <i class="bi bi-stars"></i> Générer un avatar IA
                             </a>
                             <a href="{{ path('admin_dashboard') }}" class="btn-outline btn-block">
                                 <i class="bi bi-arrow-left"></i> Retour au dashboard

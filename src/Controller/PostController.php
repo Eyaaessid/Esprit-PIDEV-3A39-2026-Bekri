@@ -6,6 +6,7 @@ use App\Entity\Like;
 use App\Entity\Post;
 use App\Entity\SavedPost;
 use App\Entity\Utilisateur;
+use App\Repository\CommentaireRepository;
 use App\Repository\PostNotificationRepository;
 use App\Repository\PostRepository;
 use App\Repository\SavedPostRepository;
@@ -42,26 +43,33 @@ class PostController extends AbstractController
             6
         );
         $savedPostIds = [];
+        $likedPostIds = [];
         $unreadNotificationsCount = 0;
         $authUser = $this->getUser();
         if ($authUser instanceof Utilisateur && $authUser->getId() !== null) {
             $savedPostIds = $savedPostRepository->findSavedPostIdsByUser($authUser->getId());
+            $likedPostIds = $postRepository->findLikedPostIdsByUser($authUser->getId());
             $unreadNotificationsCount = $postNotificationRepository->countUnreadForRecipient($authUser);
         }
 
         /** @var Post[] $currentPagePosts */
-        $currentPagePosts = $posts->getItems();
-        $mainIds = array_filter(array_map(fn (Post $p) => $p->getId(), $currentPagePosts));
+        $currentPagePosts = $this->normalizePosts($posts->getItems());
+        $mainIds = $this->extractPostIds($currentPagePosts);
+        $postMetrics = $postRepository->getInteractionMetrics($mainIds);
         $recommended = $recommendationService->getRecommendedForUser(
             $authUser instanceof Utilisateur ? $authUser : null,
             6,
             array_slice($mainIds, 0, 12)
         );
+        $recommendedMetrics = $postRepository->getInteractionMetrics($this->extractPostIds($recommended));
 
         return $this->render('post/posts.html.twig', [
             'posts' => $posts,
+            'postMetrics' => $postMetrics,
             'recommendedPosts' => $recommended,
+            'recommendedMetrics' => $recommendedMetrics,
             'savedPostIds' => $savedPostIds,
+            'likedPostIds' => $likedPostIds,
             'unreadNotificationsCount' => $unreadNotificationsCount,
         ]);
     }
@@ -79,7 +87,7 @@ class PostController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $notifications = $postNotificationRepository->findForRecipient($authUser);
+        $notifications = $postNotificationRepository->createForRecipientQueryBuilder($authUser);
         $pagination = $paginator->paginate(
             $notifications,
             max(1, $request->query->getInt('page', 1)),
@@ -88,6 +96,7 @@ class PostController extends AbstractController
 
         return $this->render('post/post_notifications.html.twig', [
             'notifications' => $pagination,
+            'totalNotifications' => $postNotificationRepository->countAllForRecipient($authUser),
             'unreadNotificationsCount' => $postNotificationRepository->countUnreadForRecipient($authUser),
         ]);
     }
@@ -189,8 +198,11 @@ class PostController extends AbstractController
 
     #[Route('/saved', name: 'posts_saved', methods: ['GET'])]
     public function saved(
+        Request $request,
         SavedPostRepository $savedPostRepository,
-        PostRecommendationService $recommendationService
+        PostRepository $postRepository,
+        PostRecommendationService $recommendationService,
+        PaginatorInterface $paginator
     ): Response {
         /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
@@ -199,8 +211,15 @@ class PostController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $savedPosts = $savedPostRepository->findSavedPostsForUser($authUser->getId());
+        $savedPosts = $paginator->paginate(
+            $postRepository->createSavedByUserQueryBuilder($authUser->getId()),
+            max(1, $request->query->getInt('page', 1)),
+            8
+        );
         $savedPostIds = $savedPostRepository->findSavedPostIdsByUser($authUser->getId());
+        $likedPostIds = $postRepository->findLikedPostIdsByUser($authUser->getId());
+        /** @var Post[] $currentPagePosts */
+        $currentPagePosts = $this->normalizePosts($savedPosts->getItems());
 
         $recommended = $recommendationService->getRecommendedForUser(
             $authUser,
@@ -210,8 +229,12 @@ class PostController extends AbstractController
 
         return $this->render('post/saved_posts.html.twig', [
             'posts' => $savedPosts,
+            'postMetrics' => $postRepository->getInteractionMetrics($this->extractPostIds($currentPagePosts)),
             'recommendedPosts' => $recommended,
+            'recommendedMetrics' => $postRepository->getInteractionMetrics($this->extractPostIds($recommended)),
             'savedPostIds' => $savedPostIds,
+            'likedPostIds' => $likedPostIds,
+            'totalSavedPosts' => $savedPosts->getTotalItemCount(),
         ]);
     }
 
@@ -219,7 +242,7 @@ class PostController extends AbstractController
     public function show(
         int $id,
         PostRepository $postRepository,
-        EntityManagerInterface $entityManager,
+        CommentaireRepository $commentaireRepository,
         PostRecommendationService $recommendationService,
         SavedPostRepository $savedPostRepository
     ): Response
@@ -235,26 +258,32 @@ class PostController extends AbstractController
         /** @var \App\Entity\Utilisateur|null $authUser */
         $authUser = $this->getUser();
         if ($authUser instanceof Utilisateur) {
-            $like = $entityManager->getRepository(Like::class)->findOneBy([
-                'post' => $post,
-                'utilisateur' => $authUser,
-            ]);
-            $userHasLiked = ($like !== null);
-
-            $saved = $savedPostRepository->findOneBy([
-                'post' => $post,
-                'utilisateur' => $authUser,
-            ]);
-            $userHasSaved = ($saved !== null);
+            $likedPostIds = $postRepository->findLikedPostIdsByUser($authUser->getId());
+            $savedPostIds = $savedPostRepository->findSavedPostIdsByUser($authUser->getId());
+            $userHasLiked = in_array($post->getId(), $likedPostIds, true);
+            $userHasSaved = in_array($post->getId(), $savedPostIds, true);
         }
 
         $relatedPosts = $recommendationService->getRelatedToPost($post, 5);
+        $author = $post->getUtilisateur();
+        $authorStats = [
+            'posts' => 0,
+            'comments' => 0,
+        ];
+
+        if ($author !== null) {
+            $authorStats['posts'] = $postRepository->countVisibleByAuthor($author);
+            $authorStats['comments'] = $commentaireRepository->countVisibleByAuthor($author);
+        }
 
         return $this->render('post/post_details.html.twig', [
             'post' => $post,
+            'postMetrics' => $postRepository->getInteractionMetrics([$post->getId()]),
             'userHasLiked' => $userHasLiked,
             'userHasSaved' => $userHasSaved,
             'relatedPosts' => $relatedPosts,
+            'relatedMetrics' => $postRepository->getInteractionMetrics($this->extractPostIds($relatedPosts)),
+            'authorStats' => $authorStats,
         ]);
     }
 
@@ -478,5 +507,31 @@ class PostController extends AbstractController
         return $this->json([
             'saved' => $saved,
         ]);
+    }
+
+    /**
+     * @param iterable<Post> $posts
+     * @return Post[]
+     */
+    private function normalizePosts(iterable $posts): array
+    {
+        return is_array($posts) ? $posts : iterator_to_array($posts, false);
+    }
+
+    /**
+     * @param iterable<Post> $posts
+     * @return int[]
+     */
+    private function extractPostIds(iterable $posts): array
+    {
+        $ids = [];
+        foreach ($posts as $post) {
+            $id = $post->getId();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

@@ -7,6 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: QuestionEvaluationRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_question_eval_category', columns: ['category']),
+    new ORM\Index(name: 'idx_question_eval_type', columns: ['type_reponse']),
+])]
+#[ORM\Cache(region: 'reference_data')]
 class QuestionEvaluation
 {
     #[ORM\Id]

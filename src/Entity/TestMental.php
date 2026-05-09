@@ -10,6 +10,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TestMentalRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_test_mental_type_level', columns: ['type_test', 'niveau']),
+])]
+#[ORM\Cache(region: 'reference_data')]
 class TestMental
 {
     #[ORM\Id]

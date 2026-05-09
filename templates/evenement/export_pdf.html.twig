@@ -44,7 +44,7 @@
                 {{ evenement.statut.value }}
             </span>
         </p>
-        <p><span class="info-label">Capacité :</span> {{ evenement.participations|length }} / {{ evenement.capaciteMax }} participants</p>
+        <p><span class="info-label">Capacité :</span> {{ participantCount|default(0) }} / {{ evenement.capaciteMax }} participants</p>
     </div>
 
     <div class="info-section">

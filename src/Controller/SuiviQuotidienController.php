@@ -39,10 +39,7 @@ class SuiviQuotidienController extends AbstractController
         $today = new \DateTime('today');
 
         // ── 2. Block duplicate check-in ───────────────────────────
-        $existingSuivi = $suiviRepo->findOneBy([
-            'utilisateur' => $user,
-            'date'        => $today,
-        ]);
+        $existingSuivi = $suiviRepo->findOneByUserAndDateWithResponses($user, $today);
 
         if ($existingSuivi && $existingSuivi->getReponses()->count() > 0) {
             $this->addFlash(
@@ -61,35 +58,17 @@ class SuiviQuotidienController extends AbstractController
 
         // ── 4. Load questions based on user's active objectives ───
         // Get raw types from user's objectifs
-        $objectifs = $objectifRepo->findBy(['utilisateur' => $user]);
-
-        // Normalize to lowercase + trim to avoid case/space mismatches
-        $activeTypes = array_unique(
-            array_filter(
-                array_map(
-                    fn($o) => strtolower(trim((string) $o->getType())),
-                    $objectifs
-                )
-            )
-        );
-
-        // DEBUG — remove after confirming it works
-        // dump(['objectif_types' => $activeTypes]); die;
+        $activeTypes = $objectifRepo->findActiveTypesByUser($user);
 
         if (empty($activeTypes)) {
             // Fallback: load ALL questions if user has no objectifs
-            $questions = $questionRepo->findAll();
+            $questions = $questionRepo->findAllOrdered();
         } else {
-            // Use LOWER() in DQL to match case-insensitively
-            $questions = $questionRepo->createQueryBuilder('q')
-                ->where('LOWER(TRIM(q.category)) IN (:cats)')
-                ->setParameter('cats', $activeTypes)
-                ->getQuery()
-                ->getResult();
+            $questions = $questionRepo->findByNormalizedCategories($activeTypes);
 
             // If still empty (category format mismatch), fallback to all questions
             if (empty($questions)) {
-                $questions = $questionRepo->findAll();
+                $questions = $questionRepo->findAllOrdered();
             }
         }
 

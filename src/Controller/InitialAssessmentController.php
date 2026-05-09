@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ProfilPsychologique;
 use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository;
 use App\Service\AiEmotionalInsightService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -64,6 +65,7 @@ class InitialAssessmentController extends AbstractController
 
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private UtilisateurRepository $utilisateurRepository,
         private CsrfTokenManagerInterface $csrfTokenManager,
         private AiEmotionalInsightService $aiEmotionalInsightService
     ) {}
@@ -73,7 +75,8 @@ class InitialAssessmentController extends AbstractController
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
-        if ($user->getProfilPsychologique() !== null) {
+        $userWithProfil = $this->utilisateurRepository->findOneWithProfil($user->getId());
+        if ($userWithProfil?->getProfilPsychologique() !== null) {
             return $this->redirectToRoute('user_dashboard');
         }
 

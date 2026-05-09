@@ -307,13 +307,13 @@
                             <div class="engage-left">
                                 <button class="engage-btn like-btn {% if userHasLiked %}liked{% endif %}" data-post-id="{{ post.id }}" data-like-token="{{ csrf_token('like' ~ post.id) }}">
                                     <i class="bi {% if userHasLiked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                                    <span class="like-count">{{ post.likes|length }}</span> J'aime
+                                    <span class="like-count">{{ postMetrics[post.id].likes ?? 0 }}</span> J'aime
                                 </button>
                                 <button class="engage-btn save-btn {% if userHasSaved is defined and userHasSaved %}saved{% endif %}" data-post-id="{{ post.id }}" data-save-token="{{ csrf_token('save' ~ post.id) }}">
                                     <i class="bi {% if userHasSaved is defined and userHasSaved %}bi-bookmark-check-fill{% else %}bi-bookmark{% endif %}"></i>
                                     Sauvegarder
                                 </button>
-                                <span class="engage-info"><i class="bi bi-chat-left-text"></i> {{ post.commentaires|length }} commentaires</span>
+                                <span class="engage-info"><i class="bi bi-chat-left-text"></i> {{ postMetrics[post.id].comments ?? 0 }} commentaires</span>
                             </div>
                             <button class="btn-share" onclick="sharePost()"><i class="bi bi-share"></i> Partager</button>
                         </div>
@@ -323,7 +323,7 @@
                     <div class="comments-card" id="comments">
                         <div class="comments-head">
                             <h4><i class="bi bi-chat-left-text-fill" style="color:var(--teal);"></i> Commentaires</h4>
-                            <span class="comments-count">{{ post.commentaires|length }}</span>
+                            <span class="comments-count">{{ postMetrics[post.id].comments ?? 0 }}</span>
                         </div>
                         <div class="comments-body">
                             <form action="{{ path('comment_create', {'postId': post.id}) }}" method="post" class="comment-form">
@@ -405,8 +405,8 @@
                             </div>
                             <div class="author-widget-name">{{ post.utilisateur.nom }} {{ post.utilisateur.prenom }}</div>
                             <div class="author-widget-stats">
-                                <div class="widget-stat"><strong>{{ post.utilisateur.posts|length }}</strong><span>Posts</span></div>
-                                <div class="widget-stat"><strong>{{ post.utilisateur.commentaires|length }}</strong><span>Commentaires</span></div>
+                                <div class="widget-stat"><strong>{{ authorStats.posts ?? 0 }}</strong><span>Posts</span></div>
+                                <div class="widget-stat"><strong>{{ authorStats.comments ?? 0 }}</strong><span>Commentaires</span></div>
                             </div>
                         </div>
                     </div>
@@ -417,7 +417,7 @@
                             {% for relPost in relatedPosts %}
                                 <a href="{{ path('post_details', {'id': relPost.id}) }}" class="related-item">
                                     <div class="related-item-title">{{ relPost.titre|slice(0,50) }}{% if relPost.titre|length > 50 %}...{% endif %}</div>
-                                    <div class="related-item-meta">{{ relPost.utilisateur.nom }} · {{ relPost.likes|length }} <i class="bi bi-heart-fill" style="color:#e74c3c;font-size:11px;"></i></div>
+                                    <div class="related-item-meta">{{ relPost.utilisateur.nom }} · {{ relatedMetrics[relPost.id].likes ?? 0 }} <i class="bi bi-heart-fill" style="color:#e74c3c;font-size:11px;"></i></div>
                                 </a>
                             {% endfor %}
                         </div>

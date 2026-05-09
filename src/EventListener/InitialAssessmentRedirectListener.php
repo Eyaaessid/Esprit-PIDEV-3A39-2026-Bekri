@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EventListener;
 
 use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -21,7 +22,8 @@ class InitialAssessmentRedirectListener
 {
     public function __construct(
         private TokenStorageInterface $tokenStorage,
-        private UrlGeneratorInterface $urlGenerator
+        private UrlGeneratorInterface $urlGenerator,
+        private UtilisateurRepository $utilisateurRepository
     ) {
     }
 
@@ -57,7 +59,8 @@ class InitialAssessmentRedirectListener
             return;
         }
 
-        if ($user->getProfilPsychologique() !== null) {
+        $userWithProfil = $this->utilisateurRepository->findOneWithProfil($user->getId());
+        if ($userWithProfil?->getProfilPsychologique() !== null) {
             return;
         }
 

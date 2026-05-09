@@ -1,9 +1,14 @@
 # Doctrine Doctor - Runtime Analysis for Doctrine ORM
 # Full documentation: https://github.com/ahmed-bhs/doctrine-doctor/blob/main/docs/CONFIGURATION.md
 
-doctrine_doctor:
-    # Enable Doctrine Doctor (automatically enabled in dev/test environments)
-    enabled: true
+when@dev:
+    doctrine_doctor:
+        # Enable Doctrine Doctor (automatically enabled in dev/test environments)
+        enabled: true
+
+when@test:
+    doctrine_doctor:
+        enabled: true
 
 #    # Web Profiler integration
 #    profiler:

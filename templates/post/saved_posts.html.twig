@@ -76,6 +76,11 @@
 
         .section-title { font-size:15px; font-weight:700; color:var(--dark); margin:28px 0 14px; display:flex; align-items:center; gap:8px; }
         .section-title i { color:var(--purple); }
+        .pagination-wrap { display:flex; justify-content:center; gap:8px; margin-top:24px; flex-wrap:wrap; }
+        .page-btn { width:40px; height:40px; border-radius:10px; background:white; border:2px solid #e2e8f0; color:var(--gray); font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:all 0.25s; }
+        .page-btn:hover { border-color:var(--teal); color:var(--teal); }
+        .page-btn.active { background:var(--teal); border-color:var(--teal); color:white; }
+        .page-btn.disabled { opacity:0.4; pointer-events:none; }
 
         @media (max-width:768px) {
             .sidebar { transform:translateX(-100%); } .sidebar.open { transform:translateX(0); }
@@ -146,12 +151,12 @@
             <div class="page-header">
                 <div>
                     <h1><i class="bi bi-bookmark-heart-fill"></i> Posts sauvegardés</h1>
-                    <p>{{ posts|length }} post(s) sauvegardé(s)</p>
+                    <p>{{ totalSavedPosts|default(0) }} post(s) sauvegardé(s)</p>
                 </div>
                 <a href="{{ path('posts_list') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Publications</a>
             </div>
 
-            {% if posts is empty %}
+            {% if totalSavedPosts|default(0) == 0 %}
                 <div class="empty-state">
                     <i class="bi bi-bookmark"></i>
                     <h3>Aucun post sauvegardé</h3>
@@ -172,8 +177,8 @@
                                 <div class="post-title">{{ post.titre }}</div>
                                 <div class="post-excerpt">{{ post.contenu|slice(0,160) }}{% if post.contenu|length > 160 %}...{% endif %}</div>
                                 <div class="post-meta-row">
-                                    <span><i class="bi bi-heart-fill" style="color:#e74c3c;"></i> {{ post.likes|length }}</span>
-                                    <span><i class="bi bi-chat-left-text"></i> {{ post.commentaires|length }}</span>
+                                    <span><i class="bi bi-heart-fill" style="color:#e74c3c;"></i> {{ postMetrics[post.id].likes ?? 0 }}</span>
+                                    <span><i class="bi bi-chat-left-text"></i> {{ postMetrics[post.id].comments ?? 0 }}</span>
                                 </div>
                             </div>
                             <div class="post-card-footer">
@@ -185,6 +190,25 @@
                         </article>
                     {% endfor %}
                 </div>
+
+                {% if posts.pageCount is defined and posts.pageCount > 1 %}
+                    <div class="pagination-wrap">
+                        {% set currentPage = posts.currentPageNumber %}
+                        {% set totalPages = posts.pageCount %}
+                        <a class="page-btn {% if currentPage <= 1 %}disabled{% endif %}"
+                           href="{{ currentPage > 1 ? path('posts_saved', {'page': currentPage - 1}) : '#' }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        {% for page in 1..totalPages %}
+                            <a class="page-btn {% if page == currentPage %}active{% endif %}"
+                               href="{{ path('posts_saved', {'page': page}) }}">{{ page }}</a>
+                        {% endfor %}
+                        <a class="page-btn {% if currentPage >= totalPages %}disabled{% endif %}"
+                           href="{{ currentPage < totalPages ? path('posts_saved', {'page': currentPage + 1}) : '#' }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                {% endif %}
             {% endif %}
 
             {% if recommendedPosts is defined and recommendedPosts|length > 0 %}
@@ -198,8 +222,8 @@
                             <div class="post-card-body">
                                 <div class="post-title">{{ rec.titre|slice(0,55) }}{% if rec.titre|length > 55 %}...{% endif %}</div>
                                 <div class="post-meta-row">
-                                    <span><i class="bi bi-heart-fill" style="color:#e74c3c;"></i> {{ rec.likes|length }}</span>
-                                    <span><i class="bi bi-chat-left-text"></i> {{ rec.commentaires|length }}</span>
+                                    <span><i class="bi bi-heart-fill" style="color:#e74c3c;"></i> {{ recommendedMetrics[rec.id].likes ?? 0 }}</span>
+                                    <span><i class="bi bi-chat-left-text"></i> {{ recommendedMetrics[rec.id].comments ?? 0 }}</span>
                                 </div>
                             </div>
                             <div class="post-card-footer">

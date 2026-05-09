@@ -25,6 +25,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_ADMIN')]
@@ -40,7 +42,7 @@ class AdminController extends AbstractController
 
     // ==================== USERS LIST ====================
     #[Route('/users', name: 'users_list')]
-    public function usersList(Request $request, EntityManagerInterface $entityManager): Response
+    public function usersList(Request $request, EntityManagerInterface $entityManager, CacheInterface $cache): Response
     {
         $search = $request->query->get('search', '');
         $roleFilter = $request->query->get('role', '');
@@ -82,9 +84,15 @@ class AdminController extends AbstractController
             ->getResult();
 
         // Statistics for cards
-        $userCount  = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'user']);
-        $coachCount = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'coach']);
-        $adminCount = $entityManager->getRepository(Utilisateur::class)->count(['role' => 'admin']);
+        $roleCounts = $cache->get('admin_user_role_counts', function (ItemInterface $item) use ($entityManager) {
+            $item->expiresAfter(300);
+
+            return [
+                'userCount' => $entityManager->getRepository(Utilisateur::class)->count(['role' => 'user']),
+                'coachCount' => $entityManager->getRepository(Utilisateur::class)->count(['role' => 'coach']),
+                'adminCount' => $entityManager->getRepository(Utilisateur::class)->count(['role' => 'admin']),
+            ];
+        });
 
         return $this->render('admin/users_list.html.twig', [
             'users'       => $users,
@@ -96,9 +104,9 @@ class AdminController extends AbstractController
             'currentPage' => $page,
             'totalPages'  => ceil($totalUsers / $limit),
             'totalUsers'  => $totalUsers,
-            'userCount'   => $userCount,
-            'coachCount'  => $coachCount,
-            'adminCount'  => $adminCount,
+            'userCount'   => $roleCounts['userCount'],
+            'coachCount'  => $roleCounts['coachCount'],
+            'adminCount'  => $roleCounts['adminCount'],
         ]);
     }
 
@@ -501,5 +509,4 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('admin_reactivation_requests');
     }
 }
-
 

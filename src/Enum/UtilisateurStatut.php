@@ -4,10 +4,10 @@ namespace App\Enum;
 
 enum UtilisateurStatut: string
 {
-    case ACTIF = 'actif';     
-    case BLOQUE = 'bloque';
-    case INACTIF = 'inactif';
-    case SUPPRIME = 'supprime';
+    case ACTIF = 'ACTIF';
+    case BLOQUE = 'BLOQUE';
+    case INACTIF = 'INACTIF';
+    case SUPPRIME = 'SUPPRIME';
 
     public function getLabel(): string
     {

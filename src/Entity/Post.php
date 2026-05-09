@@ -20,6 +20,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_post_user', columns: ['utilisateur_id']),
+    new ORM\Index(name: 'idx_post_deleted_created', columns: ['deleted_at', 'created_at']),
+    new ORM\Index(name: 'idx_post_category', columns: ['categorie']),
+    new ORM\Index(name: 'idx_post_emotion', columns: ['emotion']),
+    new ORM\Index(name: 'idx_post_risk_level', columns: ['risk_level']),
+])]
 #[ApiResource(
     operations: [
         new GetCollection(

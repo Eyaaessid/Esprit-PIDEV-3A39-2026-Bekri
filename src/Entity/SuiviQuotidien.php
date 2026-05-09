@@ -10,6 +10,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SuiviQuotidienRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_suivi_user_date', columns: ['utilisateur_id', 'date']),
+    new ORM\Index(name: 'idx_suivi_submitted_at', columns: ['soumis_at']),
+])]
 class SuiviQuotidien
 {
     #[ORM\Id]

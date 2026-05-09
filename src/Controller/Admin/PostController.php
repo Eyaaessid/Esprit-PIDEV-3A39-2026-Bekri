@@ -29,28 +29,28 @@ class PostController extends AbstractController
     {
         $page = $request->query->getInt('page', 1);
         $limit = 20;
-        
-        // Get posts with pagination
-        $query = $this->postRepository->createQueryBuilder('p')
-            ->where('p.deletedAt IS NULL')
-            ->orderBy('p.createdAt', 'DESC')
-            ->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit)
-            ->getQuery();
-        
-        $posts = $query->getResult();
-        
-        // Get total count for pagination
-        $totalPosts = $this->postRepository->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
-            ->where('p.deletedAt IS NULL')
+
+        $queryBuilder = $this->postRepository->createAdminListQueryBuilder();
+        $totalPosts = (int) (clone $queryBuilder)
+            ->select('COUNT(DISTINCT p.id)')
             ->getQuery()
             ->getSingleScalarResult();
-        
+
+        $posts = $queryBuilder
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $postIds = array_values(array_filter(array_map(
+            static fn (Post $post): ?int => $post->getId(),
+            $posts
+        )));
         $totalPages = ceil($totalPosts / $limit);
 
         return $this->render('admin/posts/index.html.twig', [
             'posts' => $posts,
+            'postMetrics' => $this->postRepository->getInteractionMetrics($postIds),
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalPosts' => $totalPosts,

@@ -11,6 +11,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_evenement_coach', columns: ['coach_id']),
+    new ORM\Index(name: 'idx_evenement_status_start', columns: ['statut', 'date_debut']),
+    new ORM\Index(name: 'idx_evenement_created_at', columns: ['created_at']),
+])]
 class Evenement
 {
     #[ORM\Id]

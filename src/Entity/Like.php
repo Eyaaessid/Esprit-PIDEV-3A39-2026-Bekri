@@ -18,6 +18,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: LikeRepository::class)]
 #[ORM\Table(
     name: '`like`',
+    indexes: [
+        new ORM\Index(name: 'idx_like_user_created', columns: ['utilisateur_id', 'created_at']),
+        new ORM\Index(name: 'idx_like_post_created', columns: ['post_id', 'created_at']),
+    ],
     uniqueConstraints: [
         new ORM\UniqueConstraint(name: 'uniq_like_post_user', columns: ['post_id', 'utilisateur_id']),
     ]

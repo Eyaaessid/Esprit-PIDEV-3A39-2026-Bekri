@@ -29,31 +29,23 @@ class CommentController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $limit = 20;
         $filter = $request->query->get('filter', 'all'); // all, pending, approved, spam
-        
-        // Build query
-        $queryBuilder = $this->commentaireRepository->createQueryBuilder('c')
-            ->leftJoin('c.post', 'p')
-            ->leftJoin('c.utilisateur', 'u')
-            ->where('c.deletedAt IS NULL')
-            ->orderBy('c.createdAt', 'DESC');
+
+        $queryBuilder = $this->commentaireRepository->createAdminListQueryBuilder();
 
         // Apply filters (you may need to add a status field to your entity)
         // For now, filtering by deletedAt
-        
-        $query = $queryBuilder
+
+        $comments = $queryBuilder
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
-            ->getQuery();
-        
-        $comments = $query->getResult();
-        
-        // Get total count
-        $totalComments = $this->commentaireRepository->createQueryBuilder('c')
-            ->select('COUNT(c.id)')
-            ->where('c.deletedAt IS NULL')
+            ->getQuery()
+            ->getResult();
+
+        $totalComments = (int) $this->commentaireRepository->createAdminListQueryBuilder()
+            ->select('COUNT(DISTINCT c.id)')
             ->getQuery()
             ->getSingleScalarResult();
-        
+
         $totalPages = ceil($totalComments / $limit);
 
         return $this->render('admin/comments/index.html.twig', [
@@ -360,11 +352,7 @@ class CommentController extends AbstractController
     #[Route('/post/{postId}', name: 'by_post', methods: ['GET'], requirements: ['postId' => '\d+'])]
     public function commentsByPost(int $postId): Response
     {
-        $comments = $this->commentaireRepository->createQueryBuilder('c')
-            ->where('c.post = :postId')
-            ->andWhere('c.deletedAt IS NULL')
-            ->setParameter('postId', $postId)
-            ->orderBy('c.createdAt', 'DESC')
+        $comments = $this->commentaireRepository->createAdminListQueryBuilder($postId)
             ->getQuery()
             ->getResult();
 

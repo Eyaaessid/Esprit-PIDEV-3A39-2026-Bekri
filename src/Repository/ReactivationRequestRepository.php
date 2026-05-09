@@ -22,6 +22,7 @@ class ReactivationRequestRepository extends ServiceEntityRepository
     public function findPendingOrderByRequestedAt(): array
     {
         return $this->createQueryBuilder('r')
+            ->leftJoin('r.utilisateur', 'u')->addSelect('u')
             ->andWhere('r.status = :status')
             ->setParameter('status', ReactivationRequest::STATUS_PENDING)
             ->orderBy('r.requestedAt', 'DESC')

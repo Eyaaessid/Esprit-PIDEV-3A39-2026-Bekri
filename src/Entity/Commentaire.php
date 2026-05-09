@@ -18,6 +18,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CommentaireRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_comment_post_deleted_created', columns: ['post_id', 'deleted_at', 'created_at']),
+    new ORM\Index(name: 'idx_comment_user', columns: ['utilisateur_id']),
+])]
 #[ApiResource(
     operations: [
         new GetCollection(

@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Post;
+use App\Entity\SavedPost;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -21,8 +23,6 @@ class PostRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
-            ->leftJoin('p.commentaires', 'c')->addSelect('c')
             ->where('p.deletedAt IS NULL')
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
@@ -40,8 +40,8 @@ class PostRepository extends ServiceEntityRepository
     public function findOneForShow(int $id): ?Post
     {
         return $this->createQueryBuilder('p')
+            ->distinct()
             ->leftJoin('p.utilisateur', 'u')->addSelect('u')
-            ->leftJoin('p.likes', 'l')->addSelect('l')
             ->leftJoin('p.commentaires', 'c')->addSelect('c')
             ->leftJoin('c.utilisateur', 'cu')->addSelect('cu')
             ->where('p.id = :id')
@@ -53,12 +53,14 @@ class PostRepository extends ServiceEntityRepository
     public function createFeedQueryBuilder(string $sort = 'most_recent', ?string $emotion = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.utilisateur', 'u')->addSelect('u')
             ->leftJoin('p.likes', 'l')
             ->leftJoin('p.commentaires', 'c')
             ->addSelect('COUNT(DISTINCT l.id) AS HIDDEN likesCount')
             ->addSelect('COUNT(DISTINCT c.id) AS HIDDEN commentsCount')
             ->where('p.deletedAt IS NULL')
-            ->groupBy('p.id');
+            ->groupBy('p.id')
+            ->addGroupBy('u.id');
 
         if ($emotion !== null && $emotion !== '') {
             $qb->andWhere('p.emotion = :emotion')
@@ -81,6 +83,66 @@ class PostRepository extends ServiceEntityRepository
         }
 
         return $qb;
+    }
+
+    public function createAdminListQueryBuilder(): QueryBuilder
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.utilisateur', 'u')->addSelect('u')
+            ->where('p.deletedAt IS NULL')
+            ->orderBy('p.createdAt', 'DESC');
+    }
+
+    public function createSavedByUserQueryBuilder(int $userId): QueryBuilder
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin(SavedPost::class, 'sp', 'WITH', 'sp.post = p')
+            ->leftJoin('p.utilisateur', 'u')->addSelect('u')
+            ->where('IDENTITY(sp.utilisateur) = :userId')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('userId', $userId)
+            ->orderBy('sp.createdAt', 'DESC');
+    }
+
+    /**
+     * @param int[] $postIds
+     * @return array<int, array{likes:int, comments:int}>
+     */
+    public function getInteractionMetrics(array $postIds): array
+    {
+        $postIds = array_values(array_unique(array_filter(array_map('intval', $postIds))));
+        if ($postIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.id AS postId')
+            ->addSelect('COUNT(DISTINCT l.id) AS likesCount')
+            ->addSelect('COUNT(DISTINCT c.id) AS commentsCount')
+            ->leftJoin('p.likes', 'l')
+            ->leftJoin('p.commentaires', 'c')
+            ->where('p.id IN (:postIds)')
+            ->setParameter('postIds', $postIds)
+            ->groupBy('p.id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $metrics = [];
+        foreach ($postIds as $postId) {
+            $metrics[$postId] = [
+                'likes' => 0,
+                'comments' => 0,
+            ];
+        }
+
+        foreach ($rows as $row) {
+            $metrics[(int) $row['postId']] = [
+                'likes' => (int) $row['likesCount'],
+                'comments' => (int) $row['commentsCount'],
+            ];
+        }
+
+        return $metrics;
     }
 
     public function getEmotionStats(): array
@@ -442,5 +504,37 @@ class PostRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function countVisibleByAuthor(Utilisateur $author): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.utilisateur = :author')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('author', $author)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countVisibleCreatedSince(\DateTimeInterface $date): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.deletedAt IS NULL')
+            ->andWhere('p.createdAt >= :date')
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countTotalLikes(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(l.id)')
+            ->leftJoin('p.likes', 'l')
+            ->where('p.deletedAt IS NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

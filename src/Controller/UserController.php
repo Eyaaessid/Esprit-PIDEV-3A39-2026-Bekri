@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Enum\UtilisateurStatut;
 use App\Form\UserProfileType;
+use App\Repository\ObjectifBienEtreRepository;
+use App\Repository\UtilisateurRepository;
 use App\Service\AiEmotionalInsightService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,13 +23,18 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class UserController extends AbstractController
 {
     #[Route('', name: 'dashboard', methods: ['GET'])]
-    public function dashboard(): Response
+    public function dashboard(
+        UtilisateurRepository $utilisateurRepository,
+        ObjectifBienEtreRepository $objectifBienEtreRepository
+    ): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
+        $user = $utilisateurRepository->findOneWithProfil($user->getId()) ?? $user;
 
         return $this->render('user/index.html.twig', [
             'user' => $user,
+            'activeGoalCount' => $objectifBienEtreRepository->countActiveByUser($user),
         ]);
     }
 
@@ -147,10 +154,11 @@ class UserController extends AbstractController
     }
 
     #[Route('/analyse', name: 'analyse', methods: ['GET'])]
-    public function analyse(): Response
+    public function analyse(UtilisateurRepository $utilisateurRepository): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
+        $user = $utilisateurRepository->findOneWithProfil($user->getId()) ?? $user;
 
         if ($user->getProfilPsychologique() === null) {
             $this->addFlash('warning', 'Vous devez d\'abord compléter le test initial.');
@@ -166,10 +174,12 @@ class UserController extends AbstractController
     public function regenerateInsight(
         Request $request,
         EntityManagerInterface $entityManager,
-        AiEmotionalInsightService $aiService
+        AiEmotionalInsightService $aiService,
+        UtilisateurRepository $utilisateurRepository
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
+        $user = $utilisateurRepository->findOneWithProfil($user->getId()) ?? $user;
 
         if (!$this->isCsrfTokenValid('regenerate_insight', $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de sécurité invalide.');

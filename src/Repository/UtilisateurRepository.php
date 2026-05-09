@@ -23,9 +23,10 @@ class UtilisateurRepository extends ServiceEntityRepository
     public function findAllWithProfil(): array
     {
         return $this->createQueryBuilder('u')
-            ->innerJoin('u.profilPsychologique', 'p')
+            ->leftJoin('u.profilPsychologique', 'p')
             ->addSelect('p')
             ->getQuery()
+            ->enableResultCache(300, 'utilisateurs_all_with_profil')
             ->getResult();
     }
 
@@ -35,11 +36,12 @@ class UtilisateurRepository extends ServiceEntityRepository
     public function findOneWithProfil(int $id): ?Utilisateur
     {
         return $this->createQueryBuilder('u')
-            ->innerJoin('u.profilPsychologique', 'p')
+            ->leftJoin('u.profilPsychologique', 'p')
             ->addSelect('p')
             ->where('u.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
+            ->enableResultCache(300, 'utilisateur_with_profil_' . $id)
             ->getOneOrNullResult();
     }
 }

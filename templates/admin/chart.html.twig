@@ -231,28 +231,28 @@
                 <div class="stat-icon teal"><i class="bi bi-newspaper"></i></div>
                 <div>
                     <div class="stat-label">Total Posts</div>
-                    <div class="stat-value">{{ posts|length }}</div>
+                    <div class="stat-value">{{ totalPosts }}</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="bi bi-chat-dots-fill"></i></div>
                 <div>
                     <div class="stat-label">Total Commentaires</div>
-                    <div class="stat-value">{{ comments|length }}</div>
+                    <div class="stat-value">{{ totalComments }}</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="bi bi-calendar-check-fill"></i></div>
                 <div>
                     <div class="stat-label">Posts cette semaine</div>
-                    <div class="stat-value">{{ posts|filter(p => p.createdAt|date('U') > "now"|date_modify('-7 days')|date('U'))|length }}</div>
+                    <div class="stat-value">{{ recentPostCount }}</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange"><i class="bi bi-heart-fill"></i></div>
                 <div>
                     <div class="stat-label">Total Likes</div>
-                    <div class="stat-value">{{ posts|reduce((carry, p) => carry + p.likes|length, 0) }}</div>
+                    <div class="stat-value">{{ totalLikes }}</div>
                 </div>
             </div>
         </div>
@@ -262,7 +262,7 @@
             <div class="card-header">
                 <div>
                     <div class="card-title">Publications</div>
-                    <div class="card-sub">{{ posts|length }} publication(s) au total</div>
+                    <div class="card-sub">{{ totalPosts }} publication(s) au total</div>
                 </div>
                 <a href="{{ path('admin_post_create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nouvelle publication</a>
             </div>
@@ -287,9 +287,9 @@
                             <td><div class="text-truncate-content" title="{{ post.titre }}">{{ post.titre }}</div></td>
                             <td>{{ post.utilisateur.nom ?? 'Inconnu' }}</td>
                             <td><span class="badge badge-teal">{{ post.categorie ?? 'Sans catégorie' }}</span></td>
-                            <td><span class="badge badge-gray"><i class="bi bi-chat" style="margin-right:4px;"></i>{{ post.commentaires|length }}</span></td>
+                            <td><span class="badge badge-gray"><i class="bi bi-chat" style="margin-right:4px;"></i>{{ postMetrics[post.id].comments ?? 0 }}</span></td>
                             <td style="font-size:13px;color:var(--gray);">{{ post.createdAt|date('d/m/Y') }}</td>
-                            <td><span class="badge badge-red"><i class="bi bi-heart" style="margin-right:4px;"></i>{{ post.likes|length }}</span></td>
+                            <td><span class="badge badge-red"><i class="bi bi-heart" style="margin-right:4px;"></i>{{ postMetrics[post.id].likes ?? 0 }}</span></td>
                             <td>
                                 <div class="action-group">
                                     <a href="{{ path('admin_post_view', {id: post.id}) }}" class="btn btn-info" title="Voir"><i class="bi bi-eye"></i></a>
@@ -306,15 +306,18 @@
                     </tbody>
                 </table>
             </div>
-            {% if posts|length > 0 %}
+            {% if totalPosts > 0 %}
             <div class="pagination-row">
                 <span>{{ posts|length }} publication(s) affichée(s)</span>
                 <div class="pag-btns">
-                    <a href="#" class="pag-btn disabled"><i class="bi bi-chevron-left"></i></a>
-                    <a href="#" class="pag-btn active">1</a>
-                    <a href="#" class="pag-btn">2</a>
-                    <a href="#" class="pag-btn">3</a>
-                    <a href="#" class="pag-btn"><i class="bi bi-chevron-right"></i></a>
+                    <a href="{{ currentPostsPage > 1 ? path(app.request.attributes.get('_route'), {'postsPage': currentPostsPage - 1, 'commentsPage': currentCommentsPage}) : '#' }}"
+                       class="pag-btn {% if currentPostsPage <= 1 %}disabled{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                    {% for page in 1..totalPostsPages %}
+                        <a href="{{ path(app.request.attributes.get('_route'), {'postsPage': page, 'commentsPage': currentCommentsPage}) }}"
+                           class="pag-btn {% if page == currentPostsPage %}active{% endif %}">{{ page }}</a>
+                    {% endfor %}
+                    <a href="{{ currentPostsPage < totalPostsPages ? path(app.request.attributes.get('_route'), {'postsPage': currentPostsPage + 1, 'commentsPage': currentCommentsPage}) : '#' }}"
+                       class="pag-btn {% if currentPostsPage >= totalPostsPages %}disabled{% endif %}"><i class="bi bi-chevron-right"></i></a>
                 </div>
             </div>
             {% endif %}
@@ -325,7 +328,7 @@
             <div class="card-header">
                 <div>
                     <div class="card-title">Commentaires</div>
-                    <div class="card-sub">{{ comments|length }} commentaire(s) au total</div>
+                    <div class="card-sub">{{ totalComments }} commentaire(s) au total</div>
                 </div>
                 <button class="btn btn-danger" onclick="deleteSelectedComments()"><i class="bi bi-trash"></i> Supprimer la sélection</button>
             </div>
@@ -378,15 +381,18 @@
                     </tbody>
                 </table>
             </div>
-            {% if comments|length > 0 %}
+            {% if totalComments > 0 %}
             <div class="pagination-row">
                 <span>{{ comments|length }} commentaire(s) affiché(s)</span>
                 <div class="pag-btns">
-                    <a href="#" class="pag-btn disabled"><i class="bi bi-chevron-left"></i></a>
-                    <a href="#" class="pag-btn active">1</a>
-                    <a href="#" class="pag-btn">2</a>
-                    <a href="#" class="pag-btn">3</a>
-                    <a href="#" class="pag-btn"><i class="bi bi-chevron-right"></i></a>
+                    <a href="{{ currentCommentsPage > 1 ? path(app.request.attributes.get('_route'), {'postsPage': currentPostsPage, 'commentsPage': currentCommentsPage - 1}) : '#' }}"
+                       class="pag-btn {% if currentCommentsPage <= 1 %}disabled{% endif %}"><i class="bi bi-chevron-left"></i></a>
+                    {% for page in 1..totalCommentsPages %}
+                        <a href="{{ path(app.request.attributes.get('_route'), {'postsPage': currentPostsPage, 'commentsPage': page}) }}"
+                           class="pag-btn {% if page == currentCommentsPage %}active{% endif %}">{{ page }}</a>
+                    {% endfor %}
+                    <a href="{{ currentCommentsPage < totalCommentsPages ? path(app.request.attributes.get('_route'), {'postsPage': currentPostsPage, 'commentsPage': currentCommentsPage + 1}) : '#' }}"
+                       class="pag-btn {% if currentCommentsPage >= totalCommentsPages %}disabled{% endif %}"><i class="bi bi-chevron-right"></i></a>
                 </div>
             </div>
             {% endif %}

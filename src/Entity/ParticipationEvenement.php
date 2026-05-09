@@ -8,6 +8,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ParticipationEvenementRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_participation_event_status', columns: ['evenement_id', 'statut']),
+    new ORM\Index(name: 'idx_participation_user_event', columns: ['utilisateur_id', 'evenement_id']),
+    new ORM\Index(name: 'idx_participation_date', columns: ['date_inscription']),
+])]
 class ParticipationEvenement
 {
     #[ORM\Id]

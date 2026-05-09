@@ -7,6 +7,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ResultatTestRepository::class)]
+#[ORM\Table(indexes: [
+    new ORM\Index(name: 'idx_resultat_user_test_date', columns: ['utilisateur_id', 'test_mental_id', 'date_passage']),
+])]
 class ResultatTest
 {
     #[ORM\Id]

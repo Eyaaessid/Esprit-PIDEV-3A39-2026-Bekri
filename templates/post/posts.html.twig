@@ -420,7 +420,7 @@
                                 {% endif %}
                                 <div class="rec-card-body">
                                     <span class="rec-card-title">{{ recPost.titre|slice(0,40) }}{% if recPost.titre|length > 40 %}...{% endif %}</span>
-                                    <span class="rec-card-meta">{{ recPost.likes|length }} likes · {{ recPost.commentaires|length }} comments</span>
+                                    <span class="rec-card-meta">{{ recommendedMetrics[recPost.id].likes ?? 0 }} likes · {{ recommendedMetrics[recPost.id].comments ?? 0 }} comments</span>
                                 </div>
                             </a>
                         {% endfor %}
@@ -480,15 +480,10 @@
 
                             <div class="post-card-footer">
                                 <div class="post-stats">
-                                    {% set isLiked = false %}
-                                    {% if app.user %}
-                                        {% for like in post.likes %}
-                                            {% if like.utilisateur and like.utilisateur.id == app.user.id %}{% set isLiked = true %}{% endif %}
-                                        {% endfor %}
-                                    {% endif %}
+                                    {% set isLiked = app.user and post.id in (likedPostIds|default([])) %}
                                     <button class="stat-btn like-btn {% if isLiked %}liked{% endif %}" data-post-id="{{ post.id }}" data-like-token="{{ csrf_token('like' ~ post.id) }}">
                                         <i class="bi {% if isLiked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                                        <span>{{ post.likes|length }}</span>
+                                        <span>{{ postMetrics[post.id].likes ?? 0 }}</span>
                                     </button>
                                     {% set isSaved = app.user and post.id in (savedPostIds|default([])) %}
                                     <button class="stat-btn save-btn {% if isSaved %}saved{% endif %}" data-post-id="{{ post.id }}" data-save-token="{{ csrf_token('save' ~ post.id) }}">
@@ -496,7 +491,7 @@
                                     </button>
                                     <a href="{{ path('post_details', {'id': post.id}) }}#comments" class="stat-btn">
     <i class="bi bi-chat"></i>
-    <span>{{ post.commentaires|length }}</span>
+    <span>{{ postMetrics[post.id].comments ?? 0 }}</span>
 </a>
                                 </div>
                                 <a href="{{ path('post_details', {'id': post.id}) }}" class="btn-read-more">Lire <i class="bi bi-arrow-right"></i></a>

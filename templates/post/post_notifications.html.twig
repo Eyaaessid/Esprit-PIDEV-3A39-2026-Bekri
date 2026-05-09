@@ -300,7 +300,7 @@
                 <div class="stat-card">
                     <div class="stat-icon icon-teal"><i class="bi bi-bell-fill"></i></div>
                     <div>
-                        <div class="stat-value">{{ notifications|length }}</div>
+                        <div class="stat-value">{{ totalNotifications|default(0) }}</div>
                         <div class="stat-label">Total notifications</div>
                     </div>
                 </div>
@@ -314,7 +314,7 @@
                 <div class="stat-card">
                     <div class="stat-icon icon-amber"><i class="bi bi-check2-all"></i></div>
                     <div>
-                        <div class="stat-value">{{ (notifications|length) - (unreadNotificationsCount|default(0)) }}</div>
+                        <div class="stat-value">{{ (totalNotifications|default(0)) - (unreadNotificationsCount|default(0)) }}</div>
                         <div class="stat-label">Déjà lues</div>
                     </div>
                 </div>

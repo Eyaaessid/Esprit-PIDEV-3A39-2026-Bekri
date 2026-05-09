@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/api/community', name: 'api_community_')]
 class CommunityApiController extends AbstractController
@@ -38,13 +40,13 @@ class CommunityApiController extends AbstractController
 
         $qb = $this->postRepository->createFeedQueryBuilder($sort, $emotion);
         $pagination = $this->paginator->paginate($qb, $page, $limit);
+        $posts = $this->normalizePosts($pagination->getItems());
+        $postMetrics = $this->postRepository->getInteractionMetrics($this->extractPostIds($posts));
 
         $items = [];
-        foreach ($pagination->getItems() as $post) {
-            if (!$post instanceof Post) {
-                continue;
-            }
+        foreach ($posts as $post) {
             $author = $post->getUtilisateur();
+            $metrics = $postMetrics[$post->getId()] ?? ['likes' => 0, 'comments' => 0];
             $items[] = [
                 'id' => $post->getId(),
                 'titre' => $post->getTitre(),
@@ -54,8 +56,8 @@ class CommunityApiController extends AbstractController
                 'risk_level' => $post->getRiskLevel(),
                 'is_sensitive' => $post->isSensitive(),
                 'created_at' => $post->getCreatedAt()->format(\DateTimeInterface::ATOM),
-                'likes_count' => $post->getLikesCount(),
-                'comments_count' => $post->getCommentsCount(),
+                'likes_count' => $metrics['likes'],
+                'comments_count' => $metrics['comments'],
                 'author' => $author ? [
                     'id' => $author->getId(),
                     'nom' => $author->getNom(),
@@ -124,10 +126,40 @@ class CommunityApiController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
-    public function dashboard(): JsonResponse
+    public function dashboard(CacheInterface $cache): JsonResponse
     {
         return $this->json([
-            'emotions' => $this->postRepository->getEmotionStats(),
+            'emotions' => $cache->get('community_dashboard_emotions', function (ItemInterface $item) {
+                $item->expiresAfter(300);
+
+                return $this->postRepository->getEmotionStats();
+            }),
         ]);
+    }
+
+    /**
+     * @param iterable<Post> $posts
+     * @return Post[]
+     */
+    private function normalizePosts(iterable $posts): array
+    {
+        return is_array($posts) ? $posts : iterator_to_array($posts, false);
+    }
+
+    /**
+     * @param iterable<Post> $posts
+     * @return int[]
+     */
+    private function extractPostIds(iterable $posts): array
+    {
+        $ids = [];
+        foreach ($posts as $post) {
+            $id = $post->getId();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

@@ -17,6 +17,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/coach', name: 'coach_')]
 #[IsGranted('ROLE_COACH')]
@@ -25,44 +27,25 @@ class CoachController extends AbstractController
     #[Route('', name: 'dashboard')]
     public function dashboard(
         EvenementRepository $evenementRepo,
-        ParticipationEvenementRepository $participationRepo
+        ParticipationEvenementRepository $participationRepo,
+        CacheInterface $cache
     ): Response {
         /** @var Utilisateur $coach */
         $coach = $this->getUser();
 
-        $mesEvenements   = $evenementRepo->findBy(['coach' => $coach]);
-        $totalEvenements = count($mesEvenements);
+        $stats = $cache->get(sprintf('coach_dashboard_stats_%d', $coach->getId()), function (ItemInterface $item) use ($evenementRepo, $coach) {
+            $item->expiresAfter(300);
 
-        $totalParticipations = 0;
-        $evenementsAVenir    = 0;
-        $evenementsTermines  = 0;
-
-        foreach ($mesEvenements as $evenement) {
-            $participations = $participationRepo->count([
-                'evenement' => $evenement,
-                'statut'    => ParticipationStatut::INSCRIT,
-            ]);
-            $totalParticipations += $participations;
-
-            if ($evenement->getDateDebut() > new \DateTime()) {
-                $evenementsAVenir++;
-            } elseif ($evenement->getStatut() === EvenementStatut::FINISHED) {
-                $evenementsTermines++;
-            }
-        }
-
-        $evenementsRecents = $evenementRepo->findBy(
-            ['coach' => $coach],
-            ['createdAt' => 'DESC'],
-            5
-        );
+            return $evenementRepo->getCoachDashboardStats($coach);
+        });
+        $evenementsRecents = $evenementRepo->findRecentForCoach($coach, 5);
 
         return $this->render('evenement/coach/dashboard.html.twig', [
             'coach'               => $coach,
-            'totalEvenements'     => $totalEvenements,
-            'totalParticipations' => $totalParticipations,
-            'evenementsAVenir'    => $evenementsAVenir,
-            'evenementsTermines'  => $evenementsTermines,
+            'totalEvenements'     => $stats['totalEvenements'],
+            'totalParticipations' => $stats['totalParticipations'],
+            'evenementsAVenir'    => $stats['evenementsAVenir'],
+            'evenementsTermines'  => $stats['evenementsTermines'],
             'evenementsRecents'   => $evenementsRecents,
         ]);
     }

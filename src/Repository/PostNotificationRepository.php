@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\PostNotification;
 use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,14 +23,29 @@ class PostNotificationRepository extends ServiceEntityRepository
      */
     public function findForRecipient(Utilisateur $recipient): array
     {
+        return $this->createForRecipientQueryBuilder($recipient)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createForRecipientQueryBuilder(Utilisateur $recipient): QueryBuilder
+    {
         return $this->createQueryBuilder('n')
             ->leftJoin('n.actor', 'a')->addSelect('a')
             ->leftJoin('n.post', 'p')->addSelect('p')
             ->where('n.recipient = :recipient')
             ->setParameter('recipient', $recipient)
-            ->orderBy('n.createdAt', 'DESC')
+            ->orderBy('n.createdAt', 'DESC');
+    }
+
+    public function countAllForRecipient(Utilisateur $recipient): int
+    {
+        return (int) $this->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->where('n.recipient = :recipient')
+            ->setParameter('recipient', $recipient)
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
     }
 
     public function countUnreadForRecipient(Utilisateur $recipient): int

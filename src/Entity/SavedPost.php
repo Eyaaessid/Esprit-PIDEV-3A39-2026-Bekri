@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SavedPostRepository::class)]
 #[ORM\Table(
     name: 'saved_post',
+    indexes: [
+        new ORM\Index(name: 'idx_saved_post_post', columns: ['post_id']),
+        new ORM\Index(name: 'idx_saved_post_user_created', columns: ['utilisateur_id', 'created_at']),
+    ],
     uniqueConstraints: [
         new ORM\UniqueConstraint(name: 'uniq_saved_post_user_post', columns: ['utilisateur_id', 'post_id']),
     ]
